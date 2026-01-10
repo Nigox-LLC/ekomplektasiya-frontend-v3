@@ -1,0 +1,21 @@
+.container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f1f5f9;
+    /* Dashboard background */
+}
+
+.contentWrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    /* Prevent flex overflow */
+}
+
+.mainContent {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    /* Ensure height calculation handles sticky header */
+}
