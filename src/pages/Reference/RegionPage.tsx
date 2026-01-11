@@ -4,7 +4,7 @@ import { directoryApi } from '@/services/api';
 import type { Region } from '@/types/reference';
 import { DataTable, type Column } from '@/components/ui/DataTable';
 import { ConfirmModal } from '@/components/ui/Modal/ConfirmModal';
-import { exportToCSV } from '@/utils/exportToCSV';
+import { exportToExcel } from '@/utils/exportToExcel';
 import { MapPin, Hash, Info } from 'lucide-react';
 import { ModernModal } from '@/components/ui/Modal/ModernModal';
 import styles from './RegionPage.module.css';
@@ -140,7 +140,15 @@ export const RegionPage = () => {
     try {
       setExporting(true);
       const response = await directoryApi.getRegions({ page_size: 10000 });
-      exportToCSV(response.results, 'Viloyatlar');
+
+      // Define columns for export
+      const exportColumns = [
+        { key: 'id' as keyof Region, header: 'ID' },
+        { key: 'prefix' as keyof Region, header: 'Prefiks' },
+        { key: 'name' as keyof Region, header: 'Nom' },
+      ];
+
+      exportToExcel(response.results, 'Viloyatlar', exportColumns);
     } catch (e) {
       console.error(e);
       alert('Excel yuklashda xatolik');
