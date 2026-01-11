@@ -1,21 +1,26 @@
 .container {
-    display: flex;
-    min-height: 100vh;
-    background-color: #f1f5f9;
-    /* Dashboard background */
+  display: flex;
+  height: 100vh;
+  /* Fixed height */
+  overflow: hidden;
+  /* Prevent body scroll */
+  background-color: #f1f5f9;
 }
 
 .contentWrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    /* Prevent flex overflow */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  /* Ensure full height */
 }
 
 .mainContent {
-    flex: 1;
-    padding: 1.5rem;
-    overflow-y: auto;
-    /* Ensure height calculation handles sticky header */
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  /* Restore scrolling for normal pages */
+  display: flex;
+  flex-direction: column;
 }

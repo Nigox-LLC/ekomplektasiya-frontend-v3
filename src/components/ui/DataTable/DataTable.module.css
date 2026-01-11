@@ -1,149 +1,218 @@
 .container {
-    background: white;
-    border-radius: var(--radius-lg);
-    border: 1px solid #e2e8f0;
-    overflow: hidden;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  min-height: 500px;
+  flex: 1;
+  /* Ensure enough height for pagination to be at bottom */
 }
 
 .controls {
-    padding: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #e2e8f0;
-    gap: 1rem;
-    flex-wrap: wrap;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  gap: 1rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .searchBox {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    border: 1px solid #e2e8f0;
-    border-radius: var(--radius-md);
-    padding: 0.5rem 0.75rem;
-    width: 300px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  width: 300px;
 }
 
 .searchInput {
-    border: none;
-    outline: none;
-    font-size: 0.875rem;
-    width: 100%;
+  border: none;
+  outline: none;
+  font-size: 0.875rem;
+  width: 100%;
+  color: #0f172a;
+  /* Slate 900 - Dark color for text */
 }
 
 .actions {
-    display: flex;
-    gap: 0.75rem;
+  display: flex;
+  gap: 0.75rem;
 }
 
 .button {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
 }
 
 .primaryButton {
-    background-color: #3b82f6;
-    color: white;
+  background-color: #3b82f6;
+  color: white;
 }
 
 .primaryButton:hover {
-    background-color: #2563eb;
+  background-color: #2563eb;
 }
 
 .secondaryButton {
-    background-color: white;
-    border-color: #e2e8f0;
-    color: #475569;
+  background-color: white;
+  border-color: #e2e8f0;
+  color: #475569;
 }
 
 .secondaryButton:hover {
-    background-color: #f8fafc;
-    border-color: #cbd5e1;
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.importButton {
+  background-color: #10b981;
+  /* Emerald 500 */
+  color: white;
+}
+
+.importButton:hover {
+  background-color: #059669;
 }
 
 /* Table */
 .tableContainer {
-    overflow-x: auto;
+  overflow: auto;
+  /* Handle both scrolls here */
+  flex: 1;
+  /* Push pagination to bottom */
+  display: flex;
+  flex-direction: column;
+  /* Ensure table takes full width min-content to avoid shrinking */
 }
 
 .table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 4rem 2rem;
+  color: #64748b;
+  gap: 1rem;
+  min-height: 200px;
+}
+
+.emptyIcon {
+  width: 48px;
+  height: 48px;
+  color: #cbd5e1;
+}
+
+.emptyText {
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .th {
-    background-color: #f8fafc;
-    padding: 0.75rem 1rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: #64748b;
-    border-bottom: 1px solid #e2e8f0;
-    white-space: nowrap;
+  background-color: #e2e8f0;
+  /* Darker header background */
+  padding: 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #475569;
+  border-bottom: 2px solid #cbd5e1;
+  white-space: nowrap;
 }
 
 .td {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #e2e8f0;
-    font-size: 0.875rem;
-    color: #1e293b;
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.875rem;
+  color: #1e293b;
+}
+
+.tr {
+  cursor: pointer;
+  /* Pointer for clickable rows */
+  transition: background-color 0.15s;
 }
 
 .tr:last-child .td {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .tr:hover {
-    background-color: #f8fafc;
+  background-color: #f1f5f9;
 }
 
 .actionCell {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: flex-end;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
 }
 
 .iconButton {
-    padding: 0.25rem;
-    border-radius: var(--radius-md);
-    color: #64748b;
-    cursor: pointer;
-    border: none;
-    background: transparent;
+  padding: 0.4rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.iconButton:hover {
-    background-color: #e2e8f0;
-    color: #1e293b;
+.editButton {
+  background-color: #e0f2fe;
+  color: #0284c7;
+}
+
+.editButton:hover {
+  background-color: #bae6fd;
+  color: #0369a1;
+}
+
+.deleteButton {
+  background-color: #fee2e2;
+  color: #ef4444;
 }
 
 .deleteButton:hover {
-    background-color: #fee2e2;
-    color: #ef4444;
+  background-color: #fecaca;
+  color: #dc2626;
 }
 
 /* Pagination */
 .pagination {
-    padding: 0.75rem 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid #e2e8f0;
-    background-color: #f8fafc;
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  flex-shrink: 0;
+  /* Prevent shrinking */
 }
 
 .pageInfo {
-    font-size: 0.875rem;
-    color: #64748b;
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 500;
 }

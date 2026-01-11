@@ -6,6 +6,8 @@ interface AppState {
   toggleTheme: () => void;
   isLoading: boolean;
   setLoading: (loading: boolean) => void;
+  pageTitle: string;
+  setPageTitle: (title: string) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -15,6 +17,8 @@ export const useAppStore = create<AppState>()(
       toggleTheme: () => set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' })),
       isLoading: false,
       setLoading: (loading) => set({ isLoading: loading }),
+      pageTitle: '',
+      setPageTitle: (title) => set({ pageTitle: title }),
     }),
     {
       name: 'app-storage',
