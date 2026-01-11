@@ -50,13 +50,23 @@
   padding: 0;
 }
 
+/* Global scroll locked for internal scrolling */
+html,
 body {
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  zoom: 0.8;
   font-family:
     'Inter',
     system-ui,
     -apple-system,
     sans-serif;
-  background-color: var(--color-bg);
+  background-color: #f1f5f9;
   color: var(--color-text);
   line-height: 1.5;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';

@@ -71,7 +71,7 @@ export const Header = ({ className, onToggleSidebar }: HeaderProps) => {
           <ArrowLeft size={20} />
         </button>
         <div className={styles.pageTitle}>
-          E-KOMPLEKTATSIYA <span className={styles.sep}>|</span>{' '}
+          E-KOMPLEKTASIYA <span className={styles.sep}>|</span>{' '}
           <span className={styles.subTitle}>{pageTitle || 'E-KOMPLEKTASIYA'}</span>
         </div>
       </div>
@@ -84,7 +84,7 @@ export const Header = ({ className, onToggleSidebar }: HeaderProps) => {
           onClick={handleOldVersionClick}
         >
           <RotateCcw size={16} />
-          Eski talqinga otish
+          Eski talqinga o'tish
         </button>
 
         <button

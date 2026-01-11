@@ -5,6 +5,7 @@ import type { District, Region } from '@/types/reference';
 import { DataTable, type Column } from '@/components/ui/DataTable';
 import { Modal } from '@/components/ui/Modal';
 import { ConfirmModal } from '@/components/ui/Modal/ConfirmModal';
+import { exportToCSV } from '@/utils/exportToCSV';
 
 export const DistrictPage = () => {
   const [data, setData] = useState<District[]>([]);
@@ -12,6 +13,7 @@ export const DistrictPage = () => {
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   // Form state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,7 +27,7 @@ export const DistrictPage = () => {
   const fetchData = useCallback(async (page: number = 1, search: string = '') => {
     setLoading(true);
     try {
-      const response = await directoryApi.getDistricts({ page, search });
+      const response = await directoryApi.getDistricts({ page, search, page_size: PAGE_SIZE });
       setData(response.results);
       setTotal(response.count);
     } catch (err) {
@@ -113,12 +115,28 @@ export const DistrictPage = () => {
     }
   };
 
-  const handleExcelExport = () => {
-    alert("Ma'lumotlar Excel formatida yuklanmoqda...");
+  const handleExcelExport = async () => {
+    try {
+      alert("Ma'lumotlar yuklanmoqda...");
+      const response = await directoryApi.getDistricts({ page_size: 10000 });
+      exportToCSV(response.results, 'Tumanlar');
+    } catch (e) {
+      console.error(e);
+      alert('Excel yuklashda xatolik');
+    }
+  };
+
+  const handleRefresh = () => {
+    fetchData(currentPage);
   };
 
   const columns: Column<District>[] = [
     { key: 'id', header: 'ID' },
+    {
+      key: 'prefix',
+      header: 'Prefiks',
+      render: (value) => value || '—',
+    },
     { key: 'name', header: 'Nom' },
     {
       key: 'region',
@@ -127,17 +145,8 @@ export const DistrictPage = () => {
     },
   ];
 
-  const [activeTab, setActiveTab] = useState('all');
-
-  const tabs = [
-    { key: 'all', label: 'Barchasi', count: total },
-    { key: 'active', label: 'Tasdiqlangan', count: Math.ceil(total * 0.8) },
-    { key: 'inactive', label: 'Tasdiqlanmagan', count: Math.ceil(total * 0.15) },
-    { key: 'pending', label: "Ko'rilmagan", count: Math.ceil(total * 0.05) },
-  ];
-
   return (
-    <div className="flex flex-col gap-4 flex-1 h-full min-h-0">
+    <div className="flex flex-col gap-4 flex-1 h-[calc(125vh-120px)] min-h-0">
       <DataTable
         columns={columns}
         data={data}
@@ -151,9 +160,8 @@ export const DistrictPage = () => {
         onDelete={handleDelete}
         onImport={handleExcelExport}
         onRowClick={handleEdit}
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
+        pageSize={PAGE_SIZE}
+        onRefresh={handleRefresh}
       />
 
       <Modal

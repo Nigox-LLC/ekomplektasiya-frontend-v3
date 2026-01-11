@@ -1,9 +1,7 @@
 .container {
   display: flex;
-  height: 100vh;
-  /* Fixed height */
+  height: 125vh;
   overflow: hidden;
-  /* Prevent body scroll */
   background-color: #f1f5f9;
 }
 
@@ -13,14 +11,18 @@
   flex-direction: column;
   min-width: 0;
   height: 100%;
-  /* Ensure full height */
 }
 
 .mainContent {
   flex: 1;
   padding: 1.5rem;
-  overflow-y: auto;
-  /* Restore scrolling for normal pages */
+  overflow: hidden;
+  /* Default: Lock scroll for table pages */
   display: flex;
   flex-direction: column;
+}
+
+.scrollable {
+  overflow-y: auto;
+  /* Enable scroll for normal pages */
 }
