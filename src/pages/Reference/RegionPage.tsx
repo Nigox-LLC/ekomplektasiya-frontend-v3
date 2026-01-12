@@ -23,6 +23,7 @@ export const RegionPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [searchTerm, setSearchTerm] = useState('');
+  const [hasNextPage, setHasNextPage] = useState(true);
 
   // Form state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -62,6 +63,7 @@ export const RegionPage = () => {
         }
 
         setTotal(response.count);
+        setHasNextPage(!!response.next);
       } catch (err) {
         console.error(err);
       } finally {
@@ -77,12 +79,12 @@ export const RegionPage = () => {
   }, [fetchData]);
 
   const handleLoadMore = useCallback(() => {
-    if (data.length < total) {
+    if (hasNextPage && !moreLoading && !loading) {
       const nextPage = currentPage + 1;
       setCurrentPage(nextPage);
       fetchData(nextPage, searchTerm, pageSize, true);
     }
-  }, [data.length, total, currentPage, searchTerm, pageSize, fetchData]);
+  }, [hasNextPage, moreLoading, loading, currentPage, searchTerm, pageSize, fetchData]);
 
   const handleCreate = () => {
     setEditingItem(null);
@@ -210,7 +212,7 @@ export const RegionPage = () => {
         onRefresh={handleRefresh}
         enableInfiniteScroll={true}
         onLoadMore={handleLoadMore}
-        hasMore={data.length < total}
+        hasMore={hasNextPage}
       />
 
       <ModernModal

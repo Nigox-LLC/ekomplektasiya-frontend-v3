@@ -15,7 +15,8 @@ export interface PaginatedResponse<T> {
 export interface Region extends BaseReference {}
 
 export interface District extends BaseReference {
-  region: number; // Foreign key ID
+  region_id: number; // Foreign key ID
+  region_name: string;
 }
 
 export interface Department extends BaseReference {

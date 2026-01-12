@@ -25,7 +25,9 @@ export const ConfirmModal = ({
   return (
     <ModernModal isOpen={isOpen} onClose={onClose} title={title}>
       <div className={styles.body}>
-        <p className="text-base text-slate-600 leading-relaxed font-medium">{message}</p>
+        <p className="text-base leading-relaxed font-medium" style={{ color: 'black' }}>
+          {message}
+        </p>
 
         <div className={styles.buttonGroup}>
           <button

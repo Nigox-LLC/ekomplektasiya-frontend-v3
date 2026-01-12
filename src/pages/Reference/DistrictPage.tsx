@@ -3,39 +3,38 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { directoryApi } from '@/services/api';
 import type { District, Region } from '@/types/reference';
 import { DataTable, type Column } from '@/components/ui/DataTable';
-import { Modal } from '@/components/ui/Modal';
 import { ConfirmModal } from '@/components/ui/Modal/ConfirmModal';
-import { exportToCSV } from '@/utils/exportToCSV';
+import { exportToExcel } from '@/utils/exportToExcel';
+import { ModernModal } from '@/components/ui/Modal/ModernModal';
+import { MapPin, Info, Map } from 'lucide-react';
+import styles from './DistrictPage.module.css';
+
+interface DistrictFormData {
+  name: string;
+  region: string;
+  prefix?: string;
+}
 
 export const DistrictPage = () => {
   const [data, setData] = useState<District[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
   const [loading, setLoading] = useState(true);
+  const [moreLoading, setMoreLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const PAGE_SIZE = 10;
+  const [pageSize, setPageSize] = useState(20);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [hasNextPage, setHasNextPage] = useState(true);
 
   // Form state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<District | null>(null);
-  const [formData, setFormData] = useState({ name: '', region: '' });
+  const [formData, setFormData] = useState<DistrictFormData>({ name: '', region: '', prefix: '' });
   const [error, setError] = useState('');
   const [deletingItem, setDeletingItem] = useState<District | null>(null);
 
   usePageTitle('Tumanlar');
-
-  const fetchData = useCallback(async (page: number = 1, search: string = '') => {
-    setLoading(true);
-    try {
-      const response = await directoryApi.getDistricts({ page, search, page_size: PAGE_SIZE });
-      setData(response.results);
-      setTotal(response.count);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   const fetchRegions = useCallback(async () => {
     try {
@@ -46,28 +45,67 @@ export const DistrictPage = () => {
     }
   }, []);
 
-  useEffect(() => {
-    fetchData(currentPage);
-    fetchRegions();
-  }, [fetchData, fetchRegions, currentPage]);
+  const fetchData = useCallback(
+    async (
+      page: number = 1,
+      search: string = '',
+      limit: number = pageSize,
+      isAppend: boolean = false
+    ) => {
+      if (isAppend) {
+        setMoreLoading(true);
+      } else {
+        setLoading(true);
+      }
 
-  const handleSearch = useCallback(
-    (query: string) => {
-      setCurrentPage(1);
-      fetchData(1, query);
+      try {
+        const response = await directoryApi.getDistricts({ page, search, page_size: limit });
+
+        if (isAppend) {
+          setData((prev) => {
+            const newItems = response.results.filter(
+              (newItem) => !prev.some((existingItem) => existingItem.id === newItem.id)
+            );
+            return [...prev, ...newItems];
+          });
+        } else {
+          setData(response.results);
+        }
+
+        setTotal(response.count);
+        setHasNextPage(!!response.next);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+        setMoreLoading(false);
+      }
     },
-    [fetchData]
+    [pageSize]
   );
+
+  useEffect(() => {
+    fetchData(1);
+    fetchRegions();
+  }, [fetchData, fetchRegions]);
+
+  const handleLoadMore = useCallback(() => {
+    if (hasNextPage && !moreLoading && !loading) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      fetchData(nextPage, searchTerm, pageSize, true);
+    }
+  }, [hasNextPage, moreLoading, loading, currentPage, searchTerm, pageSize, fetchData]);
 
   const handleCreate = () => {
     setEditingItem(null);
-    setFormData({ name: '', region: '' });
+    setFormData({ name: '', region: '', prefix: '' });
     setIsModalOpen(true);
   };
 
   const handleEdit = (item: District) => {
     setEditingItem(item);
-    setFormData({ name: item.name, region: String(item.region) });
+    setFormData({ name: item.name, region: String(item.region_id), prefix: item.prefix || '' });
     setIsModalOpen(true);
   };
 
@@ -96,6 +134,8 @@ export const DistrictPage = () => {
       const payload = {
         name: formData.name,
         region: parseInt(formData.region),
+        // Only include prefix if it's relevant, District interface usually has it
+        prefix: formData.prefix,
       };
 
       if (editingItem) {
@@ -105,7 +145,7 @@ export const DistrictPage = () => {
       }
       fetchData(currentPage);
       setIsModalOpen(false);
-      setFormData({ name: '', region: '' });
+      setFormData({ name: '', region: '', prefix: '' });
       setEditingItem(null);
     } catch (err: unknown) {
       console.error(err);
@@ -117,12 +157,21 @@ export const DistrictPage = () => {
 
   const handleExcelExport = async () => {
     try {
-      alert("Ma'lumotlar yuklanmoqda...");
+      setExporting(true);
       const response = await directoryApi.getDistricts({ page_size: 10000 });
-      exportToCSV(response.results, 'Tumanlar');
+
+      const exportColumns = [
+        { key: 'id' as keyof District, header: 'ID' },
+        { key: 'name' as keyof District, header: 'Nom' },
+        { key: 'region_name' as keyof District, header: 'Viloyat' },
+      ];
+
+      exportToExcel(response.results, 'Tumanlar', exportColumns);
     } catch (e) {
       console.error(e);
       alert('Excel yuklashda xatolik');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -132,25 +181,39 @@ export const DistrictPage = () => {
 
   const columns: Column<District>[] = [
     { key: 'id', header: 'ID' },
-    {
-      key: 'prefix',
-      header: 'Prefiks',
-      render: (value) => value || '—',
-    },
     { key: 'name', header: 'Nom' },
     {
-      key: 'region',
+      key: 'region_name',
       header: 'Viloyat',
-      render: (value) => regions.find((r) => r.id === value)?.name || value,
+      render: (value) => value || '—',
     },
   ];
 
+  const handleSearch = useCallback(
+    (query: string) => {
+      setSearchTerm(query);
+      setCurrentPage(1);
+      fetchData(1, query, pageSize, false);
+    },
+    [fetchData, pageSize]
+  );
+
+  const handlePageSizeChange = useCallback(
+    (size: number) => {
+      setPageSize(size);
+      setCurrentPage(1);
+      fetchData(1, searchTerm, size, false);
+    },
+    [fetchData, searchTerm]
+  );
+
   return (
-    <div className="flex flex-col gap-4 flex-1 h-[calc(125vh-120px)] min-h-0">
+    <div className="flex flex-col gap-4 flex-1 min-h-0" style={{ position: 'relative' }}>
       <DataTable
         columns={columns}
         data={data}
         loading={loading}
+        moreLoading={moreLoading}
         totalItems={total}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
@@ -160,60 +223,80 @@ export const DistrictPage = () => {
         onDelete={handleDelete}
         onImport={handleExcelExport}
         onRowClick={handleEdit}
-        pageSize={PAGE_SIZE}
+        pageSize={pageSize}
+        onPageSizeChange={handlePageSizeChange}
         onRefresh={handleRefresh}
+        enableInfiniteScroll={true}
+        onLoadMore={handleLoadMore}
+        hasMore={hasNextPage}
       />
 
-      <Modal
+      <ModernModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingItem ? 'Tumanni tahrirlash' : "Yangi tuman qo'shish"}
       >
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-slate-700">Viloyat</label>
-            <select
-              className="border border-slate-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              value={formData.region}
-              onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-              required
-            >
-              <option value="">Tanlang</option>
-              {regions.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
-                </option>
-              ))}
-            </select>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.inputGroup}>
+            <label className={styles.label}>Viloyat</label>
+            <div className={styles.inputWrapper}>
+              <select
+                className={styles.input}
+                value={formData.region}
+                onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+                required
+              >
+                <option value="">Tanlang</option>
+                {regions.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
+              <span className={styles.icon}>
+                <Map size={18} />
+              </span>
+            </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-slate-700">Nom</label>
-            <input
-              type="text"
-              className="border border-slate-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required
-            />
+
+          <div className={styles.inputGroup}>
+            <label className={styles.label}>Nom</label>
+            <div className={styles.inputWrapper}>
+              <input
+                type="text"
+                className={styles.input}
+                placeholder="Tuman nomini kiriting..."
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+              />
+              <span className={styles.icon}>
+                <MapPin size={18} />
+              </span>
+            </div>
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-          <div className="flex justify-end gap-2 mt-2">
+
+          <div className={styles.infoBox}>
+            <Info size={20} className={styles.infoIcon} />
+            <span>Yangi tuman ma'lumotlarini to'g'ri va aniq kiriting.</span>
+          </div>
+
+          {error && <p className={styles.errorBox}>{error}</p>}
+
+          <div className={styles.buttonGroup}>
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 border border-slate-300 rounded-md text-slate-700 hover:bg-slate-50"
+              className={`${styles.button} ${styles.cancelButton}`}
             >
               Bekor qilish
             </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
+            <button type="submit" className={`${styles.button} ${styles.submitButton}`}>
               {editingItem ? 'Saqlash' : "Qo'shish"}
             </button>
           </div>
         </form>
-      </Modal>
+      </ModernModal>
 
       <ConfirmModal
         isOpen={!!deletingItem}
@@ -223,6 +306,13 @@ export const DistrictPage = () => {
         message={`"${deletingItem?.name}" tumanini o'chirishni tasdiqlaysizmi? Bu amalni ortga qaytarib bo'lmaydi.`}
         isLoading={loading}
       />
+
+      <ModernModal isOpen={exporting} onClose={() => {}} title="Export">
+        <div className="flex flex-col items-center justify-center p-6 gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="text-slate-600 font-medium">Ma'lumotlar yuklanmoqda... Iltimos kuting.</p>
+        </div>
+      </ModernModal>
     </div>
   );
 };
