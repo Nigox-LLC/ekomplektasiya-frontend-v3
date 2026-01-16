@@ -12,7 +12,7 @@ export interface PaginatedResponse<T> {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface Region extends BaseReference {}
+export interface Region extends BaseReference { }
 
 export interface District extends BaseReference {
   region_id: number; // Foreign key ID
@@ -21,16 +21,16 @@ export interface District extends BaseReference {
 
 export interface Department extends BaseReference {
   index_number?: string;
-  region?: number;
-  district?: number;
+  region?: Region | null;
+  district?: District | null;
   posted_site_link?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface Position extends BaseReference {}
+export interface Position extends BaseReference { }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ProductType extends BaseReference {}
+export interface ProductType extends BaseReference { }
 
 export interface ProductModel extends BaseReference {
   product_type: number;

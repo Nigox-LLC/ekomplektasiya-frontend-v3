@@ -15,7 +15,7 @@ import styles from './DataTable.module.css';
 export interface Column<T> {
   key: keyof T;
   header: string;
-  render?: (value: T[keyof T], item: T) => React.ReactNode;
+  render?: (value: T[keyof T], item: T, index: number) => React.ReactNode;
 }
 
 interface DataTableProps<T> {
@@ -25,7 +25,7 @@ interface DataTableProps<T> {
   totalItems: number;
   currentPage: number;
   onPageChange: (page: number) => void;
-  onSearch: (query: string) => void;
+  onSearch?: (query: string) => void;
   onCreate?: () => void;
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
@@ -42,6 +42,7 @@ interface DataTableProps<T> {
   onLoadMore?: () => void;
   hasMore?: boolean;
   moreLoading?: boolean;
+  filters?: React.ReactNode;
 }
 
 export function DataTable<T extends { id: number }>({
@@ -68,6 +69,7 @@ export function DataTable<T extends { id: number }>({
   onLoadMore,
   hasMore = false,
   moreLoading = false,
+  filters,
 }: DataTableProps<T>) {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -109,10 +111,12 @@ export function DataTable<T extends { id: number }>({
       isMounted.current = true;
       return;
     }
-    const timer = setTimeout(() => {
-      onSearch(searchTerm);
-    }, 500);
-    return () => clearTimeout(timer);
+    if (onSearch) {
+      const timer = setTimeout(() => {
+        onSearch(searchTerm);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
   }, [searchTerm, onSearch]);
 
   const totalPages = Math.ceil(totalItems / pageSize);
@@ -135,18 +139,21 @@ export function DataTable<T extends { id: number }>({
       )}
 
       <div className={styles.controls}>
-        <div className={styles.searchBox}>
-          <Search size={18} className="text-slate-400" />
-          <input
-            type="text"
-            placeholder="Qidirish..."
-            className={styles.searchInput}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+        {onSearch && (
+          <div className={styles.searchBox}>
+            <Search size={18} className="text-slate-400" />
+            <input
+              type="text"
+              placeholder="Qidirish..."
+              className={styles.searchInput}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        )}
 
         <div className={styles.actions}>
+          {filters && <div className={styles.filters}>{filters}</div>}
           {onRefresh && (
             <button
               className={cn(styles.button, styles.secondaryButton)}
@@ -223,7 +230,7 @@ export function DataTable<T extends { id: number }>({
                 </td>
               </tr>
             ) : (
-              data.map((item) => (
+              data.map((item, index) => (
                 <tr
                   key={item.id}
                   className={styles.tr}
@@ -231,7 +238,7 @@ export function DataTable<T extends { id: number }>({
                 >
                   {columns.map((col) => (
                     <td key={`${item.id}-${String(col.key)}`} className={styles.td}>
-                      {col.render ? col.render(item[col.key], item) : String(item[col.key] || '—')}
+                      {col.render ? col.render(item[col.key], item, index) : String(item[col.key] || '—')}
                     </td>
                   ))}
                   {(onEdit || onDelete) && (

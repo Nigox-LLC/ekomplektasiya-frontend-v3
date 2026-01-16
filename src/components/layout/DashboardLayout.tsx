@@ -5,7 +5,7 @@ import { Header } from './Header/Header';
 import styles from './DashboardLayout.module.css';
 
 // Routes that should NOT have page scrolling (internal table scroll instead)
-const NO_SCROLL_ROUTES = ['/reference/regions'];
+const NO_SCROLL_ROUTES = ['/reference/regions', '/references/permissions', '/permissions/users'];
 
 export const DashboardLayout = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -22,7 +22,7 @@ export const DashboardLayout = () => {
       <Sidebar collapsed={isSidebarCollapsed} />
       <div className={styles.contentWrapper}>
         <Header onToggleSidebar={toggleSidebar} />
-        <main className={`${styles.mainContent} ${!isFixedPage ? styles.scrollable : ''}`}>
+        <main className={`${styles.mainContent} ${!isFixedPage ? styles.scrollable : styles.noPadding}`}>
           <Outlet />
         </main>
       </div>

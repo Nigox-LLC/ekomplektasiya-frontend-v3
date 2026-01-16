@@ -7,192 +7,28 @@
   },
   "tags": [
     {
-      "name": "directory"
+      "name": "Users"
+    },
+    {
+      "name": "Permissions"
     }
   ],
   "paths": {
-    "/api/directory/organization/department/": {
-      "get": {
-        "summary": "directory_organization_department_list",
-        "deprecated": false,
-        "description": "",
-        "operationId": "directory_organization_department_list",
-        "tags": ["directory"],
-        "parameters": [
-          {
-            "name": "ordering",
-            "in": "query",
-            "description": "Which field to use when ordering the results.",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "description": "A page number within the paginated result set.",
-            "required": false,
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "search",
-            "in": "query",
-            "description": "A search term.",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaginatedDepartmentList"
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": [
-          {
-            "jwtAuth": []
-          }
-        ]
-      },
-      "post": {
-        "summary": "directory_organization_department_create",
-        "deprecated": false,
-        "description": "",
-        "operationId": "directory_organization_department_create",
-        "tags": ["directory"],
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Department"
-              },
-              "example": {
-                "name": "F bo'lim",
-                "index_number": "97",
-                "region": 1,
-                "district": 1,
-                "posted_site_link": "https://bekmuxtorov.uz"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Department"
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": [
-          {
-            "jwtAuth": []
-          }
-        ]
-      }
-    },
-    "/api/directory/organization/department//{id}/": {
-      "get": {
-        "summary": "directory_organization_department_retrieve",
-        "deprecated": false,
-        "description": "",
-        "operationId": "directory_organization_department_retrieve",
-        "tags": ["directory"],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "A unique integer value identifying this Bolim.",
-            "required": true,
-            "example": 0,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Department"
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": [
-          {
-            "jwtAuth": []
-          }
-        ]
-      },
-      "delete": {
-        "summary": "directory_organization_department_destroy",
-        "deprecated": false,
-        "description": "",
-        "operationId": "directory_organization_department_destroy",
-        "tags": ["directory"],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "A unique integer value identifying this Bolim.",
-            "required": true,
-            "example": 0,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No response body",
-            "headers": {}
-          }
-        },
-        "security": [
-          {
-            "jwtAuth": []
-          }
-        ]
-      }
-    },
-    "/api/directory/organization/department/{id}/": {
+    "/api/users/types/users/{id}/": {
       "patch": {
-        "summary": "directory_organization_department_partial_update",
+        "summary": "Update user permissions",
         "deprecated": false,
         "description": "",
-        "operationId": "directory_organization_department_partial_update",
-        "tags": ["directory"],
+        "tags": [
+          "Users"
+        ],
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "A unique integer value identifying this Bolim.",
+            "description": "4",
             "required": true,
-            "example": 1,
+            "example": 3,
             "schema": {
               "type": "integer"
             }
@@ -202,24 +38,30 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PatchedDepartment"
+                "type": "object",
+                "properties": {
+                  "user_permissions": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "description": "List of Permission IDs"
+                  }
+                }
               },
               "example": {
-                "id": 1,
-                "name": "A bo'lim",
-                "index_number": "78",
-                "region": 1
+                "user_permissions": []
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "",
+            "description": "User updated successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Department"
+                  "$ref": "#/components/schemas/User"
                 }
               }
             },
@@ -228,7 +70,71 @@
         },
         "security": [
           {
-            "jwtAuth": []
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/users/types/users/": {
+      "get": {
+        "summary": "List all users with their roles and permissions",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A list of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/users/types/permissions/": {
+      "get": {
+        "summary": "List all permissions",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Permissions"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A list of permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Permission"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
           }
         ]
       }
@@ -236,7 +142,7 @@
   },
   "components": {
     "schemas": {
-      "Department": {
+      "Permission": {
         "type": "object",
         "properties": {
           "id": {
@@ -244,62 +150,49 @@
           },
           "name": {
             "type": "string"
+          },
+          "codename": {
+            "type": "string"
+          },
+          "app_label": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
           }
         }
       },
-      "PaginatedDepartmentList": {
-        "type": "object",
-        "required": ["count", "results"],
-        "properties": {
-          "count": {
-            "type": "integer",
-            "example": 123
-          },
-          "next": {
-            "type": "string",
-            "format": "uri",
-            "nullable": true,
-            "example": "http://api.example.org/accounts/?page=4"
-          },
-          "previous": {
-            "type": "string",
-            "format": "uri",
-            "nullable": true,
-            "example": "http://api.example.org/accounts/?page=2"
-          },
-          "results": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Department"
-            }
-          }
-        }
-      },
-      "PatchedDepartment": {
+      "User": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
-            "readOnly": true
+            "type": "integer"
           },
-          "name": {
+          "username": {
+            "type": "string"
+          },
+          "full_name": {
             "type": "string",
-            "maxLength": 255
-          },
-          "index_number": {
-            "type": "string",
-            "maxLength": 200
-          },
-          "region": {
-            "type": "integer",
             "nullable": true
+          },
+          "role": {
+            "type": "string"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "user_permissions": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
           }
         }
       }
     },
     "responses": {},
     "securitySchemes": {
-      "jwtAuth": {
+      "bearerAuth": {
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT"

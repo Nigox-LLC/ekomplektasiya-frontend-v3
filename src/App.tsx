@@ -7,6 +7,11 @@ import { ProfilePage } from '@/pages/ProfilePage/ProfilePage';
 import { ReferenceDashboard } from '@/pages/Reference/ReferenceDashboard';
 import { RegionPage } from '@/pages/Reference/RegionPage';
 import { DistrictPage } from '@/pages/Reference/DistrictPage';
+import { DepartmentPage } from '@/pages/Reference/DepartmentPage';
+import { PositionPage } from '@/pages/Reference/PositionPage';
+import { EmployeePage } from '@/pages/Staff/EmployeePage';
+import UserPermissionsPage from '@/pages/Permissions/UserPermissions';
+import PermissionsUserList from '@/pages/Permissions/PermissionsUserList';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -41,6 +46,10 @@ function App() {
               {/* ... */}
               <Route path="area/regions" element={<RegionPage />} />
               <Route path="area/districts" element={<DistrictPage />} />
+              <Route path="organization/department" element={<DepartmentPage />} />
+              <Route path="organization/position" element={<PositionPage />} />
+              <Route path="organization/employees" element={<EmployeePage />} />
+              <Route path="permissions" element={<PermissionsUserList />} />
               {/* Other reference routes will go here */}
             </Route>
             <Route path="orders" element={<PlaceholderPage title="Buyurtmalar" />} />
@@ -48,6 +57,7 @@ function App() {
             <Route path="price-analysis" element={<PlaceholderPage title="Narx tahlili" />} />
             <Route path="issues" element={<PlaceholderPage title="Murojaat xato" />} />
             <Route path="settings" element={<PlaceholderPage title="Sozlamalar" />} />
+            <Route path="permissions/users/:id" element={<UserPermissionsPage />} />
           </Route>
         </Route>
 

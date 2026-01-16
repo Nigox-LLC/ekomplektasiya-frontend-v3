@@ -7,7 +7,9 @@ import {
     Package,
     Box,
     Scale,
-    Ruler
+    Ruler,
+    Users,
+    ShieldCheck
 } from 'lucide-react';
 import styles from './ReferenceDashboard.module.css';
 
@@ -57,6 +59,22 @@ export const ReferenceDashboard = () => {
             bgColor: "#fffbeb" // amber-50
         },
         {
+            title: "Xodimlar",
+            description: "Barcha xodimlar ro'yxati va ma'lumotlari",
+            icon: Users,
+            path: "organization/employees",
+            color: "#6366f1", // indigo-500
+            bgColor: "#eef2ff" // indigo-50
+        },
+        {
+            title: "Ruxsatlar",
+            description: "Foydalanuvchilar va ularning ruxsatlari",
+            icon: ShieldCheck,
+            path: "permissions",
+            color: "#8b5cf6", // violet-500
+            bgColor: "#f5f3ff" // violet-50
+        },
+        {
             title: "Mahsulot turlari",
             description: "Ombordagi mahsulotlarning asosiy turlari",
             icon: Package,
@@ -80,6 +98,7 @@ export const ReferenceDashboard = () => {
             color: "#6366f1", // indigo-500
             bgColor: "#eef2ff" // indigo-50
         },
+        
         {
             title: "O'lchamlar",
             description: "Mahsulot modellari uchun o'lchamlar",

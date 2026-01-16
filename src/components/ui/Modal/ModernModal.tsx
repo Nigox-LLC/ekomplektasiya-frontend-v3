@@ -7,9 +7,10 @@ interface ModernModalProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  maxWidth?: string;
 }
 
-export const ModernModal = ({ isOpen, onClose, title, children }: ModernModalProps) => {
+export const ModernModal = ({ isOpen, onClose, title, children, maxWidth }: ModernModalProps) => {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -33,7 +34,7 @@ export const ModernModal = ({ isOpen, onClose, title, children }: ModernModalPro
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className={styles.modal}>
+      <div className={styles.modal} style={{ maxWidth: maxWidth }}>
         <div className={styles.header}>
           <h2 className={styles.title}>{title}</h2>
           <button className={styles.closeButton} onClick={onClose} type="button">

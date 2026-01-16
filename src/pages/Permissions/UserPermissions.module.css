@@ -1,0 +1,400 @@
+.container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: #f1f5f9;
+    /* Slate 100 - Page Background */
+    font-family: var(--font-inter, sans-serif);
+    color: #1e293b;
+    padding: 0.25rem 0 0 0.25rem;
+    /* Show background around the content */
+}
+
+.scrollContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Prevent full page scroll */
+    background-color: white;
+    /* White Content Card */
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    padding: 0;
+    /* Reset padding, apply to children */
+}
+
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0;
+    padding: 1.5rem 1.5rem 0 1.5rem;
+    /* Internal padding */
+    background: linear-gradient(to bottom, #f8fafc, white);
+    /* Subtle gradient for header */
+}
+
+/* ... existing styles ... */
+
+/* Footer */
+.footer {
+    background-color: white;
+    padding: 1rem;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    z-index: 50;
+    flex-shrink: 0;
+}
+
+.headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.backButton {
+    padding: 0.5rem;
+    background-color: white;
+    border-radius: 9999px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border: 1px solid #f3f4f6;
+    /* gray-100 */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.backButton:hover {
+    background-color: #f9fafb;
+}
+
+.userInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.avatar {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+}
+
+.userName {
+    font-size: 1.25rem;
+    /* xl */
+    font-weight: 700;
+    color: #111827;
+    /* gray-900 */
+    margin: 0;
+    line-height: 1.25;
+}
+
+.userSubtitle {
+    font-size: 0.875rem;
+    /* sm */
+    color: #6b7280;
+    /* gray-500 */
+    margin: 0;
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.actionButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border: 1px solid transparent;
+}
+
+/* User Info Grid */
+.infoGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-top: 0;
+    padding: 1.5rem;
+    /* Restore padding inside the white card */
+    background-color: white;
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+    border-bottom: 1px solid #e5e7eb;
+    /* Restore separator for clarity within white card */
+    margin-bottom: 0;
+}
+
+/* Remove the accent top border since it is no longer a card */
+.infoGrid::before {
+    display: none;
+}
+
+
+.infoItem {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.infoLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #64748b;
+    /* slate-500 */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.infoLabel svg {
+    color: #3b82f6;
+    /* blue-500 */
+}
+
+.infoValue {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.btnPrimary {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.btnPrimary:hover {
+    background-color: #2563eb;
+}
+
+.btnOutline {
+    background-color: white;
+    color: #374151;
+    /* gray-700 */
+    border-color: #e5e7eb;
+    /* gray-200 */
+}
+
+.btnOutline:hover {
+    background-color: #f9fafb;
+}
+
+/* Table Card */
+/* Table Card - styles removed */
+.card {
+    background-color: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+    overflow: hidden;
+    flex: 1;
+    /* Fill remaining vertical space */
+    display: flex;
+    flex-direction: column;
+}
+
+.tableWrapper {
+    overflow: auto;
+    /* Allow both X and Y scrolling */
+    flex: 1;
+    /* Fill the card height */
+    /* Custom scrollbar styling could go here */
+}
+
+.table {
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+}
+
+.thead {
+    background-color: #f9fafb;
+    /* gray-50/50 approx */
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.th {
+    padding: 1rem;
+    font-size: 0.95rem;
+    /* Increased size as requested */
+    font-weight: 600;
+    color: #6b7280;
+    /* gray-500 */
+    position: sticky;
+    top: 0;
+    background-color: #f9fafb;
+    /* Ensure opaque background */
+    z-index: 10;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    /* Optional: adds a subtle line when scrolling */
+}
+
+.thCenter {
+    text-align: center;
+}
+
+.thContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.labelWithIcon {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.row {
+    border-bottom: 1px solid #f9fafb;
+    transition: background-color 0.15s;
+}
+
+.row:hover {
+    background-color: #eff6ff80;
+    /* blue-50/50 approx */
+}
+
+.td {
+    padding: 1rem;
+}
+
+.tdNo {
+    text-align: center;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.tdName {
+    font-weight: 500;
+    color: #1f2937;
+    /* gray-800 */
+}
+
+.tdCheck {
+    text-align: center;
+}
+
+.checkbox {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 0.25rem;
+    border: 1px solid #d1d5db;
+    cursor: pointer;
+    accent-color: #3b82f6;
+}
+
+/* Footer */
+/* Footer */
+.footer {
+    background-color: white;
+    padding: 1rem;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    z-index: 50;
+    flex-shrink: 0;
+}
+
+.btnFooterCancel {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    color: #4b5563;
+    /* gray-600 */
+    padding: 0.625rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btnFooterCancel:hover {
+    background-color: #f9fafb;
+}
+
+.btnFooterSave {
+    background-color: #3b82f6;
+    /* blue-500 */
+    color: white;
+    padding: 0.625rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.btnFooterSave:hover {
+    background-color: #2563eb;
+}
+
+.btnFooterSave:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btnFooterSaveClose {
+    background-color: #0ea5e9;
+    /* sky-500 */
+    color: white;
+    padding: 0.625rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.btnFooterSaveClose:hover {
+    background-color: #0284c7;
+}
+
+.btnFooterSaveClose:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Error/Loading */
+.centerInfo {
+    padding: 2rem;
+    text-align: center;
+    color: #6b7280;
+}
+
+.errorText {
+    color: #ef4444;
+    /* red-500 */
+}

@@ -1,0 +1,217 @@
+.filterContainer {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.searchFilterGroup {
+    flex: 1;
+    min-width: 250px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.filterGroup {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 150px;
+}
+
+.clearSearchButton {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #94A3B8;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.clearSearchButton:hover {
+    background-color: #F1F5F9;
+    color: #ef4444;
+}
+
+.clearFiltersButton {
+    color: #ef4444 !important;
+    border-color: #FEE2E2 !important;
+    background-color: #FEF2F2 !important;
+}
+
+.clearFiltersButton:hover {
+    background-color: #FEE2E2 !important;
+    border-color: #FCA5A5 !important;
+}
+
+.filterIcon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94A3B8;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.filterInput {
+    width: 100%;
+    height: 40px;
+    padding: 0 36px 0 40px;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1E293B;
+    background: #F8FAFC;
+    transition: all 0.2s;
+}
+
+.filterInput:focus {
+    outline: none;
+    border-color: #3B82F6;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.filterSelect {
+    width: 100%;
+    height: 40px;
+    padding: 0 40px 0 40px;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1E293B;
+    background: #F8FAFC;
+    cursor: pointer;
+    min-width: 180px;
+    appearance: none;
+    transition: all 0.2s;
+}
+
+.filterSelect:focus {
+    outline: none;
+    border-color: #3B82F6;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.filterSelect:disabled {
+    background-color: #F1F5F9;
+    color: #94A3B8;
+    cursor: not-allowed;
+}
+
+.filterChevron {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+/* User Icon Box */
+.userIconBox {
+    background-color: #F1F5F9;
+    padding: 6px;
+    border-radius: 6px;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+}
+
+/* Badges */
+.badge {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.badgeGray {
+    background-color: #F1F5F9;
+    color: #475569;
+}
+
+.badgeGreen {
+    background-color: #DCFCE7;
+    color: #166534;
+}
+
+.badgeRed {
+    background-color: #FEE2E2;
+    color: #991B1B;
+}
+
+/* Status Dots */
+.statusDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.dotGreen {
+    background-color: #166534;
+}
+
+.dotRed {
+    background-color: #991B1B;
+}
+
+/* Action Button */
+.actionButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #E2E8F0;
+    background: white;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.actionButton:hover {
+    background: #F8FAFC;
+    color: #3B82F6;
+    border-color: #3B82F6;
+}
+
+.refreshButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    background: white;
+    color: #64748B;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.refreshButton:hover {
+    border-color: #3B82F6;
+    color: #3B82F6;
+    background: #F8FAFC;
+}

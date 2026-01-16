@@ -1,0 +1,221 @@
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding-top: 0.5rem;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #374151;
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+}
+
+.inputWrapper {
+    position: relative;
+    width: 100%;
+}
+
+.input {
+    width: 100%;
+    padding-left: 2.5rem;
+    padding-right: 1rem;
+    height: 44px;
+    font-size: 0.95rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    outline: none;
+    background-color: white;
+    color: #1e293b;
+    transition: all 0.2s;
+    line-height: normal;
+}
+
+.input:focus {
+    border-color: #1e56a0;
+    box-shadow: 0 0 0 2px rgba(30, 86, 160, 0.1);
+}
+
+.input::placeholder {
+    color: #9ca3af;
+}
+
+.icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    pointer-events: none;
+    transition: color 0.2s;
+}
+
+.inputWrapper:focus-within .icon {
+    color: #1e56a0;
+}
+
+.filterContainer {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.filterGroup {
+    position: relative;
+    min-width: 140px;
+}
+
+.filterIcon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.filterSelect {
+    width: 100%;
+    appearance: none;
+    padding: 0.625rem 2.5rem 0.625rem 2.5rem;
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filterSelect:hover {
+    border-color: #cbd5e1;
+}
+
+.filterSelect:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.filterChevron {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #94a3b8;
+}
+
+.infoBox {
+    font-size: 0.875rem;
+    color: #475569;
+    background-color: #eff6ff;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #dbeafe;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.infoIcon {
+    color: #1e56a0;
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+}
+
+.errorBox {
+    color: #ef4444;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background-color: #fef2f2;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #fee2e2;
+}
+
+.buttonGroup {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.button {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cancelButton {
+    background-color: white;
+    color: #374151;
+    border: 1px solid #cbd5e1;
+}
+
+.cancelButton:hover {
+    background-color: #f8fafc;
+}
+
+.submitButton {
+    background-color: #1e56a0;
+    color: white;
+    border: none;
+    box-shadow: 0 10px 15px -3px rgba(30, 86, 160, 0.2);
+}
+
+.submitButton:hover {
+    background-color: #15427d;
+}
+
+.submitButton:active {
+    transform: scale(0.98);
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.fullWidth {
+    grid-column: span 3;
+}
+
+.searchFilterGroup {
+    position: relative;
+    min-width: 250px;
+}
+
+.filterInput {
+    width: 100%;
+    padding: 0.625rem 1rem 0.625rem 2.5rem;
+    font-size: 0.875rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    outline: none;
+    color: #334155;
+    background-color: white;
+    transition: all 0.2s;
+}
+
+.filterInput:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.filterInput::placeholder {
+    color: #94a3b8;
+}
