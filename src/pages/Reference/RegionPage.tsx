@@ -150,7 +150,8 @@ export const RegionPage = () => {
         { key: 'name' as keyof Region, header: 'Nom' },
       ];
 
-      exportToExcel(response.results, 'Viloyatlar', exportColumns);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      exportToExcel(response.results as any, 'Viloyatlar', exportColumns);
     } catch (e) {
       console.error(e);
       alert('Excel yuklashda xatolik');

@@ -2,7 +2,17 @@ import axios from 'axios';
 import { useAuthStore } from '../store/useAuthStore';
 import type { LoginCredentials, AuthResponse } from '../types/auth'; // We need to define these types
 import type { EmployeeDetail, EmployeeListItem, EmployeeCreateUpdate } from '../types/employee';
-import type { PaginatedResponse, Region, District, Department, Position, ProductType, ProductModel, Unit, Size } from '../types/reference';
+import type {
+  PaginatedResponse,
+  Region,
+  District,
+  Department,
+  Position,
+  ProductType,
+  ProductModel,
+  Unit,
+  Size,
+} from '../types/reference';
 import type { Permission, UserWithPermissions } from '../types/permission';
 
 // Using /api based on the OpenAPI spec which shows /api/users/login/
@@ -51,8 +61,10 @@ export const employeeApi = {
     const response = await api.get<EmployeeDetail>('/api/staff/employees/get_current_employee/');
     return response.data;
   },
-  getEmployees: async (params?: any) => {
-    const response = await api.get<PaginatedResponse<EmployeeListItem>>('/api/staff/employees/', { params });
+  getEmployees: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<EmployeeListItem>>('/api/staff/employees/', {
+      params,
+    });
     return response.data;
   },
   getEmployee: async (id: number) => {
@@ -74,15 +86,17 @@ export const employeeApi = {
 
 export const directoryApi = {
   // Regions
-  getRegions: async (params?: any) => {
-    const response = await api.get<PaginatedResponse<Region>>('/api/directory/area/regions/', { params });
+  getRegions: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<Region>>('/api/directory/area/regions/', {
+      params,
+    });
     return response.data;
   },
-  createRegion: async (data: any) => {
+  createRegion: async (data: Record<string, unknown>) => {
     const response = await api.post<Region>('/api/directory/area/regions/', data);
     return response.data;
   },
-  updateRegion: async (id: number, data: any) => {
+  updateRegion: async (id: number, data: Record<string, unknown>) => {
     const response = await api.patch<Region>(`/api/directory/area/regions/${id}/`, data);
     return response.data;
   },
@@ -90,15 +104,17 @@ export const directoryApi = {
     await api.delete(`/api/directory/area/regions/${id}/`);
   },
   // Districts
-  getDistricts: async (params?: any) => {
-    const response = await api.get<PaginatedResponse<District>>('/api/directory/area/districts/', { params });
+  getDistricts: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<District>>('/api/directory/area/districts/', {
+      params,
+    });
     return response.data;
   },
-  createDistrict: async (data: any) => {
+  createDistrict: async (data: Record<string, unknown>) => {
     const response = await api.post<District>('/api/directory/area/districts/', data);
     return response.data;
   },
-  updateDistrict: async (id: number, data: any) => {
+  updateDistrict: async (id: number, data: Record<string, unknown>) => {
     const response = await api.patch<District>(`/api/directory/area/districts/${id}/`, data);
     return response.data;
   },
@@ -106,31 +122,40 @@ export const directoryApi = {
     await api.delete(`/api/directory/area/districts/${id}/`);
   },
   // Departments
-  getDepartments: async (params?: any) => {
-    const response = await api.get<PaginatedResponse<Department>>('/api/directory/organization/department/', { params });
+  getDepartments: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<Department>>(
+      '/api/directory/organization/department/',
+      { params }
+    );
     return response.data;
   },
-  createDepartment: async (data: any) => {
+  createDepartment: async (data: Record<string, unknown>) => {
     const response = await api.post<Department>('/api/directory/organization/department/', data);
     return response.data;
   },
-  updateDepartment: async (id: number, data: any) => {
-    const response = await api.patch<Department>(`/api/directory/organization/department/${id}/`, data);
+  updateDepartment: async (id: number, data: Record<string, unknown>) => {
+    const response = await api.patch<Department>(
+      `/api/directory/organization/department/${id}/`,
+      data
+    );
     return response.data;
   },
   deleteDepartment: async (id: number) => {
     await api.delete(`/api/directory/organization/department/${id}/`);
   },
   // Positions
-  getPositions: async (params?: any) => {
-    const response = await api.get<PaginatedResponse<Position>>('/api/directory/organization/position/', { params });
+  getPositions: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<Position>>(
+      '/api/directory/organization/position/',
+      { params }
+    );
     return response.data;
   },
-  createPosition: async (data: any) => {
+  createPosition: async (data: Record<string, unknown>) => {
     const response = await api.post<Position>('/api/directory/organization/position/', data);
     return response.data;
   },
-  updatePosition: async (id: number, data: any) => {
+  updatePosition: async (id: number, data: Record<string, unknown>) => {
     const response = await api.patch<Position>(`/api/directory/organization/position/${id}/`, data);
     return response.data;
   },
@@ -138,23 +163,32 @@ export const directoryApi = {
     await api.delete(`/api/directory/organization/position/${id}/`);
   },
   // Product Types
-  getProductTypes: async (params?: any) => {
-    const response = await api.get<PaginatedResponse<ProductType>>('/api/directory/product/type/', { params });
+  getProductTypes: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<ProductType>>('/api/directory/product/type/', {
+      params,
+    });
     return response.data;
   },
   // Product Models
-  getProductModels: async (params?: any) => {
-    const response = await api.get<PaginatedResponse<ProductModel>>('/api/directory/product/model/', { params });
+  getProductModels: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<ProductModel>>(
+      '/api/directory/product/model/',
+      { params }
+    );
     return response.data;
   },
   // Units
-  getUnits: async (params?: any) => {
-    const response = await api.get<PaginatedResponse<Unit>>('/api/directory/measurement/unit/', { params });
+  getUnits: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<Unit>>('/api/directory/measurement/unit/', {
+      params,
+    });
     return response.data;
   },
   // Sizes
-  getSizes: async (params?: any) => {
-    const response = await api.get<PaginatedResponse<Size>>('/api/directory/measurement/size/', { params });
+  getSizes: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<Size>>('/api/directory/measurement/size/', {
+      params,
+    });
     return response.data;
   },
 };
@@ -164,12 +198,15 @@ export const permissionApi = {
     const response = await api.get<Permission[]>('/api/users/types/permissions/');
     return response.data;
   },
-  getUsers: async (params?: any) => {
-    const response = await api.get<PaginatedResponse<UserWithPermissions> | UserWithPermissions[]>('/api/users/types/users/', { params });
+  getUsers: async (params?: Record<string, unknown>) => {
+    const response = await api.get<PaginatedResponse<UserWithPermissions> | UserWithPermissions[]>(
+      '/api/users/types/users/',
+      { params }
+    );
     return response.data;
   },
   getUserWithPermissions: async (id: number) => {
-    const response = await api.get<UserWithPermissions>(`/api/users/types/users/${id}/`); // Assuming retrieving a single user works this way or we interpret the list. The spec shows PATCH on {id} but GET on list. I might need to find the user from the list if there is no detail endpoint, but typical REST has detail. The spec snippet had PATCH /api/users/types/users/{id}/ and GET /api/users/types/users/. I will assume GET /api/users/types/users/{id}/ exists or I might have to fetch all and find. Let's try to fetch detail. If it fails I'll fix. Wait, the spec ONLY showed PATCH for {id}. It showed GET for list. I will try GET {id} hoping it exists, otherwise I'll need to use the list endpoint.
+    // const response = await api.get<UserWithPermissions>(`/api/users/types/users/${id}/`); // Commented out unused call
     // Spec inspection: "paths": { "/api/users/types/users/{id}/": { "patch": ... } } - NO GET defined for specific ID in the snippet I saw!
     // However, usually it exists. If not, I'll have to use list and filter.
     // Let's assume standard REST for now, or use list if I must. The snippet ended at line 204.
@@ -178,20 +215,26 @@ export const permissionApi = {
     // The paths were `/api/users/types/users/{id}/` (PATCH only visible), `/api/users/types/users/` (GET), `/api/users/types/permissions/` (GET).
     // So there is NO GET /api/users/types/users/{id}/ in the spec provided.
     // I should implement fetching the list and finding the user.
-    return api.get<any>(`/api/users/types/users/`).then(res => {
-      const data = res.data;
-      if (Array.isArray(data)) {
-        return data.find((u: UserWithPermissions) => u.id === Number(id));
-      } else if (data.results && Array.isArray(data.results)) {
-        return data.results.find((u: UserWithPermissions) => u.id === Number(id));
-      }
-      return null;
-    });
+    return api
+      .get<
+        PaginatedResponse<UserWithPermissions> | UserWithPermissions[]
+      >(`/api/users/types/users/`)
+      .then((res) => {
+        const data = res.data;
+        if (Array.isArray(data)) {
+          return data.find((u: UserWithPermissions) => u.id === Number(id));
+        } else if (data.results && Array.isArray(data.results)) {
+          return data.results.find((u: UserWithPermissions) => u.id === Number(id));
+        }
+        return null;
+      });
   },
   updateUserPermissions: async (id: number, permissionIds: number[]) => {
-    const response = await api.patch<UserWithPermissions>(`/api/users/types/users/${id}/`, { user_permissions: permissionIds });
+    const response = await api.patch<UserWithPermissions>(`/api/users/types/users/${id}/`, {
+      user_permissions: permissionIds,
+    });
     return response.data;
-  }
+  },
 };
 
 export default api;

@@ -166,7 +166,8 @@ export const DistrictPage = () => {
         { key: 'region_name' as keyof District, header: 'Viloyat' },
       ];
 
-      exportToExcel(response.results, 'Tumanlar', exportColumns);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      exportToExcel(response.results as any, 'Tumanlar', exportColumns);
     } catch (e) {
       console.error(e);
       alert('Excel yuklashda xatolik');
