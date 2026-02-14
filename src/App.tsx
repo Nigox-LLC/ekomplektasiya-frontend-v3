@@ -2,6 +2,7 @@ import React from "react";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 import { Layout } from "@/components";
 import { EmployeeStatistics, GenStatistics, Login } from "@/pages";
+import PriceAnalysis from "./PriceAnaliysis/PriceAnalysis";
 const App: React.FC = () => {
 
   const hasAccess = () => {
@@ -26,6 +27,10 @@ const App: React.FC = () => {
               element: <GenStatistics hasAccess={hasAccess} />,
             }
           ]
+        },
+        {
+          path: "price-analysis",
+          element: <PriceAnalysis/>
         }
       ],
     },

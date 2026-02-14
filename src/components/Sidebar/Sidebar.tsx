@@ -12,25 +12,35 @@ const Sidebar: React.FC = () => {
   const confirmLogout = () => {};
 
   return (
-    <div
-      className={`flex h-screen ${theme === "dark" ? "bg-gray-900" : "bg-gray-50"}`}
-    >
-      <aside className="w-72 bg-[#1a2332] text-white flex flex-col shadow-xl">
+    /* 
+      Asosiy konteyner: h-screen va overflow-hidden orqali butun sahifa scroll bo'lishini to'xtatamiz.
+      Faqat o'ng tarafdagi kontent qismi scroll bo'ladi.
+    */
+    <div className={`flex h-screen overflow-hidden ${theme === "dark" ? "bg-gray-900" : "bg-gray-50"}`}>
+      
+      {/* 
+        Sidebar: 
+        - 'fixed' orqali ekranda qotirildi.
+        - 'z-40' orqali boshqa elementlardan ustun turishi ta'minlandi.
+      */}
+      <aside className="fixed left-0 top-0 h-screen w-72 bg-[#1a2332] text-white flex flex-col shadow-xl z-40">
         <SidebarHeader />
+        {/* SidebarNav ichida overflow-y-auto bo'lishi kerak */}
         <SidebarNav />
         <SidebarFooter />
       </aside>
 
-      {/* <LanguageMenu
-        isOpen={showLanguage}
-        onClose={() => setShowLanguage(false)}
-      />
-      <SettingsMenu
-        isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
-        theme={theme}
-        onThemeChange={setTheme}
-      /> */}
+      {/* 
+        Asosiy kontent uchun bo'sh joy (Placeholder):
+        Sidebar 'fixed' bo'lgani uchun, kontent uning tagida qolib ketmasligi uchun 
+        sidebar kengligicha (w-72) bo'sh joy tashlanadi.
+      */}
+      <div className="w-82 flex-shrink-0" />
+
+      {/* 
+        Bu yerdan keyin sizning asosiy kontentingiz (Routes/Pages) keladi.
+        Ular o'z navbatida 'flex-1 overflow-y-auto' bo'lishi kerak.
+      */}
 
       {/* Logout Confirmation Modal */}
       {showLogoutConfirm && (
