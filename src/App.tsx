@@ -1,7 +1,7 @@
 import React from "react";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 import { Layout } from "@/components";
-import { EmployeeStatistics, Login } from "@/pages";
+import { EmployeeStatistics, Login, Calendar} from "@/pages";
 
 const App: React.FC = () => {
 
@@ -26,8 +26,12 @@ const App: React.FC = () => {
               path: "general-statistics",
               // Umumiy statistika sahifasi uchun element qo'shish
               element: <></>
-            }
+            },
           ]
+        },
+        {
+          path: "calendar",
+          element: <Calendar/>
         }
       ],
     },
