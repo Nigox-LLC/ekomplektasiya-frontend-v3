@@ -44,7 +44,7 @@ const SidebarNav: React.FC = React.memo(() => {
           icon: null,
         },
         {
-          id: "dashboard-stats",
+          id: "general-statistics",
           label: "Umumiy statistika",
           icon: null,
         },
