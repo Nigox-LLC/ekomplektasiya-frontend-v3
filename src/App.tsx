@@ -21,6 +21,11 @@ const App: React.FC = () => {
             {
               path: "employee-statistics",
               element: <EmployeeStatistics hasAccess={hasAccess} />,
+            },
+            {
+              path: "general-statistics",
+              // Umumiy statistika sahifasi uchun element qo'shish
+              element: <></>
             }
           ]
         }

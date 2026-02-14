@@ -15,9 +15,11 @@ const Layout: React.FC = () => {
     <>
       <div className="flex items-start">
         <Sidebar />
-        <Header />
+        <div className="flex flex-col w-full">
+          <Header />
+          <Outlet />
+        </div>
       </div>
-      <Outlet />
     </>
   );
 };
