@@ -1,14 +1,30 @@
 import React from "react";
-import { createBrowserRouter, RouterProvider } from "react-router";
+import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 import { Layout } from "@/components";
-import { Login } from "@/pages";
+import { EmployeeStatistics, Login } from "@/pages";
 
 const App: React.FC = () => {
+
+  const hasAccess = () => {
+    return true;
+  }
+
   const router = createBrowserRouter([
     {
       path: "/",
       element: <Layout />,
-      children: [],
+      children: [
+        {
+          path: "dashboard",
+          element: <Outlet />,
+          children: [
+            {
+              path: "employee-statistics",
+              element: <EmployeeStatistics hasAccess={hasAccess} />,
+            }
+          ]
+        }
+      ],
     },
     {
       path: "login",
