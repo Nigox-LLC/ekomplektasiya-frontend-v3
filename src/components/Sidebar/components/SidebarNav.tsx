@@ -61,32 +61,32 @@ const SidebarNav: React.FC = React.memo(() => {
       icon: <Calendar className="size-5" />,
     },
     {
-      id: "sent",
+      id: "outgoing",
       label: "Yuborilgan",
       icon: <Send className="size-5" />,
       subItems: [
         {
-          id: "sent-all",
+          id: "all",
           label: "Barchasi",
           icon: null,
         },
         {
-          id: "sent-instructions",
+          id: "info",
           label: "Ma'lumot uchun",
           icon: null,
         },
         {
-          id: "sent-approval",
+          id: "approval",
           label: "Kelishish uchun",
           icon: <CheckCircle className="size-4" />,
         },
         {
-          id: "sent-for-signing",
+          id: "for-signing",
           label: "Imzolash uchun",
           icon: <PenTool className="size-4" />,
         },
         {
-          id: "sent-for-above",
+          id: "for-above",
           label: "Ustixat uchun",
           icon: <Briefcase className="size-4" />,
         },
@@ -98,27 +98,27 @@ const SidebarNav: React.FC = React.memo(() => {
       icon: <Inbox className="size-5" />,
       subItems: [
         {
-          id: "incoming-all",
+          id: "all",
           label: "Barchasi",
           icon: null,
         },
         {
-          id: "incoming-info",
+          id: "info",
           label: "Ma'lumot uchun",
           icon: null,
         },
         {
-          id: "incoming-approval",
+          id: "approval",
           label: "Kelishish uchun",
           icon: <CheckCircle className="size-4" />,
         },
         {
-          id: "incoming-for-signing",
+          id: "for-signing",
           label: "Imzolash uchun",
           icon: <PenTool className="size-4" />,
         },
         {
-          id: "incoming-backup",
+          id: "for-above",
           label: "Ustixat uchun",
           icon: <Briefcase className="size-4" />,
         },

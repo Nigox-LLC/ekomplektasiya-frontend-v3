@@ -4,11 +4,14 @@ import UsernameInput from "./components/LoginForm/UsernameInput";
 import PasswordInput from "./components/LoginForm/PasswordInput";
 import SubmitButton from "./components/LoginForm/SubmitButton";
 import { axiosAPI } from "@/service/axiosAPI";
+import { useNavigate } from "react-router";
 
 const LoginForm = React.memo(() => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleSubmit = useCallback(async () => {
     try {
@@ -25,14 +28,17 @@ const LoginForm = React.memo(() => {
         refresh: string;
       } = response.data;
 
-      localStorage.setItem("v3_ganiwer", access);
-      console.log(refresh);
+      if (response.status === 200) {
+        localStorage.setItem("v3_ganiwer", access);
+        console.log(refresh);
+        navigate("/");
+      }
     } catch (error) {
       console.log(error);
     } finally {
       setLoading(false);
     }
-  }, [username, password]);
+  }, [username, password, navigate]);
 
   return (
     <div className="p-8 space-y-4">
