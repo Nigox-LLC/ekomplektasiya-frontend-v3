@@ -1,8 +1,15 @@
 import React from "react";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 import { Layout } from "@/components";
-import { EmployeeStatistics, GenStatistics, Login, Calendar } from "@/pages";
+import {
+  EmployeeStatistics,
+  GenStatistics,
+  Login,
+  Calendar,
+  LettersPage,
+} from "@/pages";
 import PriceAnalysis from "./PriceAnaliysis/PriceAnalysis";
+
 const App: React.FC = () => {
   const hasAccess = () => {
     return true;
@@ -34,6 +41,26 @@ const App: React.FC = () => {
         {
           path: "calendar",
           element: <Calendar />,
+        },
+        {
+          path: "incoming",
+          element: <Outlet />,
+          children: [
+            {
+              path: ":status",
+              element: <LettersPage />,
+            },
+          ],
+        },
+        {
+          path: "outgoing",
+          element: <Outlet />,
+          children: [
+            {
+              path: ":status",
+              element: <LettersPage />,
+            },
+          ],
         },
       ],
     },
