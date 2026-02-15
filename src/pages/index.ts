@@ -3,3 +3,10 @@ export { default as EmployeeStatistics } from "./Dashboard/Employee/EmployeeStat
 export { default as LettersPage } from "./Letters/LettersPage";
 export { default as Calendar } from "./Calendar/CalendarStatistca";
 export { default as GenStatistics } from "./Dashboard/DashboardStats/GenStatistics";
+export { default as ReferenceRequisites } from "./Reference/Requisites/ReferenceRequisites";
+export { default as Bank } from "./Reference/Bank/Bank";
+export { default as Contracts } from "./Reference/Contracts/Contracts";
+export { default as GoodsIn } from "./Reference/GoodsIn/GoodsIn";
+export { default as GoodsOut } from "./Reference/GoodsOut/GoodsOut";
+export { default as WareHouseTransfer } from "./Reference/WareHouseTransfer/WareHouseTransfer";
+export { default as YearPlan } from "./Reference/YearPlan/YearPlan";
