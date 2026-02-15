@@ -16,3 +16,4 @@ export { default as GoodsIn } from "./Reference/GoodsIn/GoodsIn";
 export { default as GoodsOut } from "./Reference/GoodsOut/GoodsOut";
 export { default as WareHouseTransfer } from "./Reference/WareHouseTransfer/WareHouseTransfer";
 export { default as YearPlan } from "./Reference/YearPlan/YearPlan";
+export { default as Statistics } from "./EmployeeStatistics/Statistics";

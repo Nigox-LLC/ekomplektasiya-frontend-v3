@@ -19,6 +19,7 @@ import {
   GoodsOut,
   WareHouseTransfer,
   YearPlan,
+  Statistics,
 } from "@/pages";
 import PriceAnalysis from "./PriceAnaliysis/PriceAnalysis";
 import Bank from "./pages/Reference/Bank/Bank";
@@ -153,6 +154,16 @@ const App: React.FC = () => {
             // Yillik reja
             { path: "reference-year-plan",
               element: <YearPlan />
+            }
+          ]
+        },
+        {
+          path: "statistics",
+          element: <Outlet />,
+          children: [
+            {
+              path: "statistics-employee",
+              element: <Statistics />
             }
           ]
         }
