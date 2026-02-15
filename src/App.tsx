@@ -23,6 +23,7 @@ import {
 } from "@/pages";
 import PriceAnalysis from "./PriceAnaliysis/PriceAnalysis";
 import Bank from "./pages/Reference/Bank/Bank";
+import NewDocumentProduct from "./pages/NewDocument/NewDocumentProduct/NewDocumentProduct";
 
 const App: React.FC = () => {
   const hasAccess = () => {
@@ -166,6 +167,10 @@ const App: React.FC = () => {
               element: <Statistics />
             }
           ]
+        },
+        {
+          path: "new-document/:type",
+          element: <NewDocumentProduct />
         }
       ],
     },
