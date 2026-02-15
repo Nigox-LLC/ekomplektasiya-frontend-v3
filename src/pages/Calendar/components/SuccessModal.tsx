@@ -8,7 +8,7 @@ interface SuccessModalProps {
   duration?: number; // milliseconds
 }
 
-export function SuccessModal({ isOpen, message, onClose, duration = 2000 }: SuccessModalProps) {
+const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, message, onClose, duration = 2000 }) => {
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => {
@@ -53,7 +53,7 @@ export function SuccessModal({ isOpen, message, onClose, duration = 2000 }: Succ
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes progress {
           from {
             width: 100%;
@@ -66,3 +66,5 @@ export function SuccessModal({ isOpen, message, onClose, duration = 2000 }: Succ
     </div>
   );
 }
+
+export default SuccessModal;

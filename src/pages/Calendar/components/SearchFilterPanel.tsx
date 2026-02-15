@@ -1,7 +1,5 @@
 import { Button, Input } from 'antd';
 import { X, Search, ArrowLeft } from 'lucide-react';
-// import { Button } from './ui/button';
-// import { Input } from './ui/input';
 import { useState } from 'react';
 
 interface SearchFilterPanelProps {
@@ -10,7 +8,7 @@ interface SearchFilterPanelProps {
   onSearch?: (filters: { kirishRaqami: string; kalitSozi: string; jonatuvchi: string }) => void;
 }
 
-export function SearchFilterPanel({ isOpen, onClose, onSearch }: SearchFilterPanelProps) {
+const SearchFilterPanel: React.FC<SearchFilterPanelProps> = ({ isOpen, onClose, onSearch }) => {
   const [kirishRaqami, setKirishRaqami] = useState('');
   const [kalitSozi, setKalitSozi] = useState('');
   const [jonatuvchi, setJonatuvchi] = useState('');
@@ -100,3 +98,4 @@ export function SearchFilterPanel({ isOpen, onClose, onSearch }: SearchFilterPan
     </div>
   );
 }
+export default SearchFilterPanel;

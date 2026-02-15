@@ -1,7 +1,4 @@
 import { useState } from 'react';
-// import { Button } from '@/app/components/ui/button';
-// import { Input } from '@/app/components/ui/input';
-// import { Badge } from '@/app/components/ui/badge';
 import { X, Search, Check } from 'lucide-react';
 import { Badge, Button, Input } from 'antd';
 
@@ -25,7 +22,7 @@ const availableGoods = [
   { id: 12, type: 'Xarid qilish', name: 'Sichqoncha', model: 'Logitech M90', size: 'Kichik', unit: 'dona', note: 'USB' },
 ];
 
-export function AddGoodsModal({ isOpen, onClose, onSave }: AddGoodsModalProps) {
+const AddGoodsModal: React.FC<AddGoodsModalProps> = ({ isOpen, onClose, onSave }) => {
   const [goodsName, setGoodsName] = useState('');
   const [quantity, setQuantity] = useState('');
   const [showSelectModal, setShowSelectModal] = useState(false);
@@ -351,3 +348,6 @@ export function AddGoodsModal({ isOpen, onClose, onSave }: AddGoodsModalProps) {
     </>
   );
 }
+
+
+export default AddGoodsModal;

@@ -1,21 +1,13 @@
-// import { Badge } from '@/app/components/ui/badge';
 import { 
-  Send, 
-  CheckCircle, 
-  Clock, 
   User, 
   X,
   FileText as FileTextIcon,
-  ArrowRight,
-  CheckCheck,
   MessageSquare,
   ArrowLeft,
   ArrowDown,
-  FileIcon,
   Download,
   Eye
 } from 'lucide-react';
-import handshakeIcon from '../assets/handshake.png';
 
 interface IjroHarakatiModalProps {
   isOpen: boolean;
@@ -44,7 +36,7 @@ export interface IjroStep {
   };
 }
 
-export function IjroHarakatiModal({ isOpen, onClose, steps = [], currentEmployee }: IjroHarakatiModalProps) {
+const IjroHarakatiModal: React.FC<IjroHarakatiModalProps> = ({ isOpen, onClose, steps = [], currentEmployee }) => {
   if (!isOpen) return null;
 
   const defaultSteps: IjroStep[] = [
@@ -226,3 +218,5 @@ export function IjroHarakatiModal({ isOpen, onClose, steps = [], currentEmployee
     </div>
   );
 }
+
+export default IjroHarakatiModal;

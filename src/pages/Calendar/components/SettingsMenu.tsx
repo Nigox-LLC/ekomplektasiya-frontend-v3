@@ -1,6 +1,6 @@
 // import { Button } from '@/app/components/ui/button';
 import { Button } from 'antd';
-import { X, Monitor, Sun, Moon, Palette } from 'lucide-react';
+import { X, Monitor, Sun, Moon } from 'lucide-react';
 
 interface SettingsMenuProps {
   isOpen: boolean;
@@ -9,7 +9,7 @@ interface SettingsMenuProps {
   onThemeChange: (theme: 'auto' | 'light' | 'dark') => void;
 }
 
-export function SettingsMenu({ isOpen, onClose, theme, onThemeChange }: SettingsMenuProps) {
+const SettingsMenu: React.FC<SettingsMenuProps> = ({ isOpen, onClose, theme, onThemeChange }) => {
   if (!isOpen) return null;
 
   return (
@@ -91,3 +91,5 @@ export function SettingsMenu({ isOpen, onClose, theme, onThemeChange }: Settings
     </>
   );
 }
+
+export default SettingsMenu;

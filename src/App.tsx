@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 import { Layout } from "@/components";
 import {
@@ -7,13 +7,20 @@ import {
   Login,
   Calendar,
   LettersPage,
+  Dashboard,
 } from "@/pages";
 import PriceAnalysis from "./PriceAnaliysis/PriceAnalysis";
+
+
+
 
 const App: React.FC = () => {
   const hasAccess = () => {
     return true;
   };
+
+  const [currentUser, setCurrentUser] = useState({ username: '', fullName: '', permissions: [] as string[] });
+  const [userRole, setUserRole] = useState<'admin' | 'manager' | 'technical' | 'employee'>('employee');
 
   const router = createBrowserRouter([
     {
@@ -24,6 +31,15 @@ const App: React.FC = () => {
           path: "dashboard",
           element: <Outlet />,
           children: [
+            {
+              path: "dashboard-main",
+              element: <Dashboard userName={currentUser.fullName} userPosition={
+                userRole === 'admin' ? 'Administrator' :
+                  userRole === 'manager' ? 'Menejer' :
+                    userRole === 'technical' ? 'Texnik mutaxassis' :
+                      'Xodim'
+              } />
+            },
             {
               path: "employee-statistics",
               element: <EmployeeStatistics hasAccess={hasAccess} />,
