@@ -10,6 +10,9 @@ import {
   Dashboard,
   UsersManagement,
   ProductManagement,
+  TurnoverReport,
+  GoodsBalanceReport,
+  ReportTableOne,
 } from "@/pages";
 import PriceAnalysis from "./PriceAnaliysis/PriceAnalysis";
 
@@ -85,6 +88,33 @@ const App: React.FC = () => {
         {
           path: "product-management",
           element: <ProductManagement />
+        },
+        {
+          path: "reports",
+          element: <Outlet />,
+          children: [
+            {
+              path: "reports-turnover",
+              element: <TurnoverReport />
+            },
+            {
+              path: "reports-goods-balance",
+              element: <GoodsBalanceReport />
+            },
+            {
+              path: "reports-table1",
+              element: <ReportTableOne />
+            },
+            {
+              path: "reports-table2",
+              element: <ReportTableOne />
+            },
+            {
+              path: "reports-table3",
+              element: <ReportTableOne />
+            },
+
+          ]
         }
       ],
     },

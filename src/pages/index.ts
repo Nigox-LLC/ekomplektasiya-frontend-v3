@@ -6,3 +6,6 @@ export { default as GenStatistics } from "./Dashboard/DashboardStats/GenStatisti
 export { default as Dashboard } from "./Dashboard/DashboardPage/Dashboard";
 export { default as UsersManagement} from "./UsersManagement/UsersManagement";
 export { default as ProductManagement} from "./ProductManagement/ProductManagement";
+export { default as TurnoverReport} from "./Reports/TurnoverReport/TurnoverReport";
+export { default as GoodsBalanceReport} from "./Reports/GoodsMaterialsBalance/GoodsMaterialsBalance";
+export { default as ReportTableOne} from "./Reports/ReportTable/ReportTableOne";
