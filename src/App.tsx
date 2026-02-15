@@ -1,13 +1,12 @@
 import React from "react";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 import { Layout } from "@/components";
-import { EmployeeStatistics, Login } from "@/pages";
+import { EmployeeStatistics, LettersPage, Login } from "@/pages";
 
 const App: React.FC = () => {
-
   const hasAccess = () => {
     return true;
-  }
+  };
 
   const router = createBrowserRouter([
     {
@@ -25,10 +24,30 @@ const App: React.FC = () => {
             {
               path: "general-statistics",
               // Umumiy statistika sahifasi uchun element qo'shish
-              element: <></>
-            }
-          ]
-        }
+              element: <></>,
+            },
+          ],
+        },
+        {
+          path: "incoming",
+          element: <Outlet />,
+          children: [
+            {
+              path: ":status",
+              element: <LettersPage />,
+            },
+          ],
+        },
+        {
+          path: "outgoing",
+          element: <Outlet />,
+          children: [
+            {
+              path: ":status",
+              element: <LettersPage />,
+            },
+          ],
+        },
       ],
     },
     {
