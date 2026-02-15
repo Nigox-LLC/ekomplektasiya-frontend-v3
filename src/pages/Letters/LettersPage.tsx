@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   FileText,
   MapPin,
@@ -11,6 +11,8 @@ import {
 import StatusFilter from "./components/StatusFilter";
 import { Button, Card, Input } from "antd";
 import LetterDetail from "./components/LetterDetail";
+import { useAppSelector } from "@/store/hooks/hooks";
+import { axiosAPI } from "@/service/axiosAPI";
 
 interface Letter {
   id: string;
@@ -27,6 +29,10 @@ interface Letter {
 
 const LettersPage: React.FC = () => {
   const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null);
+  const [letters, setLetters] = useState<Letter[]>([]);
+  const [page, setPage] = useState(1);
+
+  const { showFilters } = useAppSelector((state) => state.letters);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -58,6 +64,20 @@ const LettersPage: React.FC = () => {
     }
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {};
+
+  useEffect(() => {
+    const fetchLetters = async () => {
+      try {
+        const response = await axiosAPI.get(`document/orders/?page=${page}`);
+        if(response.status === 200) setLetters(response.data.results);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchLetters();
+  }, [page]);
+
   return (
     <div className="flex flex-col gap-4 h-full">
       {/* Status Filters - YUQORIDA, TO'LIQ KENGLIKDA */}
@@ -76,9 +96,7 @@ const LettersPage: React.FC = () => {
                 {filter === "info" && "Ma'lumot uchun"}
                 {filter === "instructions" && "Ko'rsatma xatlar"} */}
               </h2>
-              <p className="text-xs text-gray-500">
-                Jami: {90} ta
-              </p>
+              <p className="text-xs text-gray-500">Jami: {90} ta</p>
             </div>
           </div>
 
@@ -93,8 +111,8 @@ const LettersPage: React.FC = () => {
                 <div>
                   <Input
                     placeholder="Kirish raqami"
-                    value={kirish}
-                    onChange={(e) => setKirish(e.target.value)}
+                    // value={kirish}
+                    // onChange={(e) => setKirish(e.target.value)}
                     className="w-full"
                     onKeyPress={handleKeyPress}
                   />
@@ -102,8 +120,8 @@ const LettersPage: React.FC = () => {
                 <div>
                   <Input
                     placeholder="Kalit so'zi"
-                    value={kalit}
-                    onChange={(e) => setKalit(e.target.value)}
+                    // value={kalit}
+                    // onChange={(e) => setKalit(e.target.value)}
                     className="w-full"
                     onKeyPress={handleKeyPress}
                   />
@@ -111,8 +129,8 @@ const LettersPage: React.FC = () => {
                 <div>
                   <Input
                     placeholder="Jo'natuvchi tashkilot"
-                    value={jonatuvchi}
-                    onChange={(e) => setJonatuvchi(e.target.value)}
+                    // value={jonatuvchi}
+                    // onChange={(e) => setJonatuvchi(e.target.value)}
                     className="w-full"
                     onKeyPress={handleKeyPress}
                   />
@@ -121,13 +139,22 @@ const LettersPage: React.FC = () => {
 
               {/* Action Buttons */}
               <div className="flex flex-col gap-2 mt-6">
-                <Button onClick={handleSearch} className="gap-2 w-full">
+                <Button
+                  onClick={() => {
+                    // search logic here
+                  }}
+                  className="gap-2 w-full"
+                >
                   <Search className="size-4" />
                   Qidirish
                 </Button>
                 <Button
                   variant="outlined"
-                  onClick={handleClear}
+                  onClick={() => {
+                    // setKirish("");
+                    // setKalit("");
+                    // setJonatuvchi("");
+                  }}
                   className="gap-2 w-full"
                 >
                   <Trash2 className="size-4" />
@@ -142,7 +169,7 @@ const LettersPage: React.FC = () => {
             className="space-y-3 overflow-y-auto"
             style={{ maxHeight: "calc(100vh - 300px)" }}
           >
-            {filteredLetters.map((letter) => {
+            {letters.map((letter) => {
               const borderColor = getStatusColor(letter.status);
               const statusBadge = getStatusBadge(letter.status);
 
