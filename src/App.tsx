@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 import { Layout } from "@/components";
 import {
@@ -7,13 +7,23 @@ import {
   Login,
   Calendar,
   LettersPage,
+  Dashboard,
+  UsersManagement,
+  ProductManagement,
+  TurnoverReport,
+  GoodsBalanceReport,
+  ReportTableOne,
 } from "@/pages";
 import PriceAnalysis from "./PriceAnaliysis/PriceAnalysis";
+
 
 const App: React.FC = () => {
   const hasAccess = () => {
     return true;
   };
+
+  const [currentUser, setCurrentUser] = useState({ username: '', fullName: '', permissions: [] as string[] });
+  const [userRole, setUserRole] = useState<'admin' | 'manager' | 'technical' | 'employee'>('employee');
 
   const router = createBrowserRouter([
     {
@@ -24,6 +34,15 @@ const App: React.FC = () => {
           path: "dashboard",
           element: <Outlet />,
           children: [
+            {
+              path: "dashboard-main",
+              element: <Dashboard userName={currentUser.fullName} userPosition={
+                userRole === 'admin' ? 'Administrator' :
+                  userRole === 'manager' ? 'Menejer' :
+                    userRole === 'technical' ? 'Texnik mutaxassis' :
+                      'Xodim'
+              } />
+            },
             {
               path: "employee-statistics",
               element: <EmployeeStatistics hasAccess={hasAccess} />,
@@ -62,6 +81,41 @@ const App: React.FC = () => {
             },
           ],
         },
+        {
+          path: "users-management",
+          element: <UsersManagement />,
+        },
+        {
+          path: "product-management",
+          element: <ProductManagement />
+        },
+        {
+          path: "reports",
+          element: <Outlet />,
+          children: [
+            {
+              path: "reports-turnover",
+              element: <TurnoverReport />
+            },
+            {
+              path: "reports-goods-balance",
+              element: <GoodsBalanceReport />
+            },
+            {
+              path: "reports-table1",
+              element: <ReportTableOne />
+            },
+            {
+              path: "reports-table2",
+              element: <ReportTableOne />
+            },
+            {
+              path: "reports-table3",
+              element: <ReportTableOne />
+            },
+
+          ]
+        }
       ],
     },
     {

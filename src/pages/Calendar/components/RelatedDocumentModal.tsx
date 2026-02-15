@@ -1,5 +1,4 @@
 import { useState } from 'react';
-// import { Button } from '@/app/components/ui/button';
 import { X, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button, Select } from 'antd';
 // import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
@@ -12,7 +11,7 @@ interface RelatedDocumentModalProps {
 
 type TabType = 'incomingNumber' | 'outgoingNumber' | 'outgoingDate' | 'documentType' | 'summary' | 'files';
 
-export function RelatedDocumentModal({ isOpen, onClose, onSave }: RelatedDocumentModalProps) {
+const RelatedDocumentModal: React.FC<RelatedDocumentModalProps> = ({ isOpen, onClose, onSave }) => {
   const [activeTab, setActiveTab] = useState<TabType>('incomingNumber');
   const [incomingNumber, setIncomingNumber] = useState('');
   const [outgoingNumber, setOutgoingNumber] = useState('');
@@ -92,7 +91,7 @@ export function RelatedDocumentModal({ isOpen, onClose, onSave }: RelatedDocumen
                 Yil
               </label>
               <Select value={selectedYear} onChange={(value) => setSelectedYear(value)}>
-                <SelectTrigger className="w-full">
+                {/* <SelectTrigger className="w-full">
                   <SelectValue placeholder="Yil" />
                 </SelectTrigger>
                 <SelectContent>
@@ -100,7 +99,11 @@ export function RelatedDocumentModal({ isOpen, onClose, onSave }: RelatedDocumen
                   <SelectItem value="2025">2025</SelectItem>
                   <SelectItem value="2024">2024</SelectItem>
                   <SelectItem value="2023">2023</SelectItem>
-                </SelectContent>
+                </SelectContent> */}
+                <Select.Option value="2026">2026</Select.Option>
+                <Select.Option value="2026">2025</Select.Option>
+                <Select.Option value="2026">2024</Select.Option>
+                <Select.Option value="2026">2023</Select.Option>
               </Select>
             </div>
 
@@ -124,11 +127,10 @@ export function RelatedDocumentModal({ isOpen, onClose, onSave }: RelatedDocumen
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-4 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === tab.id
+                className={`py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id
                     ? 'border-blue-600 text-blue-600'
                     : 'border-transparent text-gray-600 hover:text-gray-900'
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
@@ -184,3 +186,5 @@ export function RelatedDocumentModal({ isOpen, onClose, onSave }: RelatedDocumen
     </div>
   );
 }
+
+export default RelatedDocumentModal;

@@ -1,15 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-// import { Button } from '@/app/components/ui/button';
-// import { Badge } from '@/app/components/ui/badge';
-// import { Card } from '@/app/components/ui/card';
-// import { Checkbox } from '@/app/components/ui/checkbox';
-import { ChevronLeft, ChevronRight, Filter, X, Settings, Globe, Calendar, FileText, MapPin } from 'lucide-react';
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
-// import { LanguageMenu } from './LanguageMenu';
-// import { DocumentDetailView } from './components/DocumentDetailView';
+import { ChevronLeft, ChevronRight, X, Calendar, FileText, MapPin } from 'lucide-react';
 import DocumentDetailView from './components/DocumentDetailView';
-import { SettingsMenu } from './components/SettingsMenu';
-import { SuccessModal } from './components/SuccessModal';
+import SettingsMenu from './components/SettingsMenu';
+import SuccessModal from './components/SuccessModal';
 import { Badge, Button, Card, Checkbox, Select } from 'antd';
 
 interface Letter {
@@ -34,56 +27,56 @@ const mockLetters: Letter[] = [
   { id: '2', number: 'KIR-002', region: 'Samarqand v.', title: 'Kadrlar bo\'yicha ma\'lumot', status: 'cancelled', type: 'incoming', day: 1, month: 0, year: 2026 },
   { id: '3', number: 'CHQ-001', region: 'Buxoro v.', title: 'Rejalashtirish bo\'yicha', status: 'cancelled', type: 'outgoing', day: 1, month: 0, year: 2026 },
   { id: '4', number: 'KIR-003', region: 'Andijon v.', title: 'Statistik ma\'lumotlar', status: 'cancelled', type: 'incoming', day: 1, month: 0, year: 2026 },
-  
+
   // Day 5
   { id: '5', number: 'KIR-004', region: 'Fargona v.', title: 'Choraklik natijalar tahlili', status: 'cancelled', type: 'incoming', day: 5, month: 0, year: 2026 },
   { id: '6', number: 'CHQ-002', region: 'Namangan v.', title: 'Topshiriq berish', status: 'cancelled', type: 'outgoing', day: 5, month: 0, year: 2026 },
   { id: '7', number: 'KIR-005', region: 'Qashqadaryo v.', title: 'Yillik reja to\'g\'risida', status: 'cancelled', type: 'incoming', day: 5, month: 0, year: 2026 },
   { id: '8', number: 'KIR-006', region: 'Surxondaryo v.', title: 'Monitoring natijalari', status: 'cancelled', type: 'incoming', day: 5, month: 0, year: 2026 },
-  
+
   // Day 10
   { id: '9', number: 'KIR-007', region: 'Toshkent v.', title: 'Byudjet mablag\'lari', status: 'cancelled', type: 'incoming', day: 10, month: 0, year: 2026 },
   { id: '10', number: 'CHQ-003', region: 'Sirdaryo v.', title: 'Eslatma xat', status: 'cancelled', type: 'outgoing', day: 10, month: 0, year: 2026 },
   { id: '11', number: 'KIR-008', region: 'Jizzax v.', title: 'Texnik ta\'minot', status: 'cancelled', type: 'incoming', day: 10, month: 0, year: 2026 },
   { id: '12', number: 'KIR-009', region: 'Navoiy v.', title: 'Ishchi rejalar', status: 'cancelled', type: 'incoming', day: 10, month: 0, year: 2026 },
-  
+
   // Day 15
   { id: '13', number: 'KIR-010', region: 'Xorazm v.', title: 'Majlis bayonnomalari', status: 'overdue', type: 'incoming', day: 15, month: 0, year: 2026 },
   { id: '14', number: 'KIR-011', region: 'Toshkent sh.', title: 'Davlat xaridlari', status: 'overdue', type: 'incoming', day: 15, month: 0, year: 2026 },
   { id: '15', number: 'CHQ-004', region: 'Samarqand v.', title: 'Tavsiya xatlari', status: 'overdue', type: 'outgoing', day: 15, month: 0, year: 2026 },
   { id: '16', number: 'KIR-012', region: 'Buxoro v.', title: 'Qo\'shimcha ma\'lumotlar', status: 'overdue', type: 'incoming', day: 15, month: 0, year: 2026 },
-  
+
   // Day 18
   { id: '17', number: 'KIR-013', region: 'Andijon v.', title: 'Audit hisoboti', status: 'cancelled', type: 'incoming', day: 18, month: 0, year: 2026 },
   { id: '18', number: 'CHQ-005', region: 'Fargona v.', title: 'Kelishuv loyihasi', status: 'cancelled', type: 'outgoing', day: 18, month: 0, year: 2026 },
   { id: '19', number: 'KIR-014', region: 'Namangan v.', title: 'Ishchi guruh hisoboti', status: 'cancelled', type: 'incoming', day: 18, month: 0, year: 2026 },
   { id: '20', number: 'KIR-015', region: 'Qashqadaryo v.', title: 'Davlat dasturi', status: 'cancelled', type: 'incoming', day: 18, month: 0, year: 2026 },
-  
+
   // Day 20
   { id: '21', number: 'KIR-016', region: 'Surxondaryo v.', title: 'Yillik hisobot', status: 'cancelled', type: 'incoming', day: 20, month: 0, year: 2026 },
   { id: '22', number: 'CHQ-006', region: 'Toshkent v.', title: 'Buyruq loyihasi', status: 'cancelled', type: 'outgoing', day: 20, month: 0, year: 2026 },
   { id: '23', number: 'KIR-017', region: 'Sirdaryo v.', title: 'Tashkiliy masalalar', status: 'cancelled', type: 'incoming', day: 20, month: 0, year: 2026 },
   { id: '24', number: 'KIR-018', region: 'Jizzax v.', title: 'Ma\'lumot so\'rovi', status: 'cancelled', type: 'incoming', day: 20, month: 0, year: 2026 },
-  
+
   // Day 22
   { id: '25', number: 'KIR-019', region: 'Navoiy v.', title: 'Investitsiya loyihalari', status: 'cancelled', type: 'incoming', day: 22, month: 0, year: 2026 },
   { id: '26', number: 'CHQ-007', region: 'Xorazm v.', title: 'Eslatma xat', status: 'cancelled', type: 'outgoing', day: 22, month: 0, year: 2026 },
   { id: '27', number: 'KIR-020', region: 'Toshkent sh.', title: 'Axborot xavfsizligi', status: 'cancelled', type: 'incoming', day: 22, month: 0, year: 2026 },
   { id: '28', number: 'KIR-021', region: 'Samarqand v.', title: 'Kadrlar malakasini oshirish', status: 'cancelled', type: 'incoming', day: 22, month: 0, year: 2026 },
-  
+
   // Day 25
   { id: '29', number: 'KIR-022', region: 'Buxoro v.', title: 'Choraklik natijalar', status: 'cancelled', type: 'incoming', day: 25, month: 0, year: 2026 },
   { id: '30', number: 'CHQ-008', region: 'Andijon v.', title: 'Farmoyish loyihasi', status: 'cancelled', type: 'outgoing', day: 25, month: 0, year: 2026 },
   { id: '31', number: 'KIR-023', region: 'Fargona v.', title: 'Moliyaviy tahlil', status: 'cancelled', type: 'incoming', day: 25, month: 0, year: 2026 },
   { id: '32', number: 'KIR-024', region: 'Namangan v.', title: 'Statistik hisobot', status: 'cancelled', type: 'incoming', day: 25, month: 0, year: 2026 },
-  
+
   // Day 28 (Today)
   { id: '33', number: 'KIR-025', region: 'Qashqadaryo v.', title: 'Moliyaviy hisobot', status: 'active', type: 'incoming', day: 28, month: 0, year: 2026 },
   { id: '34', number: 'KIR-026', region: 'Surxondaryo v.', title: 'Kadrlar bo\'yicha', status: 'active', type: 'incoming', day: 28, month: 0, year: 2026 },
   { id: '35', number: 'CHQ-009', region: 'Toshkent v.', title: 'Rejalashtirish', status: 'active', type: 'outgoing', day: 28, month: 0, year: 2026 },
   { id: '36', number: 'KIR-027', region: 'Sirdaryo v.', title: 'Topshiriq berish', status: 'active', type: 'incoming', day: 28, month: 0, year: 2026 },
   { id: '37', number: 'CHQ-010', region: 'Jizzax v.', title: 'Kelishuv xati', status: 'active', type: 'outgoing', day: 28, month: 0, year: 2026 },
-  
+
   // Day 30
   { id: '38', number: 'KIR-028', region: 'Navoiy v.', title: 'Oylik hisobot', status: 'active', type: 'incoming', day: 30, month: 0, year: 2026 },
   { id: '39', number: 'CHQ-011', region: 'Xorazm v.', title: 'Davlat dasturi', status: 'active', type: 'outgoing', day: 30, month: 0, year: 2026 },
@@ -91,7 +84,7 @@ const mockLetters: Letter[] = [
   { id: '41', number: 'KIR-030', region: 'Samarqand v.', title: 'Tekshiruv natijalari', status: 'active', type: 'incoming', day: 30, month: 0, year: 2026 },
 ];
 
- const CalendarView: React.FC = () => {
+const CalendarView: React.FC = () => {
   // Bugungi kunni avtomatik aniqlash
   const today = new Date();
   const todayDay = today.getDate();
@@ -119,8 +112,8 @@ const mockLetters: Letter[] = [
   useEffect(() => {
     if (selectedLetter && letterDetailsRef.current) {
       setTimeout(() => {
-        letterDetailsRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
+        letterDetailsRef.current?.scrollIntoView({
+          behavior: 'smooth',
           block: 'start'
         });
       }, 100);
@@ -136,8 +129,8 @@ const mockLetters: Letter[] = [
   useEffect(() => {
     if (selectedDay !== null && letterDetailsRef.current) {
       setTimeout(() => {
-        letterDetailsRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
+        letterDetailsRef.current?.scrollIntoView({
+          behavior: 'smooth',
           block: 'start'
         });
       }, 150);
@@ -168,10 +161,10 @@ const mockLetters: Letter[] = [
   };
 
   const firstDayOfWeek = getFirstDayOfMonth(currentMonth, currentYear);
-  
+
   // Bo'sh kunlar
   const emptyDays = Array(firstDayOfWeek).fill(null);
-  
+
   // Barcha kunlar
   const calendarDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
@@ -223,7 +216,7 @@ const mockLetters: Letter[] = [
 
   const getLettersForDay = (day: number) => {
     const letters = filteredLetters.filter(letter => letter.day === day);
-    
+
     // Agar bugungi oyda bo'lsak va kun bugundan oldin bo'lsa
     if (currentMonth === todayMonth && currentYear === todayYear && day < todayDay) {
       // Ko'k nuqtalarni (active) qizil (overdue) ga o'zgartirish
@@ -234,12 +227,12 @@ const mockLetters: Letter[] = [
         return letter;
       });
     }
-    
+
     // Agar kelajak oy bo'lsa yoki kelajak yil bo'lsa - hammasi active qoladi
     if (currentYear > todayYear || (currentYear === todayYear && currentMonth > todayMonth)) {
       return letters;
     }
-    
+
     // Agar o'tgan oy yoki o'tgan yil bo'lsa - hammasi overdue
     if (currentYear < todayYear || (currentYear === todayYear && currentMonth < todayMonth)) {
       return letters.map(letter => {
@@ -249,7 +242,7 @@ const mockLetters: Letter[] = [
         return letter;
       });
     }
-    
+
     return letters;
   };
 
@@ -322,7 +315,7 @@ const mockLetters: Letter[] = [
                     <SelectItem value="Andijon v.">Andijon v.</SelectItem>
                     <SelectItem value="Fargona v.">Fargona v.</SelectItem>
                   </SelectContent> */}
-                                    <Select.Option>Barcha viloyatlar</Select.Option>
+                  <Select.Option>Barcha viloyatlar</Select.Option>
                   <Select.Option>Toshkent sh.</Select.Option>
                   <Select.Option>Samarqand v.</Select.Option>
                   <Select.Option>Buxoro v.</Select.Option>
@@ -362,7 +355,7 @@ const mockLetters: Letter[] = [
                     <SelectItem value="incoming">Kiruvchi</SelectItem>
                     <SelectItem value="outgoing">Chiquvchi</SelectItem>
                   </SelectContent> */}
-      <Select.Option>Barcha turlar</Select.Option>
+                  <Select.Option>Barcha turlar</Select.Option>
                   <Select.Option>Kiruvchi</Select.Option>
                   <Select.Option>Chiquvchi</Select.Option>
                 </Select>
@@ -418,11 +411,9 @@ const mockLetters: Letter[] = [
               return (
                 <div
                   key={day}
-                  className={`aspect-square border rounded-lg p-2 relative transition-all hover:shadow-md cursor-pointer ${
-                    isToday ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'
-                  } ${
-                    selectedDay === day ? 'ring-4 ring-blue-400 ring-offset-2 shadow-lg' : ''
-                  }`}
+                  className={`aspect-square border rounded-lg p-2 relative transition-all hover:shadow-md cursor-pointer ${isToday ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'
+                    } ${selectedDay === day ? 'ring-4 ring-blue-400 ring-offset-2 shadow-lg' : ''
+                    }`}
                   title={`${day} ${monthNames[currentMonth]} - ${dayLetters.length} ta xat`}
                   onClick={() => setSelectedDay(selectedDay === day ? null : day)}
                 >
@@ -436,11 +427,10 @@ const mockLetters: Letter[] = [
                   )}
 
                   {/* O'ng tomon - Kun raqami */}
-                  <div className={`absolute top-1 right-1 ${
-                    isToday ? 'text-blue-600 font-extrabold text-lg' : 
-                    isWeekend ? 'text-red-600 font-medium text-sm' : 
-                    'text-gray-900 font-medium text-sm'
-                  }`}>
+                  <div className={`absolute top-1 right-1 ${isToday ? 'text-blue-600 font-extrabold text-lg' :
+                      isWeekend ? 'text-red-600 font-medium text-sm' :
+                        'text-gray-900 font-medium text-sm'
+                    }`}>
                     {day}
                   </div>
 
@@ -535,23 +525,22 @@ const mockLetters: Letter[] = [
                 <X className="size-4" />
               </Button>
             </div>
-            
+
             {/* Xatlar ro'yxati - scroll */}
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
               {getLettersForDay(selectedDay).map((letter) => {
-                const borderColor = 
+                const borderColor =
                   letter.status === 'overdue' ? 'border-l-red-500' :
-                  letter.status === 'active' ? 'border-l-blue-500' :
-                  'border-l-gray-400';
-                
+                    letter.status === 'active' ? 'border-l-blue-500' :
+                      'border-l-gray-400';
+
                 const isSelected = selectedLetter?.id === letter.id;
 
                 return (
                   <div
                     key={letter.id}
-                    className={`relative bg-white border rounded-lg p-3 cursor-pointer transition-all border-l-4 ${borderColor} ${
-                      isSelected ? 'ring-2 ring-blue-500 shadow-md bg-blue-50' : 'hover:shadow-md hover:bg-gray-50'
-                    }`}
+                    className={`relative bg-white border rounded-lg p-3 cursor-pointer transition-all border-l-4 ${borderColor} ${isSelected ? 'ring-2 ring-blue-500 shadow-md bg-blue-50' : 'hover:shadow-md hover:bg-gray-50'
+                      }`}
                     onClick={() => setSelectedLetter(letter)}
                   >
                     <div className="flex items-start gap-2">
@@ -574,7 +563,7 @@ const mockLetters: Letter[] = [
           {/* O'NG PANEL - To'liq DocumentDetailView (75%) */}
           <div className="flex-1 bg-white rounded-lg shadow border border-gray-200 h-[800px] overflow-y-auto">
             {selectedLetter ? (
-              <DocumentDetailView 
+              <DocumentDetailView
                 document={{
                   id: selectedLetter.id,
                   number: selectedLetter.number,

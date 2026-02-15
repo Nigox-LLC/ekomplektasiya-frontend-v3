@@ -1,7 +1,4 @@
 import { useState } from 'react';
-// import { Button } from '@/app/components/ui/button';
-// import { Input } from '@/app/components/ui/input';
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { X, Search, User, Building2, Send } from 'lucide-react';
 import { Button, Input, Select } from 'antd';
 
@@ -36,7 +33,7 @@ const mockEmployees: Employee[] = [
   { id: '12', name: 'Nematova Zilola', position: 'Hisobchi', department: 'Moliya bo\'limi' },
 ];
 
-export function SendDocumentModal({ isOpen, onClose, onSend, onSuccess, documentNumber, documentTitle }: SendDocumentModalProps) {
+const SendDocumentModal: React.FC<SendDocumentModalProps> = ({ isOpen, onClose, onSend, onSuccess, documentNumber, documentTitle }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
@@ -138,15 +135,16 @@ export function SendDocumentModal({ isOpen, onClose, onSend, onSuccess, document
               <label className="text-sm font-medium text-gray-700 mb-2 block">Bo'lim</label>
               <div className="relative">
                 <Select value={selectedDepartment} onChange={(value) => setSelectedDepartment(value)}>
-                  <SelectTrigger>
+                  {/* <SelectTrigger>
                     <SelectValue placeholder="Bo'limni tanlang" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Barcha bo'limlar</SelectItem>
+                  </SelectTrigger> */}
+                  <Select.Option placeholder="Bo'limni tanlang">Bo'limni tanlang</Select.Option>
+                  <Select.Option>
+                    <Select.Option value="all">Barcha bo'limlar</Select.Option>
                     {departments.slice(1).map(dept => (
-                      <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                      <Select.Option key={dept} value={dept}>{dept}</Select.Option>
                     ))}
-                  </SelectContent>
+                  </Select.Option>
                 </Select>
                 {selectedDepartment !== 'all' && (
                   <button
@@ -308,3 +306,5 @@ export function SendDocumentModal({ isOpen, onClose, onSend, onSuccess, document
     </div>
   );
 }
+
+export default SendDocumentModal;

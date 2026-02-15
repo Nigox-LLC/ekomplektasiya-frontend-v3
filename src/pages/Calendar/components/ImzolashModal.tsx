@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { X, Key, CheckCircle, Loader2, HardDrive } from 'lucide-react';
 import { Badge, Button } from 'antd';
-// import { Button } from './ui/button';
-// import { Badge } from './ui/badge';
 import { IjroStep } from './IjroHarakatiModal';
 
 interface ImzolashModalProps {
@@ -24,7 +22,7 @@ interface EriKey {
   type: 'JISMONIY_SHAXS' | 'YURIDIK_SHAXS';
 }
 
-export function ImzolashModal({ isOpen, onClose, documentNumber, onSuccess, onAddStep }: ImzolashModalProps) {
+const ImzolashModal: React.FC<ImzolashModalProps> = ({ isOpen, onClose, documentNumber, onSuccess, onAddStep }) => {
   const [selectedKey, setSelectedKey] = useState<EriKey | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSigned, setIsSigned] = useState(false);
@@ -277,3 +275,5 @@ export function ImzolashModal({ isOpen, onClose, documentNumber, onSuccess, onAd
     </div>
   );
 }
+
+export default ImzolashModal;

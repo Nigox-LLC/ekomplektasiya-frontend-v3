@@ -1,30 +1,28 @@
 import { useRef, useState } from 'react';
-// import { Button } from '@/app/components/ui/button';
-// import { Badge } from '@/app/components/ui/badge';
-// import { Card } from '@/app/components/ui/card';
-// import { Input } from '@/app/components/ui/input';
-import { 
-  ArrowLeft, 
-  Send, 
-  Edit2, 
-  Plus, 
-  Eye, 
-  Download, 
-  MoreVertical, 
-  ShoppingCart, 
-  ChevronDown, 
-  ChevronUp, 
+import {
+  ArrowLeft,
+  Send,
+  Edit2,
+  Plus,
+  Eye,
+  Download,
+  MoreVertical,
+  ShoppingCart,
+  ChevronDown,
+  ChevronUp,
   Trash2,
-  FileText as FileTextIcon 
+  FileText as FileTextIcon
 } from 'lucide-react';
-import { RelatedDocumentModal } from './RelatedDocumentModal';
-import { IjroHarakatiModal, IjroStep } from './IjroHarakatiModal';
-import { YearPlanModal } from './YearPlanModal';
-import { AddGoodsModal } from './AddGoodsModal';
+import RelatedDocumentModal from './RelatedDocumentModal';
+// import { IjroHarakatiModal, IjroStep } from './IjroHarakatiModal';
+import IjroHarakatiModal from './IjroHarakatiModal';
+import { IjroStep } from './IjroHarakatiModal';
+import YearPlanModal from './YearPlanModal';
+import AddGoodsModal from './AddGoodsModal';
 import { KelishishModal } from './KelishishModal';
-import { SearchFilterPanel } from './SearchFilterPanel';
-import { ImzolashModal } from './ImzolashModal';
-import { SendDocumentModal } from './SendDocumentModal';
+import SearchFilterPanel from './SearchFilterPanel';
+import ImzolashModal from './ImzolashModal';
+import SendDocumentModal from './SendDocumentModal';
 import cartIcon from '@/assets/0312ad68ca29e1bdf3c70bebc3eb506c0733a300.png'; // Figma dan olingan ikonani import qilish
 import ijroIcon from '@/assets/0312ad68ca29e1bdf3c70bebc3eb506c0733a300.png'; // Figma dan olingan ikonani import qilish
 import flowIcon from '@/assets/0312ad68ca29e1bdf3c70bebc3eb506c0733a300.png'; // Figma dan olingan ikonani import qilish
@@ -53,6 +51,7 @@ interface DocumentDetailViewProps {
   category?: 'execution' | 'signing' | 'resolution' | 'info' | 'approval' | 'for-signing' | 'backup';
   onSuccess?: (message: string) => void;
 }
+
 const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: DocumentDetailViewProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showRelatedDocModal, setShowRelatedDocModal] = useState(false);
@@ -67,10 +66,10 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
   const [showSearchFilter, setShowSearchFilter] = useState(false);
   const [showImzolashModal, setShowImzolashModal] = useState(false);
   const [showSendModal, setShowSendModal] = useState(false);
-  
+
   // Har bir xat uchun alohida ijro qadamlari - xat ID bo'yicha
   const [ijroSteps, setIjroSteps] = useState<Record<string, IjroStep[]>>({});
-  
+
   // Joriy xatning ijro qadamlarini olish
   const currentDocumentSteps = document?.id ? (ijroSteps[document.id] || []) : [];
 
@@ -114,7 +113,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
   const handleViewPDF = (fileName: string) => {
     // Mock PDF URL - haqiqiy ilovada backend dan keladi
     const pdfUrl = `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`;
-    
+
     // Yangi tabda ochish
     window.open(pdfUrl, '_blank');
   };
@@ -124,17 +123,14 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
     // Mock PDF URL - haqiqiy ilovada backend dan keladi
     // Haqiqiy ilovada backend'dan fayl URL keladi va Content-Disposition: attachment header bilan yuboriladi
     const pdfUrl = `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`;
-    
+
     // Yangi tabda ochish - brauzer o'zi yuklab olish yoki ko'rsatishni taklif qiladi
     const link = window.open(pdfUrl, '_blank');
-    
+
     if (!link) {
       alert('Iltimos, popup blocker ni o\'chiring va qaytadan urinib ko\'ring.');
     }
-    
-    // Haqiqiy backend'da quyidagi formatda bo'lishi kerak:
-    // GET /api/documents/download/{fileId}
-    // Response headers: Content-Disposition: attachment; filename="document.pdf"
+
   };
 
   const handleAddStep = (step: IjroStep) => {
@@ -168,15 +164,14 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
               variant="outlined"
               size="medium"
               onClick={() => setShowKelishishModal(true)}
-              className={`gap-2 border-2 h-12 px-6 ${
-                kelishishStatus === 'roziman' 
-                  ? 'border-green-600 text-green-700 bg-green-50 hover:bg-green-100 hover:border-green-700' 
+              className={`gap-2 border-2 h-12 px-6 ${kelishishStatus === 'roziman'
+                  ? 'border-green-600 text-green-700 bg-green-50 hover:bg-green-100 hover:border-green-700'
                   : kelishishStatus === 'rozi-emasman'
-                  ? 'border-red-500 text-red-700 bg-red-50 hover:bg-red-100'
-                  : kelishishStatus === 'qisman'
-                  ? 'border-yellow-500 text-yellow-700 bg-yellow-50 hover:bg-yellow-100'
-                  : 'border-purple-300 text-purple-600 hover:border-purple-500 hover:bg-purple-50'
-              }`}
+                    ? 'border-red-500 text-red-700 bg-red-50 hover:bg-red-100'
+                    : kelishishStatus === 'qisman'
+                      ? 'border-yellow-500 text-yellow-700 bg-yellow-50 hover:bg-yellow-100'
+                      : 'border-purple-300 text-purple-600 hover:border-purple-500 hover:bg-purple-50'
+                }`}
             >
               {(!kelishishStatus || kelishishStatus === 'roziman') && <img src={kelishishIcon} alt="Kelishish" className="size-6 mix-blend-multiply" />}
               <span className="font-medium text-base">
@@ -257,7 +252,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
                   {mockGoods.map((item, index) => (
                     <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                       <td className="border border-gray-300 px-4 py-3 text-sm text-gray-600 text-center">{index + 1}</td>
-                      
+
                       {/* Buyurtma turi - badge with dropdown */}
                       <td className="border border-gray-300 px-4 py-3 relative">
                         <div className="relative inline-block">
@@ -265,18 +260,17 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
                             onClick={() => setShowTypeDropdown(showTypeDropdown === index ? null : index)}
                             className="inline-flex items-center gap-2"
                           >
-                            <Badge 
-                              className={`cursor-pointer transition-colors ${
-                                item.type === 'Tovar' 
-                                  ? 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200' 
+                            <Badge
+                              className={`cursor-pointer transition-colors ${item.type === 'Tovar'
+                                  ? 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200'
                                   : 'bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200'
-                              }`}
+                                }`}
                             >
                               {item.type}
                             </Badge>
                             <ChevronDown className="size-3 text-gray-500" />
                           </button>
-                          
+
                           {showTypeDropdown === index && (
                             <div className="absolute left-0 top-full mt-1 w-40 bg-white border border-gray-300 rounded-lg shadow-lg z-20">
                               <button
@@ -307,7 +301,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
                           )}
                         </div>
                       </td>
-                      
+
                       {/* Yillik reja */}
                       <td className="border border-gray-300 px-4 py-3 text-sm text-center">
                         <button
@@ -316,8 +310,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
                             setShowYearPlanModal(true);
                             setSelectedRowIndex(index);
                           }}
-                          className="inline-block"
-                        >
+                          className="inline-block"                        >
                           {item.yearPlan ? (
                             <Badge className="bg-green-100 text-green-700 border-green-300 cursor-pointer hover:bg-green-200 transition-colors">
                               {item.yearPlan.name}
@@ -329,7 +322,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
                           )}
                         </button>
                       </td>
-                      
+
                       {/* Tovar nomi - editable */}
                       <td className="border border-gray-300 px-2 py-2">
                         <Input
@@ -343,7 +336,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
                           className="text-sm font-medium border-0 focus:ring-1 focus:ring-blue-500"
                         />
                       </td>
-                      
+
                       {/* Modeli - editable */}
                       <td className="border border-gray-300 px-2 py-2">
                         <Input
@@ -357,7 +350,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
                           className="text-sm border-0 focus:ring-1 focus:ring-blue-500"
                         />
                       </td>
-                      
+
                       {/* O'lchami - editable */}
                       <td className="border border-gray-300 px-2 py-2">
                         <Input
@@ -371,7 +364,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
                           className="text-sm border-0 focus:ring-1 focus:ring-blue-500"
                         />
                       </td>
-                      
+
                       {/* O'lchov birligi - editable */}
                       <td className="border border-gray-300 px-2 py-2">
                         <Input
@@ -385,7 +378,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
                           className="text-sm text-center border-0 focus:ring-1 focus:ring-blue-500"
                         />
                       </td>
-                      
+
                       {/* Soni - editable */}
                       <td className="border border-gray-300 px-2 py-2">
                         <Input
@@ -399,7 +392,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
                           className="text-sm text-center font-semibold border-0 focus:ring-1 focus:ring-blue-500"
                         />
                       </td>
-                      
+
                       {/* Izoh - editable */}
                       <td className="border border-gray-300 px-2 py-2">
                         <Input
@@ -413,7 +406,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
                           className="text-sm italic border-0 focus:ring-1 focus:ring-blue-500"
                         />
                       </td>
-                      
+
                       {/* O'chirish tugmasi */}
                       <td className="border border-gray-300 px-4 py-3 text-center">
                         <button
@@ -431,12 +424,12 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
                 </tbody>
               </table>
             </div>
-            
+
             {/* Yangi qator qo'shish tugmasi */}
             <div className="mt-4">
-              <Button 
-                variant="outlined" 
-                className="gap-2" 
+              <Button
+                variant="outlined"
+                className="gap-2"
                 onClick={() => {
                   // Yangi bo'sh qator qo'shish
                   const newRow = {
@@ -466,7 +459,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
         {/* Title */}
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">
-            {categoryNames[document.category] || document.category} - <span className="text-blue-600">{document.number}</span> - {document.date}
+            {document && (categoryNames[document.category] || document.category)} - <span className="text-blue-600">{document?.number}</span> - {document?.date}
           </h2>
         </div>
 
@@ -480,7 +473,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
                 <button className="text-gray-400 hover:text-gray-600">
                   <Edit2 className="size-4" />
                 </button>
-                <span className="text-base text-gray-900 font-medium">{document.number}</span>
+                <span className="text-base text-gray-900 font-medium">{document?.number}</span>
               </div>
             </div>
 
@@ -488,7 +481,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
             <div className="flex items-center justify-between py-2 border-b border-gray-100">
               <label className="text-sm text-gray-500 w-48">Hujjat sanasi</label>
               <div className="flex-1">
-                <span className="text-base text-gray-900">{document.date}</span>
+                <span className="text-base text-gray-900">{document?.date || ''}</span>
               </div>
             </div>
 
@@ -496,7 +489,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
             <div className="flex items-center justify-between py-2 border-b border-gray-100">
               <label className="text-sm text-gray-500 w-48">Hujjat turi</label>
               <div className="flex-1">
-                <span className="text-base text-gray-900">{categoryNames[document.category] || document.category}</span>
+                <span className="text-base text-gray-900">{categoryNames[document?.category ?? ''] || document?.category}</span>
               </div>
             </div>
 
@@ -538,7 +531,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
                   <Edit2 className="size-4" />
                 </button>
                 <p className="text-base text-gray-900 flex-1">
-                  {document.title}
+                  {document?.title || ''}
                 </p>
               </div>
             </div>
@@ -565,7 +558,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
             </div>
 
             {/* Kelishish uchun spravichnik */}
-            
+
           </div>
         </div>
       </div>
@@ -573,10 +566,10 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
       {/* Ilovalar bo'limi */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <h3 className="text-base font-semibold text-gray-900 mb-4">Ilovalar</h3>
-        
+
         {/* Asosiy fayl - DOCX */}
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-          
+
         </div>
 
         {/* PDF fayllar grid */}
@@ -659,11 +652,11 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
 
         {/* Qo'shish tugmalari */}
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="gap-2" onClick={handleFileUpload}>
+          <Button variant="outlined" className="gap-2" onClick={handleFileUpload}>
             <Plus className="size-4" />
             Ilova qo'shish
           </Button>
-          <Button variant="outline" className="gap-2" onClick={() => setShowRelatedDocModal(true)}>
+          <Button variant="outlined" className="gap-2" onClick={() => setShowRelatedDocModal(true)}>
             <Plus className="size-4" />
             Aloqador hujjat qo'shish
           </Button>
@@ -681,7 +674,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
       <RelatedDocumentModal
         isOpen={showRelatedDocModal}
         onClose={() => setShowRelatedDocModal(false)}
-        onSave={(documents) => {
+        onSave={(documents: any) => {
           console.log('Selected related documents:', documents);
           setShowRelatedDocModal(false);
         }}
@@ -698,7 +691,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
       <YearPlanModal
         isOpen={showYearPlanModal}
         onClose={() => setShowYearPlanModal(false)}
-        onSelect={(item) => {
+        onSelect={(item: null) => {
           console.log('Selected year plan item:', item);
           // Bu yerda tanlangan tovarni jadvalga qo'shish logikasi
           if (selectedRowIndex !== null) {
@@ -714,7 +707,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
       <AddGoodsModal
         isOpen={showAddGoodsModal}
         onClose={() => setShowAddGoodsModal(false)}
-        onSave={(newGoods) => {
+        onSave={(newGoods: { id: number; type: string; yearPlan: null; name: string; model: string; size: string; unit: string; quantity: number; note: string; }) => {
           console.log('Added new goods:', newGoods);
           // Bu yerda yangi tovarlarni jadvalga qo'shish logikasi
           setMockGoods([...mockGoods, newGoods]);
@@ -758,11 +751,11 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
       <SendDocumentModal
         isOpen={showSendModal}
         onClose={() => setShowSendModal(false)}
-        onSend={(employee, purpose) => {
+        onSend={(employee: { name: any; position: any; department: any; }, purpose: string) => {
           // Ijro qadamlariga yozish
           const now = new Date();
           const formattedDate = `${now.getDate()} ${['yan', 'fev', 'mart', 'apr', 'may', 'iyun', 'iyul', 'avg', 'sen', 'okt', 'noy', 'dek'][now.getMonth()]} ${now.getFullYear()}, ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-          
+
           const getPurposeText = (p: string) => {
             switch (p) {
               case 'signing': return 'Imzolash uchun';
@@ -794,7 +787,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
           }));
           setShowSendModal(false);
         }}
-        onSuccess={(message) => {
+        onSuccess={(message: string) => {
           if (onSuccess) {
             onSuccess(message);
           }

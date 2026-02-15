@@ -1,7 +1,4 @@
 import { useState } from 'react';
-// import { Button } from '@/app/components/ui/button';
-// import { Input } from '@/app/components/ui/input';
-// import { Badge } from '@/app/components/ui/badge';
 import { X, Search, Check } from 'lucide-react';
 import { Button, Input } from 'antd';
 
@@ -35,7 +32,7 @@ const yearPlanItems: YearPlanItem[] = [
   { id: 10, type: 'Mebel', name: 'Stul', model: 'Офис-Комфорт', size: '45x45x90cm', unit: 'dona', quantity: 15, note: 'Qora rang' },
 ];
 
-export function YearPlanModal({ isOpen, onClose, onSelect, currentItemId }: YearPlanModalProps) {
+const YearPlanModal: React.FC<YearPlanModalProps> = ({ isOpen, onClose, onSelect, currentItemId }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<YearPlanItem | null>(null);
 
@@ -194,3 +191,5 @@ export function YearPlanModal({ isOpen, onClose, onSelect, currentItemId }: Year
     </div>
   );
 }
+
+export default YearPlanModal;
