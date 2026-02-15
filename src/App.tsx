@@ -1,13 +1,12 @@
 import React from "react";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 import { Layout } from "@/components";
-import { EmployeeStatistics, GenStatistics, Login } from "@/pages";
+import { EmployeeStatistics, GenStatistics, Login, Calendar } from "@/pages";
 import PriceAnalysis from "./PriceAnaliysis/PriceAnalysis";
 const App: React.FC = () => {
-
   const hasAccess = () => {
     return true;
-  }
+  };
 
   const router = createBrowserRouter([
     {
@@ -25,13 +24,17 @@ const App: React.FC = () => {
             {
               path: "general-statistics",
               element: <GenStatistics hasAccess={hasAccess} />,
-            }
-          ]
+            },
+          ],
         },
         {
           path: "price-analysis",
-          element: <PriceAnalysis/>
-        }
+          element: <PriceAnalysis />,
+        },
+        {
+          path: "calendar",
+          element: <Calendar />,
+        },
       ],
     },
     {

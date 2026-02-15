@@ -186,19 +186,10 @@ const employeesData: Employee[] = [
   },
 ];
 
-// Umumiy statistika uchun oylik ma'lumot
-const monthlyData = [
-  { oy: 'Yan', bajarilgan: 245, bajarilmagan: 45, kechiktirilgan: 15 },
-  { oy: 'Fev', bajarilgan: 312, bajarilmagan: 38, kechiktirilgan: 12 },
-  { oy: 'Mar', bajarilgan: 428, bajarilmagan: 52, kechiktirilgan: 18 },
-  { oy: 'Apr', bajarilgan: 389, bajarilmagan: 41, kechiktirilgan: 14 },
-  { oy: 'May', bajarilgan: 456, bajarilmagan: 34, kechiktirilgan: 10 },
-  { oy: 'Iyun', bajarilgan: 521, bajarilmagan: 29, kechiktirilgan: 8 },
-];
 
 const EmployeeStatistics: React.FC<DashboardViewProps> = ({ hasAccess, initialView }) => {
 
-  const [selectedView, setSelectedView] = useState<'general' | 'employees'>(initialView || 'general');
+  const [selectedView, setSelectedView] = useState<'general' | 'employees'>(initialView || 'employees');
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
   const [expandedEmployee, setExpandedEmployee] = useState<number | null>(null);
@@ -227,17 +218,6 @@ const EmployeeStatistics: React.FC<DashboardViewProps> = ({ hasAccess, initialVi
     return () => clearInterval(interval);
   }, [isAutoPlay, selectedView, totalPages]);
 
-  // Umumiy statistika
-  const totalLetters = employeesData.reduce((sum, emp) => sum + emp.total, 0);
-  const totalCompleted = employeesData.reduce((sum, emp) => sum + emp.completed, 0);
-  const totalNotCompleted = employeesData.reduce((sum, emp) => sum + emp.notCompleted, 0);
-  const totalDelayed = employeesData.reduce((sum, emp) => sum + emp.delayed, 0);
-
-  const pieData = [
-    { name: 'Bajarilgan', value: totalCompleted, color: '#10b981' },
-    { name: 'Bajarilmagan', value: totalNotCompleted, color: '#f97316' },
-    { name: 'Kechiktirilgan', value: totalDelayed, color: '#ef4444' },
-  ];
 
   const handlePrevEmployee = () => {
     setIsAutoPlay(false);
@@ -260,105 +240,6 @@ const EmployeeStatistics: React.FC<DashboardViewProps> = ({ hasAccess, initialVi
 
     return (
       <div className="space-y-6">
-        {/* Header */}
-        {/* UMUMIY STATISTIKA - faqat ruxsat bor bo'lsa */}
-        {selectedView === 'general' && hasAccess('dashboard-statistics') && (
-          <div className="bg-white rounded-xl shadow-xl border-2 border-gray-200 p-8">
-            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-              {/* Asosiy ko'rsatkichlar */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl border-2 border-blue-200">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                      <Mail className="size-5 text-white" />
-                    </div>
-                    <p className="text-sm font-semibold text-blue-700">Jami xatlar</p>
-                  </div>
-                  <p className="text-3xl font-bold text-blue-900">{totalLetters}</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-green-50 to-green-100 p-5 rounded-xl border-2 border-green-200">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                      <CheckCircle className="size-5 text-white" />
-                    </div>
-                    <p className="text-sm font-semibold text-green-700">Bajarilgan</p>
-                  </div>
-                  <p className="text-3xl font-bold text-green-900">{totalCompleted}</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-5 rounded-xl border-2 border-orange-200">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-                      <Clock className="size-5 text-white" />
-                    </div>
-                    <p className="text-sm font-semibold text-orange-700">Bajarilmagan</p>
-                  </div>
-                  <p className="text-3xl font-bold text-orange-900">{totalNotCompleted}</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-red-50 to-red-100 p-5 rounded-xl border-2 border-red-200">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
-                      <XCircle className="size-5 text-white" />
-                    </div>
-                    <p className="text-sm font-semibold text-red-700">Kechiktirilgan</p>
-                  </div>
-                  <p className="text-3xl font-bold text-red-900">{totalDelayed}</p>
-                </div>
-              </div>
-
-              {/* Grafiklar */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                {/* Bar Chart */}
-                <Card className="p-5 shadow-lg">
-                  <h4 className="text-lg font-bold text-gray-900 mb-4">Oylik statistika</h4>
-                  <div className="h-64">
-                    <div className='w-full h-full'>
-                      <BarChart data={monthlyData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                        <XAxis dataKey="oy" tick={{ fill: '#6b7280', fontSize: 12 }} />
-                        <YAxis tick={{ fill: '#6b7280', fontSize: 12 }} />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="bajarilgan" name="Bajarilgan" fill="#10b981" radius={[8, 8, 0, 0]} />
-                        <Bar dataKey="bajarilmagan" name="Bajarilmagan" fill="#f97316" radius={[8, 8, 0, 0]} />
-                        <Bar dataKey="kechiktirilgan" name="Kechiktirilgan" fill="#ef4444" radius={[8, 8, 0, 0]} />
-                      </BarChart>
-                    </div>
-                  </div>
-                </Card>
-
-                {/* Pie Chart */}
-                <Card className="p-5 shadow-lg">
-                  <h4 className="text-lg font-bold text-gray-900 mb-4">Umumiy taqsimot</h4>
-                  <div className="h-64 flex items-center justify-center">
-                    <div className='w-full h-full'>
-                      <PieChart>
-                        <Pie
-                          data={pieData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
-                          outerRadius={100}
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          {pieData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* XODIMLAR STATISTIKASI - faqat ruxsat bor bo'lsa */}
         {selectedView === 'employees' && hasAccess('dashboard-employee-stats') && (
           <div className="bg-white rounded-xl shadow-xl border-2 border-gray-200 p-8">
@@ -533,7 +414,7 @@ const EmployeeStatistics: React.FC<DashboardViewProps> = ({ hasAccess, initialVi
                                                   step.status === 'pending' ? 'text-blue-700' :
                                                     'text-red-700'
                                                   }`}>
-                                                  {step.action}
+                                                  {step.action} 
                                                 </p>
                                                 <div className="flex items-center gap-2 mt-1">
                                                   <UserIcon className="size-3 text-gray-500" />
