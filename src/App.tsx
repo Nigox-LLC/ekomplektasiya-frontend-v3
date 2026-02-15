@@ -19,9 +19,10 @@ import {
   GoodsOut,
   WareHouseTransfer,
   YearPlan,
+  Bank
 } from "@/pages";
 import PriceAnalysis from "./PriceAnaliysis/PriceAnalysis";
-import Bank from "./pages/Reference/Bank/Bank";
+import CreatePriceAnalysis from "./PriceAnaliysis/CreatePriceAnalysis";
 
 const App: React.FC = () => {
   const hasAccess = () => {
@@ -61,7 +62,11 @@ const App: React.FC = () => {
         },
         {
           path: "price-analysis",
-          element: <PriceAnalysis />,
+          element: <Outlet />,
+          children: [
+            { index: true, element: <PriceAnalysis /> },
+            { path: "create", element: <CreatePriceAnalysis /> },
+          ],
         },
         {
           path: "calendar",

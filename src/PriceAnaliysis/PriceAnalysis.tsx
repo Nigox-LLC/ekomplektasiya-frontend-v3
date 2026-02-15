@@ -1,364 +1,337 @@
-import React from 'react';
-import { 
-  Search, 
-  Filter, 
-  Plus, 
-  Eye, 
-  Edit2, 
-  Download, 
-  Trash2, 
-  FileText, 
-  Clock, 
-  CheckCircle, 
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
-  Calendar,
-  User
-} from 'lucide-react';
-
-// Types
-interface AnalysisItem {
-  id: string;
-  title: string;
-  status: 'Kutilmoqda' | 'Ko\'rib chiqilmoqda' | 'Tasdiqlangan';
-  docNumber: string;
-  organization: string;
-  totalSum: string;
-  productsCount: number;
-  arrivalDate: string;
-  deadlineDate: string;
-  responsible: string;
-  trend?: 'up' | 'down';
-}
+import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router";
+import {
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Download,
+  FileText,
+  Info,
+  Link2,
+  Package,
+  Plus,
+  Printer,
+  RefreshCw,
+  Search,
+  UploadCloud,
+  Users,
+  X,
+} from "lucide-react";
 
 const PriceAnalysis: React.FC = () => {
-  const stats = [
-    { label: 'Jami hujjatlar', value: 8, icon: <FileText className="w-5 h-5 text-white" />, textColor: 'text-blue-700', bgColor: 'bg-blue-50', borderColor: 'border-blue-300', iconBg: 'bg-blue-500' },
-    { label: 'Kutilmoqda', value: 2, icon: <Clock className="w-5 h-5 text-white" />, textColor: 'text-yellow-700', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-300', iconBg: 'bg-yellow-500' },
-    { label: 'Tasdiqlangan', value: 3, icon: <CheckCircle className="w-5 h-5 text-white" />, textColor: 'text-green-700', bgColor: 'bg-green-50', borderColor: 'border-green-300', iconBg: 'bg-green-500' },
-    { label: 'Umumiy qiymat', value: '563.2M so\'m', icon: <DollarSign className="w-5 h-5 text-white" />, textColor: 'text-purple-700', bgColor: 'bg-purple-50', borderColor: 'border-purple-300', iconBg: 'bg-purple-500' },
-  ];
+  // --- List state ---
+  const [activeTab, setActiveTab] = useState<"all" | "approved" | "rejected">("all");
 
-  const data: AnalysisItem[] = [
-    {
-      id: '1',
-      title: 'Kompyuter texnikasi xarid qilish narx tahlili',
-      status: 'Kutilmoqda',
-      docNumber: 'NT-2024/0145',
-      organization: 'IT Service Group LLC',
-      totalSum: '125.00 M so\'m',
-      productsCount: 15,
-      arrivalDate: '28 yan 2026',
-      deadlineDate: '05 fev 2026',
-      responsible: 'Karimov A.B.',
-      trend: 'up'
-    },
-    {
-      id: '2',
-      title: 'Ofis mebellari ta\'minoti narx tahlili',
-      status: 'Ko\'rib chiqilmoqda',
-      docNumber: 'NT-2024/0144',
-      organization: 'Comfort Mebel',
-      totalSum: '45.00 M so\'m',
-      productsCount: 8,
-      arrivalDate: '27 yan 2026',
-      deadlineDate: '03 fev 2026',
-      responsible: 'Rahimova Z.S.',
-      trend: 'down'
-    },
-    {
-      id: '3',
-      title: 'Xo\'jalik mollari xarid qilish narx tahlili',
-      status: 'Tasdiqlangan',
-      docNumber: 'NT-2024/0143',
-      organization: 'Yagona Ta\'minot',
-      totalSum: '12.50 M so\'m',
-      productsCount: 24,
-      arrivalDate: '25 yan 2026',
-      deadlineDate: '01 fev 2026',
-      responsible: 'Usmonov D.R.'
-    },
-    {
-      id: '1',
-      title: 'Kompyuter texnikasi xarid qilish narx tahlili',
-      status: 'Kutilmoqda',
-      docNumber: 'NT-2024/0145',
-      organization: 'IT Service Group LLC',
-      totalSum: '125.00 M so\'m',
-      productsCount: 15,
-      arrivalDate: '28 yan 2026',
-      deadlineDate: '05 fev 2026',
-      responsible: 'Karimov A.B.',
-      trend: 'up'
-    },
-    {
-      id: '2',
-      title: 'Ofis mebellari ta\'minoti narx tahlili',
-      status: 'Ko\'rib chiqilmoqda',
-      docNumber: 'NT-2024/0144',
-      organization: 'Comfort Mebel',
-      totalSum: '45.00 M so\'m',
-      productsCount: 8,
-      arrivalDate: '27 yan 2026',
-      deadlineDate: '03 fev 2026',
-      responsible: 'Rahimova Z.S.',
-      trend: 'down'
-    },
-    {
-      id: '3',
-      title: 'Xo\'jalik mollari xarid qilish narx tahlili',
-      status: 'Tasdiqlangan',
-      docNumber: 'NT-2024/0143',
-      organization: 'Yagona Ta\'minot',
-      totalSum: '12.50 M so\'m',
-      productsCount: 24,
-      arrivalDate: '25 yan 2026',
-      deadlineDate: '01 fev 2026',
-      responsible: 'Usmonov D.R.'
-    },{
-      id: '1',
-      title: 'Kompyuter texnikasi xarid qilish narx tahlili',
-      status: 'Kutilmoqda',
-      docNumber: 'NT-2024/0145',
-      organization: 'IT Service Group LLC',
-      totalSum: '125.00 M so\'m',
-      productsCount: 15,
-      arrivalDate: '28 yan 2026',
-      deadlineDate: '05 fev 2026',
-      responsible: 'Karimov A.B.',
-      trend: 'up'
-    },
-    {
-      id: '2',
-      title: 'Ofis mebellari ta\'minoti narx tahlili',
-      status: 'Ko\'rib chiqilmoqda',
-      docNumber: 'NT-2024/0144',
-      organization: 'Comfort Mebel',
-      totalSum: '45.00 M so\'m',
-      productsCount: 8,
-      arrivalDate: '27 yan 2026',
-      deadlineDate: '03 fev 2026',
-      responsible: 'Rahimova Z.S.',
-      trend: 'down'
-    },
-    {
-      id: '3',
-      title: 'Xo\'jalik mollari xarid qilish narx tahlili',
-      status: 'Tasdiqlangan',
-      docNumber: 'NT-2024/0143',
-      organization: 'Yagona Ta\'minot',
-      totalSum: '12.50 M so\'m',
-      productsCount: 24,
-      arrivalDate: '25 yan 2026',
-      deadlineDate: '01 fev 2026',
-      responsible: 'Usmonov D.R.'
-    },{
-      id: '1',
-      title: 'Kompyuter texnikasi xarid qilish narx tahlili',
-      status: 'Kutilmoqda',
-      docNumber: 'NT-2024/0145',
-      organization: 'IT Service Group LLC',
-      totalSum: '125.00 M so\'m',
-      productsCount: 15,
-      arrivalDate: '28 yan 2026',
-      deadlineDate: '05 fev 2026',
-      responsible: 'Karimov A.B.',
-      trend: 'up'
-    },
-    {
-      id: '2',
-      title: 'Ofis mebellari ta\'minoti narx tahlili',
-      status: 'Ko\'rib chiqilmoqda',
-      docNumber: 'NT-2024/0144',
-      organization: 'Comfort Mebel',
-      totalSum: '45.00 M so\'m',
-      productsCount: 8,
-      arrivalDate: '27 yan 2026',
-      deadlineDate: '03 fev 2026',
-      responsible: 'Rahimova Z.S.',
-      trend: 'down'
-    },
-    {
-      id: '3',
-      title: 'Xo\'jalik mollari xarid qilish narx tahlili',
-      status: 'Tasdiqlangan',
-      docNumber: 'NT-2024/0143',
-      organization: 'Yagona Ta\'minot',
-      totalSum: '12.50 M so\'m',
-      productsCount: 24,
-      arrivalDate: '25 yan 2026',
-      deadlineDate: '01 fev 2026',
-      responsible: 'Usmonov D.R.'
-    },
-  ];
+  const tableRows = useMemo(
+    () => [
+      {
+        id: "000000091",
+        date: "12.02.2026 18:50:41",
+        name: "",
+        employee: "Zubaydullaeva Adiba Urinbaevna",
+        formed: true,
+        approved: false,
+      },
+      {
+        id: "000000090",
+        date: "12.02.2026 18:21:48",
+        name: "",
+        employee: "Zubaydullaeva Adiba Urinbaevna",
+        formed: true,
+        approved: false,
+      },
+      {
+        id: "000000089",
+        date: "12.02.2026 18:20:35",
+        name: "",
+        employee: "Zubaydullaeva Adiba Urinbaevna",
+        formed: true,
+        approved: false,
+      },
+      {
+        id: "000000088",
+        date: "12.02.2026 18:19:19",
+        name: "",
+        employee: "Zubaydullaeva Adiba Urinbaevna",
+        formed: true,
+        approved: false,
+      },
+      {
+        id: "000000087",
+        date: "12.02.2026 18:07:56",
+        name: "",
+        employee: "Zubaydullaeva Adiba Urinbaevna",
+        formed: true,
+        approved: false,
+      },
+      {
+        id: "000000086",
+        date: "12.02.2026 16:08:45",
+        name: "",
+        employee: "Zubaydullaeva Adiba Urinbaevna",
+        formed: true,
+        approved: true,
+      },
+      {
+        id: "000000085",
+        date: "12.02.2026 15:56:56",
+        name: "",
+        employee: "Zubaydullaeva Adiba Urinbaevna",
+        formed: true,
+        approved: true,
+      },
+      {
+        id: "000000077",
+        date: "09.02.2026 18:35:47",
+        name: "",
+        employee: "Zubaydullaeva Adiba Urinbaevna",
+        formed: true,
+        approved: true,
+      },
+    ],
+    [],
+  );
 
-  const getStatusStyles = (status: string) => {
-    switch (status) {
-      case 'Kutilmoqda': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'Ko\'rib chiqilmoqda': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'Tasdiqlangan': return 'bg-green-100 text-green-700 border-green-200';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200';
-    }
+  const filteredRows = useMemo(() => {
+    if (activeTab === "approved") return tableRows.filter((r) => r.approved);
+    if (activeTab === "rejected") return tableRows.filter((r) => !r.approved);
+    return tableRows;
+  }, [activeTab, tableRows]);
+
+  const navigate = useNavigate();
+
+  const stepTitles: Record<
+    1 | 2 | 3 | 4,
+    { title: string; subtitle: string; icon: React.ReactNode }
+  > = {
+    1: {
+      title: "Yangi narx tahlili yaratish",
+      subtitle: "Tovarlar - Qadam 1/4",
+      icon: <Package className="h-4 w-4" />,
+    },
+    2: {
+      title: "Yangi narx tahlili yaratish",
+      subtitle: "Tijoriy takliflar - Qadam 2/4",
+      icon: <FileText className="h-4 w-4" />,
+    },
+    3: {
+      title: "Yangi narx tahlili yaratish",
+      subtitle: "Imzolovchilar - Qadam 3/4",
+      icon: <Users className="h-4 w-4" />,
+    },
+    4: {
+      title: "Yangi narx tahlili yaratish",
+      subtitle: "Narx tahlili - Qadam 4/4",
+      icon: <FileText className="h-4 w-4" />,
+    },
   };
 
+  // when user wants to create, we navigate to the create page route
+  const openCreate = () => navigate("create");
+
+  const Btn = ({
+    children,
+    onClick,
+    variant = "primary",
+    className = "",
+    disabled,
+    title,
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+    variant?: "primary" | "secondary" | "ghost" | "danger";
+    className?: string;
+    disabled?: boolean;
+    title?: string;
+  }) => {
+    const base =
+      "inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed";
+    const variants: Record<string, string> = {
+      primary: "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
+      secondary:
+        "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50",
+      ghost: "text-slate-700 hover:bg-slate-100",
+      danger: "bg-red-600 text-white hover:bg-red-700 shadow-sm",
+    };
+
+    return (
+      <button
+        title={title}
+        disabled={disabled}
+        onClick={onClick}
+        className={`${base} ${variants[variant]} ${className}`}
+      >
+        {children}
+      </button>
+    );
+  };
+
+  const Badge = ({ ok }: { ok: boolean }) => (
+    <span
+      className={`inline-flex items-center justify-center rounded-full p-1 ${ok ? "text-emerald-600" : "text-rose-500"}`}
+    >
+      {ok ? <CheckCircle className="h-5 w-5" /> : <X className="h-5 w-5" />}
+    </span>
+  );
+
+  const Card = ({
+    children,
+    className = "",
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <div
+      className={`rounded-lg border border-slate-200 bg-white shadow-sm ${className}`}
+    >
+      {children}
+    </div>
+  );
+
+  // ModalShell and the create modal content are moved into a dedicated page component
+
   return (
-    /* 
-      Main Container: 
-      h-screen va overflow-hidden orqali butun sahifa scroll bo'lishini to'xtatamiz.
-      Faqat o'ng tarafdagi kontent qismi scroll bo'ladi.
-    */
-    <div className="h-screen flex overflow-hidden bg-gray-50 font-sans">
-      
-      {/* 
-        Bu yerda Sidebar bo'lishi kerak (fonda qoladi). 
-        Asosiy kontent qismi:
-      */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        
-        {/* Scroll bo'ladigan qism */}
-        <div className="flex-1 overflow-y-auto p-6">
-          
-          {/* Header Section */}
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Narx tahlil</h1>
-              <p className="text-sm text-gray-500">Narx tahlil hujjatlari ro'yxati va boshqaruv</p>
-            </div>
-            <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
-              <Plus className="w-4 h-4" />
-              <span className="font-medium">Yangi narx tahlil</span>
+    <div className="w-full h-full bg-slate-100 rounded-2xl p-2">
+      <Card className="overflow-hidden w-full h-full">
+        {/* Top tabs + actions */}
+        <div className="flex flex-col gap-3 border-b border-slate-200 bg-white p-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveTab("all")}
+              className={`rounded-full px-3 py-1 text-sm font-medium ${activeTab === "all" ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-50"}`}
+            >
+              Barchasi{" "}
+              <span className="ml-1 rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-700">
+                {tableRows.length}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab("approved")}
+              className={`rounded-full px-3 py-1 text-sm font-medium ${activeTab === "approved" ? "bg-emerald-50 text-emerald-800" : "text-slate-600 hover:bg-slate-50"}`}
+            >
+              Tasdiqlangan{" "}
+              <span className="ml-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">
+                {tableRows.filter((r) => r.approved).length}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab("rejected")}
+              className={`rounded-full px-3 py-1 text-sm font-medium ${activeTab === "rejected" ? "bg-rose-50 text-rose-800" : "text-slate-600 hover:bg-slate-50"}`}
+            >
+              Tasdiqlanmagan{" "}
+              <span className="ml-1 rounded-full bg-rose-100 px-2 py-0.5 text-xs text-rose-700">
+                {tableRows.filter((r) => !r.approved).length}
+              </span>
             </button>
           </div>
 
-          {/* Stats Cards - Borderlar rasmga moslab qalinlashtirildi */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {stats.map((stat, idx) => (
-              <div key={idx} className={`${stat.bgColor} p-6 rounded-xl border-2 ${stat.borderColor} flex flex-col justify-between h-32 relative overflow-hidden shadow-sm`}>
-                <div className="flex justify-between items-start">
-                  <div className={`${stat.iconBg} p-2 rounded-lg bg-opacity-20`}>
-                    {stat.icon}
-                  </div>
-                  <span className="text-3xl font-bold text-gray-800">{stat.value}</span>
-                </div>
-                <span className="text-sm font-medium text-gray-600">{stat.label}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Search and Filter */}
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input 
-                type="text" 
-                placeholder="Qidiruv (raqam, mavzu, tashkilot)..." 
-                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Btn variant="primary" onClick={openCreate}>
+              <Plus className="h-4 w-4" />
+              Yaratish
+            </Btn>
+            <Btn variant="secondary" onClick={() => {}}>
+              <RefreshCw className="h-4 w-4" />
+              Yangilash
+            </Btn>
+            <Btn variant="secondary" onClick={() => {}}>
+              <Printer className="h-4 w-4" />
+              Chop etish
+            </Btn>
+            <div className="relative w-full sm:w-72">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                className="w-full rounded-md border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Qidirish (Ctrl+F)"
               />
             </div>
-            <div className="flex gap-2">
-              <select className="bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none">
-                <option>Barcha holatlar</option>
-                <option>Kutilmoqda</option>
-                <option>Tasdiqlangan</option>
-              </select>
-              <button className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-                <Filter className="w-4 h-4 text-gray-600" />
-                <span className="text-sm font-medium">Filtr</span>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-auto">
+          <table className="w-full h-full min-w-[1000px] border-collapse">
+            <thead className="bg-slate-50">
+              <tr className="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <th className="w-10 border-b border-slate-200 px-4 py-3">
+                  <input type="checkbox" className="h-4 w-4" />
+                </th>
+                <th className="border-b border-slate-200 px-4 py-3">Nomer</th>
+                <th className="border-b border-slate-200 px-4 py-3">Sana</th>
+                <th className="border-b border-slate-200 px-4 py-3">Nomi</th>
+                <th className="border-b border-slate-200 px-4 py-3">Xodim</th>
+                <th className="border-b border-slate-200 px-4 py-3">
+                  Shakllanish holati
+                </th>
+                <th className="border-b border-slate-200 px-4 py-3">
+                  Tasdiqlanish holati
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRows.map((r) => (
+                <tr key={r.id} className="hover:bg-slate-50">
+                  <td className="border-b border-slate-200 px-4 py-3">
+                    <input type="checkbox" className="h-4 w-4" />
+                  </td>
+                  <td className="border-b border-slate-200 px-4 py-3 text-sm text-slate-800">
+                    {r.id}
+                  </td>
+                  <td className="border-b border-slate-200 px-4 py-3 text-sm text-slate-700">
+                    {r.date}
+                  </td>
+                  <td className="border-b border-slate-200 px-4 py-3 text-sm text-slate-700">
+                    {r.name || "-"}
+                  </td>
+                  <td className="border-b border-slate-200 px-4 py-3 text-sm text-slate-700">
+                    {r.employee}
+                  </td>
+                  <td className="border-b border-slate-200 px-4 py-3">
+                    <Badge ok={r.formed} />
+                  </td>
+                  <td className="border-b border-slate-200 px-4 py-3">
+                    <Badge ok={r.approved} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer pagination */}
+        <div className="flex flex-col gap-2 border-t border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 md:flex-row md:items-center md:justify-between">
+          <div>
+            Jami: <span className="font-medium text-slate-800">{filteredRows.length}</span>
+            ta buyurtma &nbsp;|&nbsp; Ko'rsatilmoqda:{" "}
+            <span className="font-medium text-slate-800">
+              1-{Math.min(8, filteredRows.length)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-2 md:justify-end">
+            <div className="flex items-center gap-1">
+              <button className="rounded-md border border-slate-200 p-2 hover:bg-slate-50">
+                <ChevronsLeft className="h-4 w-4" />
+              </button>
+              <button className="rounded-md border border-slate-200 p-2 hover:bg-slate-50">
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span className="mx-2 inline-flex h-8 w-8 items-center justify-center rounded-md bg-blue-600 text-white">
+                1
+              </span>
+              <button className="rounded-md border border-slate-200 p-2 hover:bg-slate-50">
+                <ChevronRight className="h-4 w-4" />
+              </button>
+              <button className="rounded-md border border-slate-200 p-2 hover:bg-slate-50">
+                <ChevronsRight className="h-4 w-4" />
               </button>
             </div>
           </div>
-
-          {/* List Items */}
-          <div className="space-y-4">
-            {data.map((item) => (
-              <div key={item.id} className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex">
-                {/* Left Accent Border */}
-                <div className={`w-1.5 ${
-                  item.status === 'Kutilmoqda' ? 'bg-yellow-400' : 
-                  item.status === 'Ko\'rib chiqilmoqda' ? 'bg-blue-400' : 'bg-green-400'
-                }`} />
-                
-                <div className="flex-1 p-5">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-blue-50 rounded-lg">
-                        <DollarSign className="w-6 h-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-3 mb-1">
-                          <h3 className="font-bold text-gray-900 text-lg">{item.title}</h3>
-                          <span className={`text-xs px-2.5 py-0.5 rounded-full border font-medium flex items-center gap-1 ${getStatusStyles(item.status)}`}>
-                            {item.status === 'Kutilmoqda' && <Clock className="w-3 h-3" />}
-                            {item.status === 'Ko\'rib chiqilmoqda' && <Eye className="w-3 h-3" />}
-                            {item.status === 'Tasdiqlangan' && <CheckCircle className="w-3 h-3" />}
-                            {item.status}
-                          </span>
-                        </div>
-                        <div className="flex gap-6 text-sm text-gray-500">
-                          <div className="flex flex-col">
-                            <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Hujjat raqami</span>
-                            <span className="font-medium text-gray-700">{item.docNumber}</span>
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Tashkilot</span>
-                            <span className="font-medium text-gray-700">{item.organization}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Action Buttons - Rangli qilib o'zgartirildi */}
-                    <div className="flex gap-2">
-                      <button className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-100 shadow-sm" title="Ko'rish">
-                        <Eye className="w-5 h-5" />
-                      </button>
-                      <button className="p-2 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors border border-amber-100 shadow-sm" title="Tahrirlash">
-                        <Edit2 className="w-5 h-5" />
-                      </button>
-                      <button className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-100 shadow-sm" title="Yuklab olish">
-                        <Download className="w-5 h-5" />
-                      </button>
-                      <button className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-100 shadow-sm" title="O'chirish">
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-4 gap-4 pt-4 border-t border-gray-50">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Calendar className="w-4 h-4" />
-                      <span>Kelgan: <span className="text-gray-700 font-medium">{item.arrivalDate}</span></span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Clock className="w-4 h-4" />
-                      <span>Muddat: <span className="text-gray-700 font-medium">{item.deadlineDate}</span></span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <User className="w-4 h-4" />
-                      <span>Mas'ul: <span className="text-gray-700 font-medium">{item.responsible}</span></span>
-                    </div>
-                    <div className="flex justify-end gap-12">
-                      <div className="flex flex-col items-end">
-                        <span className="text-xs text-gray-400 uppercase font-semibold">Jami summa</span>
-                        <div className="flex items-center gap-1">
-                          <span className="font-bold text-gray-900">{item.totalSum}</span>
-                          {item.trend === 'up' && <TrendingUp className="w-4 h-4 text-red-500" />}
-                          {item.trend === 'down' && <TrendingDown className="w-4 h-4 text-green-500" />}
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <span className="text-xs text-gray-400 uppercase font-semibold">Mahsulotlar</span>
-                        <span className="font-bold text-gray-900">{item.productsCount} ta</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
-      </div>
+      </Card>
+
+      {/* create wizard moved to a dedicated page at /price-analysis/create */}
     </div>
   );
 };
