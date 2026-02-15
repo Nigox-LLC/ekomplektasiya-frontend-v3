@@ -19,10 +19,11 @@ import {
   GoodsOut,
   WareHouseTransfer,
   YearPlan,
-  Bank
+  Bank,
+  AppealLetter,
 } from "@/pages";
-import PriceAnalysis from "./PriceAnaliysis/PriceAnalysis";
-import CreatePriceAnalysis from "./PriceAnaliysis/CreatePriceAnalysis";
+import PriceAnalysis from "./pages/PriceAnaliysis/PriceAnalysis";
+import CreatePriceAnalysis from "./pages/PriceAnaliysis/CreatePriceAnalysis";
 
 const App: React.FC = () => {
   const hasAccess = () => {
@@ -59,6 +60,10 @@ const App: React.FC = () => {
               element: <GenStatistics hasAccess={hasAccess} />,
             },
           ],
+        },
+        {
+          path: "appeal-letter",
+          element: <AppealLetter />,
         },
         {
           path: "price-analysis",

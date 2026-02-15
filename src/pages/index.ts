@@ -16,3 +16,6 @@ export { default as GoodsIn } from "./Reference/GoodsIn/GoodsIn";
 export { default as GoodsOut } from "./Reference/GoodsOut/GoodsOut";
 export { default as WareHouseTransfer } from "./Reference/WareHouseTransfer/WareHouseTransfer";
 export { default as YearPlan } from "./Reference/YearPlan/YearPlan";
+export { default as PriceAnalysis } from "./PriceAnaliysis/PriceAnalysis";
+export { default as CreatePriceAnalysis } from "./PriceAnaliysis/CreatePriceAnalysis";
+export { default as AppealLetter } from "./AppealLetter/AppealLetter";
