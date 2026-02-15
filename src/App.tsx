@@ -8,10 +8,10 @@ import {
   Calendar,
   LettersPage,
   Dashboard,
+  UsersManagement,
+  ProductManagement,
 } from "@/pages";
 import PriceAnalysis from "./PriceAnaliysis/PriceAnalysis";
-
-
 
 
 const App: React.FC = () => {
@@ -78,6 +78,14 @@ const App: React.FC = () => {
             },
           ],
         },
+        {
+          path: "users-management",
+          element: <UsersManagement />,
+        },
+        {
+          path: "product-management",
+          element: <ProductManagement />
+        }
       ],
     },
     {

@@ -225,18 +225,18 @@ const SidebarNav: React.FC = React.memo(() => {
         },
       ],
     },
-    {
-      id: "chat",
-      label: "Muloqot",
-      icon: <MessageCircle className="size-5" />,
-    },
+    // {
+    //   id: "chat",
+    //   label: "Muloqot",
+    //   icon: <MessageCircle className="size-5" />,
+    // },
     {
       id: "users-management",
       label: "Foydalanuvchilar boshqaruvsi",
       icon: <User className="size-5" />,
     },
     {
-      id: "goods-management",
+      id: "product-management",
       label: "Maxsulotlar boshqaruvsi",
       icon: <Package className="size-5" />,
     },
