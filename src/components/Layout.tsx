@@ -17,7 +17,9 @@ const Layout: React.FC = () => {
         <Sidebar />
         <div className="flex flex-col w-full">
           <Header />
-          <Outlet />
+          <main className="p-6">
+            <Outlet />
+          </main>
         </div>
       </div>
     </>

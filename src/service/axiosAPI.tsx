@@ -7,4 +7,13 @@ const axiosAPI = axios.create({
   },
 });
 
+axiosAPI.interceptors.request.use(config => {
+  const token = localStorage.getItem("v3_ganiwer");
+  if(token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+})
+
 export { axiosAPI };

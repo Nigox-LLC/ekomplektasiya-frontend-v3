@@ -584,7 +584,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
           {/* PDF 1 */}
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center gap-3 mb-3">
-              <div className="flex-shrink-0 size-12 bg-red-600 rounded flex items-center justify-center">
+              <div className="shrink-0 size-12 bg-red-600 rounded flex items-center justify-center">
                 <span className="text-white text-xs font-bold">PDF</span>
               </div>
               <div className="flex-1 min-w-0">
@@ -609,7 +609,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
           {/* PDF 2 */}
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center gap-3 mb-3">
-              <div className="flex-shrink-0 size-12 bg-red-600 rounded flex items-center justify-center">
+              <div className="shrink-0 size-12 bg-red-600 rounded flex items-center justify-center">
                 <span className="text-white text-xs font-bold">PDF</span>
               </div>
               <div className="flex-1 min-w-0">
@@ -634,7 +634,7 @@ const DocumentDetailView = ({ document, onBack, onClose, category, onSuccess }: 
           {/* PDF 3 */}
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center gap-3 mb-3">
-              <div className="flex-shrink-0 size-12 bg-red-600 rounded flex items-center justify-center">
+              <div className="shrink-0 size-12 bg-red-600 rounded flex items-center justify-center">
                 <span className="text-white text-xs font-bold">PDF</span>
               </div>
               <div className="flex-1 min-w-0">

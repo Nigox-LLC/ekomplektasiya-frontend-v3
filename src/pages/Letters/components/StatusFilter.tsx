@@ -1,8 +1,13 @@
 import { Button } from "antd";
 import { Search } from "lucide-react";
 import React from "react";
+import type { Letter } from "../LettersPage";
 
-const StatusFilter: React.FC = () => {
+interface IProps {
+  letters: Letter[];
+}
+
+const StatusFilter: React.FC<IProps> = ({ letters }) => {
   const [statusFilter, setStatusFilter] = React.useState<'all' | 'completed' | 'overdue' | 'cancelled'>('all');
   const [showFilters, setShowFilters] = React.useState(false);
 
@@ -29,7 +34,7 @@ const StatusFilter: React.FC = () => {
           <span
             className={`font-semibold text-xs ${statusFilter === "all" ? "text-white" : "text-gray-700"}`}
           >
-            {mockLetters.length}
+            {letters.length}
           </span>
         </div>
       </Button>
@@ -48,7 +53,7 @@ const StatusFilter: React.FC = () => {
           className={`size-8 rounded-full flex items-center justify-center ${statusFilter === "completed" ? "bg-green-600" : "bg-green-300"}`}
         >
           <span className="text-white font-semibold text-xs">
-            {mockLetters.filter((l) => l.status === "completed").length}
+            {letters.filter((l) => l.status === "completed").length}
           </span>
         </div>
       </Button>
@@ -67,7 +72,7 @@ const StatusFilter: React.FC = () => {
           className={`size-8 rounded-full flex items-center justify-center ${statusFilter === "overdue" ? "bg-red-600" : "bg-red-300"}`}
         >
           <span className="text-white font-semibold text-xs">
-            {mockLetters.filter((l) => l.status === "overdue").length}
+            {letters.filter((l) => l.status === "overdue").length}
           </span>
         </div>
       </Button>

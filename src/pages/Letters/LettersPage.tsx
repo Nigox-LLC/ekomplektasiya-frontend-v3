@@ -14,17 +14,17 @@ import LetterDetail from "./components/LetterDetail";
 import { useAppSelector } from "@/store/hooks/hooks";
 import { axiosAPI } from "@/service/axiosAPI";
 
-interface Letter {
-  id: string;
-  number: string;
-  outgoingNumber: string;
-  region: string;
-  title: string;
-  deadline: string;
-  status: "overdue" | "active" | "completed" | "cancelled";
-  type: string;
-  sentDate: string;
-  recipient: string;
+export interface Letter {
+  created_at: string;
+  id: number;
+  incoming_number: string;
+  is_accepted: boolean;
+  is_send: boolean;
+  outgoing_number: string;
+  receiver_name: string;
+  send_date: string;
+  sender_name: string;
+  sub_department_name: string;
 }
 
 const LettersPage: React.FC = () => {
@@ -34,19 +34,8 @@ const LettersPage: React.FC = () => {
 
   const { showFilters } = useAppSelector((state) => state.letters);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "overdue":
-        return "border-l-red-500";
-      case "active":
-        return "border-l-yellow-500";
-      case "completed":
-        return "border-l-green-500";
-      case "cancelled":
-        return "border-l-gray-500";
-      default:
-        return "border-l-gray-500";
-    }
+  const getStatusColor = (is_accepted: boolean) => {
+    return is_accepted ? "border-l-green-500" : "border-l-red-500";
   };
 
   const getStatusBadge = (status: string) => {
@@ -66,11 +55,56 @@ const LettersPage: React.FC = () => {
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {};
 
+  // Highlight funksiyasi - qidiruv so'zlarini ajratib ko'rsatish
+  const highlightText = (text: string) => {
+    const searchTerms: string[] = [];
+
+    // if (kirish.trim()) searchTerms.push(kirish.trim());
+    // if (chiqish.trim()) searchTerms.push(chiqish.trim());
+    // if (kalit.trim()) searchTerms.push(kalit.trim());
+    // if (mazmun.trim()) searchTerms.push(mazmun.trim());
+    // if (sana.trim()) searchTerms.push(sana.trim());
+    // if (jonatuvchi.trim()) searchTerms.push(jonatuvchi.trim());
+
+    if (searchTerms.length === 0) {
+      return text;
+    }
+
+    const pattern = searchTerms
+      .map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+      .join("|");
+    const regex = new RegExp(`(${pattern})`, "gi");
+
+    const parts = text.split(regex);
+
+    return (
+      <>
+        {parts.map((part, index) => {
+          const isMatch = searchTerms.some(
+            (term) => part.toLowerCase() === term.toLowerCase(),
+          );
+
+          if (isMatch) {
+            return (
+              <mark
+                key={index}
+                className="bg-yellow-200 text-gray-900 font-semibold px-1 rounded"
+              >
+                {part}
+              </mark>
+            );
+          }
+          return <span key={index}>{part}</span>;
+        })}
+      </>
+    );
+  };
+
   useEffect(() => {
     const fetchLetters = async () => {
       try {
         const response = await axiosAPI.get(`document/orders/?page=${page}`);
-        if(response.status === 200) setLetters(response.data.results);
+        if (response.status === 200) setLetters(response.data.results);
       } catch (error) {
         console.log(error);
       }
@@ -81,7 +115,7 @@ const LettersPage: React.FC = () => {
   return (
     <div className="flex flex-col gap-4 h-full">
       {/* Status Filters - YUQORIDA, TO'LIQ KENGLIKDA */}
-      <StatusFilter />
+      <StatusFilter letters={letters} />
 
       {/* Main Content */}
       <div className="flex gap-6 flex-1">
@@ -170,8 +204,7 @@ const LettersPage: React.FC = () => {
             style={{ maxHeight: "calc(100vh - 300px)" }}
           >
             {letters.map((letter) => {
-              const borderColor = getStatusColor(letter.status);
-              const statusBadge = getStatusBadge(letter.status);
+              const borderColor = getStatusColor(letter.is_accepted);
 
               return (
                 <Card
@@ -188,28 +221,28 @@ const LettersPage: React.FC = () => {
                       {/* Raqam + Sana */}
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-semibold text-sm text-gray-900">
-                          {highlightText(letter.number)}
+                          {highlightText(letter.incoming_number)}
                         </span>
                         <span className="text-xs text-gray-500">
-                          {highlightText(letter.sentDate)}
+                          {highlightText(letter.send_date)}
                         </span>
                       </div>
 
                       {/* Sarlavha */}
                       <h3 className="text-xs font-medium text-gray-900 mb-2 line-clamp-2">
-                        {highlightText(letter.title)}
+                        {highlightText(letter.receiver_name)}
                       </h3>
 
                       {/* Manzil */}
                       <div className="flex items-center gap-1 text-xs text-gray-600">
-                        <MapPin className="size-3 text-gray-400 flex-shrink-0" />
+                        <MapPin className="size-3 text-gray-400 shrink-0" />
                         <span className="truncate text-xs">
-                          {highlightText(letter.recipient)}
+                          {highlightText(letter.sender_name)}
                         </span>
                       </div>
                     </div>
 
-                    <ChevronRight className="size-3 text-gray-400 flex-shrink-0" />
+                    <ChevronRight className="size-3 text-gray-400 shrink-0" />
                   </div>
                 </Card>
               );

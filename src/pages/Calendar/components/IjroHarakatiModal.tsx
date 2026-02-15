@@ -126,7 +126,7 @@ export function IjroHarakatiModal({ isOpen, onClose, steps = [], currentEmployee
                       <div className="flex items-center justify-between py-3">
                         {/* Chap: Xodim */}
                         <div className="flex items-center gap-3">
-                          <div className="flex-shrink-0 size-10 bg-gray-200 rounded-full flex items-center justify-center">
+                          <div className="shrink-0 size-10 bg-gray-200 rounded-full flex items-center justify-center">
                             <User className="size-5 text-gray-600" />
                           </div>
                           <div>
@@ -152,7 +152,7 @@ export function IjroHarakatiModal({ isOpen, onClose, steps = [], currentEmployee
                       {step.attachedFile && (
                         <div className="pl-5 pb-3">
                           <div className="bg-gray-50 border border-gray-300 rounded-lg p-3 inline-flex items-center gap-3">
-                            <div className="flex-shrink-0 size-10 bg-red-600 rounded flex items-center justify-center">
+                            <div className="shrink-0 size-10 bg-red-600 rounded flex items-center justify-center">
                               <span className="text-white text-xs font-bold">PDF</span>
                             </div>
                             <div>
@@ -192,7 +192,7 @@ export function IjroHarakatiModal({ isOpen, onClose, steps = [], currentEmployee
                   <div className={`flex items-center justify-between py-3 ${isCurrent ? 'bg-blue-50 -mx-4 px-4 py-4 rounded-lg' : ''}`}>
                     {/* Chap: Xodim */}
                     <div className="flex items-center gap-3">
-                      <div className={`flex-shrink-0 size-10 rounded-full flex items-center justify-center ${isCurrent ? 'bg-blue-500 animate-pulse ring-4 ring-blue-300' : 'bg-blue-500'}`}>
+                      <div className={`shrink-0 size-10 rounded-full flex items-center justify-center ${isCurrent ? 'bg-blue-500 animate-pulse ring-4 ring-blue-300' : 'bg-blue-500'}`}>
                         <User className="size-5 text-white" />
                       </div>
                       <div>

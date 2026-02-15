@@ -527,7 +527,7 @@ const mockLetters: Letter[] = [
         <div className="flex gap-6" ref={letterDetailsRef}>
           {/* CHAP PANEL - Xatlar ro'yxati (25%) */}
           <div className="w-[25%] bg-white rounded-lg shadow border border-gray-200 flex flex-col h-[800px]">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 shrink-0">
               <h3 className="text-base font-semibold text-gray-900">
                 {selectedDay} {monthNames[currentMonth]} ({getLettersForDay(selectedDay).length})
               </h3>
@@ -555,12 +555,12 @@ const mockLetters: Letter[] = [
                     onClick={() => setSelectedLetter(letter)}
                   >
                     <div className="flex items-start gap-2">
-                      <FileText className="size-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                      <FileText className="size-4 text-gray-400 mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-sm text-gray-900 mb-1">{letter.number}</div>
                         <h4 className="text-xs text-gray-700 mb-2 line-clamp-2 leading-relaxed">{letter.title}</h4>
                         <div className="flex items-center gap-1 text-xs text-gray-500">
-                          <MapPin className="size-3 flex-shrink-0" />
+                          <MapPin className="size-3 shrink-0" />
                           <span className="truncate">{letter.region}</span>
                         </div>
                       </div>

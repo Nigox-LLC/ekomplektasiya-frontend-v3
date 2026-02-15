@@ -164,7 +164,7 @@ export function SendDocumentModal({ isOpen, onClose, onSend, onSuccess, document
           {/* Selected Employee Badge */}
           {selectedEmployee && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center shrink-0">
                 <User className="size-5 text-blue-700" />
               </div>
               <div className="flex-1 min-w-0">
@@ -177,7 +177,7 @@ export function SendDocumentModal({ isOpen, onClose, onSend, onSuccess, document
               </div>
               <button
                 onClick={handleClearEmployee}
-                className="flex-shrink-0 p-2 hover:bg-blue-200 rounded-lg transition-colors"
+                className="shrink-0 p-2 hover:bg-blue-200 rounded-lg transition-colors"
                 title="Xodimni tozalash"
               >
                 <X className="size-5 text-blue-700" />
@@ -201,7 +201,7 @@ export function SendDocumentModal({ isOpen, onClose, onSend, onSuccess, document
                       }`}
                       onClick={() => setSelectedEmployee(employee)}
                     >
-                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center shrink-0">
                         <User className="size-5 text-gray-600" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -213,7 +213,7 @@ export function SendDocumentModal({ isOpen, onClose, onSend, onSuccess, document
                         </div>
                       </div>
                       {selectedEmployee?.id === employee.id && (
-                        <div className="flex-shrink-0">
+                        <div className="shrink-0">
                           <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
                             <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />

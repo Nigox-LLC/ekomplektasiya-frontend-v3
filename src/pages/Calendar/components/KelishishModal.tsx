@@ -160,7 +160,7 @@ export function KelishishModal({ isOpen, onClose, documentNumber, documentId, st
                   const config = getStatusConfig(selectedStatus);
                   if (!config) return null;
                   const Icon = config.icon;
-                  return <Icon className={`size-6 ${config.iconColor} flex-shrink-0 mt-0.5`} />;
+                  return <Icon className={`size-6 ${config.iconColor} shrink-0 mt-0.5`} />;
                 })()}
                 <div>
                   <p className={`text-sm font-semibold ${getStatusConfig(selectedStatus)?.textColor}`}>
