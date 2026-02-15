@@ -9,3 +9,10 @@ export { default as ProductManagement} from "./ProductManagement/ProductManageme
 export { default as TurnoverReport} from "./Reports/TurnoverReport/TurnoverReport";
 export { default as GoodsBalanceReport} from "./Reports/GoodsMaterialsBalance/GoodsMaterialsBalance";
 export { default as ReportTableOne} from "./Reports/ReportTable/ReportTableOne";
+export { default as ReferenceRequisites } from "./Reference/Requisites/ReferenceRequisites";
+export { default as Bank } from "./Reference/Bank/Bank";
+export { default as Contracts } from "./Reference/Contracts/Contracts";
+export { default as GoodsIn } from "./Reference/GoodsIn/GoodsIn";
+export { default as GoodsOut } from "./Reference/GoodsOut/GoodsOut";
+export { default as WareHouseTransfer } from "./Reference/WareHouseTransfer/WareHouseTransfer";
+export { default as YearPlan } from "./Reference/YearPlan/YearPlan";

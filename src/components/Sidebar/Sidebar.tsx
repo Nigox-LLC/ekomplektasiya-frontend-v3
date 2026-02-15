@@ -35,7 +35,7 @@ const Sidebar: React.FC = () => {
         Sidebar 'fixed' bo'lgani uchun, kontent uning tagida qolib ketmasligi uchun 
         sidebar kengligicha (w-72) bo'sh joy tashlanadi.
       */}
-      <div className="w-82 shrink-0" />
+      <div className="w-90 flex-shrink-0" />
 
       {/* 
         Bu yerdan keyin sizning asosiy kontentingiz (Routes/Pages) keladi.

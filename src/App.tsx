@@ -13,9 +13,15 @@ import {
   TurnoverReport,
   GoodsBalanceReport,
   ReportTableOne,
+  ReferenceRequisites,
+  Contracts,
+  GoodsIn,
+  GoodsOut,
+  WareHouseTransfer,
+  YearPlan,
 } from "@/pages";
 import PriceAnalysis from "./PriceAnaliysis/PriceAnalysis";
-
+import Bank from "./pages/Reference/Bank/Bank";
 
 const App: React.FC = () => {
   const hasAccess = () => {
@@ -114,6 +120,40 @@ const App: React.FC = () => {
               element: <ReportTableOne />
             },
 
+          ]
+        },
+        {
+          path: "reference",
+          element: <Outlet />,
+          children: [
+            // Rekvizitlar
+            { path: "reference-requisites",
+              element: <ReferenceRequisites />
+            },
+            // Banklar
+            { path: "reference-bank",
+              element: <Bank />
+            },
+            // Shartnomalar
+            { path: "reference-contracts",
+              element: <Contracts />
+            },
+            // Tovarlar kirimi
+            { path: "reference-goods-in",
+              element: <GoodsIn />
+            },
+            // Tovarlar chiqimi
+            { path: "reference-goods-out",
+              element: <GoodsOut />
+            },
+            // Ombor o'tkazmalar
+            { path: "reference-warehouse-transfer",
+              element: <WareHouseTransfer />
+            },
+            // Yillik reja
+            { path: "reference-year-plan",
+              element: <YearPlan />
+            }
           ]
         }
       ],
