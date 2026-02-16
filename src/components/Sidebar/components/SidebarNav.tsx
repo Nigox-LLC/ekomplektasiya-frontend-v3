@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import {
   Archive,
@@ -19,6 +19,7 @@ import {
   User,
 } from "lucide-react";
 import NavItem from "./Navbar/NavItem";
+import { axiosAPI } from "@/service/axiosAPI";
 
 export type SidebarMenuItem = {
   id: string;
@@ -31,6 +32,8 @@ const SidebarNav: React.FC = React.memo(() => {
   const [expandedSection, setExpandedSection] = React.useState<string | null>(
     null,
   );
+
+  const [counts, setCounts] = React.useState<SidebarCounts | null>(null);
 
   const navItems: SidebarMenuItem[] = [
     {
@@ -66,27 +69,32 @@ const SidebarNav: React.FC = React.memo(() => {
       icon: <Send className="size-5" />,
       subItems: [
         {
-          id: "all",
+          id: "all_count",
           label: "Barchasi",
           icon: null,
         },
         {
-          id: "info",
+          id: "for_information",
           label: "Ma'lumot uchun",
           icon: null,
         },
         {
-          id: "approval",
+          id: "executing",
+          label: "Ijro uchun",
+          icon: null,
+        },
+        {
+          id: "in_approval",
           label: "Kelishish uchun",
           icon: <CheckCircle className="size-4" />,
         },
         {
-          id: "for-signing",
+          id: "in_signing",
           label: "Imzolash uchun",
           icon: <PenTool className="size-4" />,
         },
         {
-          id: "for-above",
+          id: "for_above",
           label: "Ustixat uchun",
           icon: <Briefcase className="size-4" />,
         },
@@ -98,34 +106,39 @@ const SidebarNav: React.FC = React.memo(() => {
       icon: <Inbox className="size-5" />,
       subItems: [
         {
-          id: "all",
+          id: "all_count",
           label: "Barchasi",
           icon: null,
         },
         {
-          id: "info",
+          id: "for_information",
           label: "Ma'lumot uchun",
           icon: null,
         },
         {
-          id: "approval",
+          id: "executing",
+          label: "Ijro uchun",
+          icon: null,
+        },
+        {
+          id: "in_approval",
           label: "Kelishish uchun",
           icon: <CheckCircle className="size-4" />,
         },
         {
-          id: "for-signing",
+          id: "in_signing",
           label: "Imzolash uchun",
           icon: <PenTool className="size-4" />,
         },
         {
-          id: "for-above",
+          id: "for_above",
           label: "Ustixat uchun",
           icon: <Briefcase className="size-4" />,
         },
       ],
     },
     {
-      id: "my-documents",
+      id: "my_letter",
       label: "Mening hujjatlarim",
       icon: <FileText className="size-5" />,
     },
@@ -242,6 +255,22 @@ const SidebarNav: React.FC = React.memo(() => {
     },
   ];
 
+  // fetch sidebar counts
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const response = await axiosAPI.get("document/orders/totals/");
+        if (response.status === 200) {
+          setCounts(response.data);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchCounts();
+  }, []);
+
   return (
     <nav className="flex-1 p-4 overflow-y-auto">
       {/* Navigation items */}
@@ -251,6 +280,7 @@ const SidebarNav: React.FC = React.memo(() => {
           item={item}
           setExpandedSection={setExpandedSection}
           expandedSection={expandedSection}
+          counts={counts}
         />
       ))}
     </nav>

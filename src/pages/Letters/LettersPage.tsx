@@ -7,12 +7,14 @@ import {
   Trash2,
   FileCheck,
   ChevronRight,
+  Building2,
 } from "lucide-react";
 import StatusFilter from "./components/StatusFilter";
 import { Button, Card, Input } from "antd";
-import LetterDetail from "./components/LetterDetail";
+import LetterDetail from "./components/Detail/LetterDetail";
 import { useAppSelector } from "@/store/hooks/hooks";
 import { axiosAPI } from "@/service/axiosAPI";
+import { useParams } from "react-router";
 
 export interface Letter {
   created_at: string;
@@ -24,7 +26,8 @@ export interface Letter {
   receiver_name: string;
   send_date: string;
   sender_name: string;
-  sub_department_name: string;
+  department_name: string;
+  region_name: string;
 }
 
 const LettersPage: React.FC = () => {
@@ -33,6 +36,7 @@ const LettersPage: React.FC = () => {
   const [page, setPage] = useState(1);
 
   const { showFilters } = useAppSelector((state) => state.letters);
+  const { status } = useParams();
 
   const getStatusColor = (is_accepted: boolean) => {
     return is_accepted ? "border-l-green-500" : "border-l-red-500";
@@ -103,14 +107,18 @@ const LettersPage: React.FC = () => {
   useEffect(() => {
     const fetchLetters = async () => {
       try {
-        const response = await axiosAPI.get(`document/orders/?page=${page}`);
+        const params = {
+          status: status || "all",
+          page: page,
+        };
+        const response = await axiosAPI.get("document/orders/", { params });
         if (response.status === 200) setLetters(response.data.results);
       } catch (error) {
         console.log(error);
       }
     };
     fetchLetters();
-  }, [page]);
+  }, [page, status]);
 
   return (
     <div className="flex flex-col gap-4 h-full">
@@ -200,7 +208,7 @@ const LettersPage: React.FC = () => {
 
           {/* Letters List */}
           <div
-            className="space-y-3 overflow-y-auto"
+            className="flex flex-col gap-2 overflow-y-auto"
             style={{ maxHeight: "calc(100vh - 300px)" }}
           >
             {letters.map((letter) => {
@@ -221,7 +229,7 @@ const LettersPage: React.FC = () => {
                       {/* Raqam + Sana */}
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-semibold text-sm text-gray-900">
-                          {highlightText(letter.incoming_number)}
+                          №: {highlightText(letter.incoming_number)}
                         </span>
                         <span className="text-xs text-gray-500">
                           {highlightText(letter.send_date)}
@@ -230,15 +238,25 @@ const LettersPage: React.FC = () => {
 
                       {/* Sarlavha */}
                       <h3 className="text-xs font-medium text-gray-900 mb-2 line-clamp-2">
-                        {highlightText(letter.receiver_name)}
+                        Xodim: {highlightText(letter.receiver_name)}
                       </h3>
 
-                      {/* Manzil */}
-                      <div className="flex items-center gap-1 text-xs text-gray-600">
-                        <MapPin className="size-3 text-gray-400 shrink-0" />
-                        <span className="truncate text-xs">
-                          {highlightText(letter.sender_name)}
-                        </span>
+                      <div className="flex items-end justify-between">
+                        {/* Department */}
+                        <div className="flex items-center gap-1 text-xs text-gray-600 mb-1">
+                          <Building2 className="size-3 text-gray-400 shrink-0" />
+                          <span className="truncate text-xs">
+                            {highlightText(letter.department_name)}
+                          </span>
+                        </div>
+
+                        {/* Manzil */}
+                        <div className="flex items-center gap-1 text-xs text-gray-600">
+                          <MapPin className="size-3 text-gray-400 shrink-0" />
+                          <span className="truncate text-xs">
+                            {highlightText(letter.region_name)}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -269,7 +287,19 @@ const LettersPage: React.FC = () => {
               }}
               onBack={() => setSelectedLetter(null)}
             /> */}
-            <LetterDetail />
+            <LetterDetail
+              document={{
+                id: selectedLetter.id,
+                number: selectedLetter.outgoing_number,
+                title: selectedLetter.department_name,
+                category: "outgoing",
+                date: selectedLetter.send_date,
+                tags: [],
+                isRead: true,
+                isReceived: false,
+              }}
+              onBack={() => setSelectedLetter(null)}
+            />
           </div>
         )}
       </div>
