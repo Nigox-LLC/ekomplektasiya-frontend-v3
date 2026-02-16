@@ -19,10 +19,12 @@ import {
   GoodsOut,
   WareHouseTransfer,
   YearPlan,
+  Bank,
+  AppealLetter,
   Statistics,
+  PriceAnalysis,
+  CreatePriceAnalysis,
 } from "@/pages";
-import PriceAnalysis from "./PriceAnaliysis/PriceAnalysis";
-import Bank from "./pages/Reference/Bank/Bank";
 import NewDocumentProduct from "./pages/NewDocument/NewDocumentProduct/NewDocumentProduct";
 
 const App: React.FC = () => {
@@ -30,8 +32,14 @@ const App: React.FC = () => {
     return true;
   };
 
-  const [currentUser, setCurrentUser] = useState({ username: '', fullName: '', permissions: [] as string[] });
-  const [userRole, setUserRole] = useState<'admin' | 'manager' | 'technical' | 'employee'>('employee');
+  const [currentUser, setCurrentUser] = useState({
+    username: "",
+    fullName: "",
+    permissions: [] as string[],
+  });
+  const [userRole, setUserRole] = useState<
+    "admin" | "manager" | "technical" | "employee"
+  >("employee");
 
   const router = createBrowserRouter([
     {
@@ -44,12 +52,20 @@ const App: React.FC = () => {
           children: [
             {
               path: "dashboard-main",
-              element: <Dashboard userName={currentUser.fullName} userPosition={
-                userRole === 'admin' ? 'Administrator' :
-                  userRole === 'manager' ? 'Menejer' :
-                    userRole === 'technical' ? 'Texnik mutaxassis' :
-                      'Xodim'
-              } />
+              element: (
+                <Dashboard
+                  userName={currentUser.fullName}
+                  userPosition={
+                    userRole === "admin"
+                      ? "Administrator"
+                      : userRole === "manager"
+                        ? "Menejer"
+                        : userRole === "technical"
+                          ? "Texnik mutaxassis"
+                          : "Xodim"
+                  }
+                />
+              ),
             },
             {
               path: "employee-statistics",
@@ -62,8 +78,16 @@ const App: React.FC = () => {
           ],
         },
         {
+          path: "appeal-letter",
+          element: <AppealLetter />,
+        },
+        {
           path: "price-analysis",
-          element: <PriceAnalysis />,
+          element: <Outlet />,
+          children: [
+            { index: true, element: <PriceAnalysis /> },
+            { path: "create", element: <CreatePriceAnalysis /> },
+          ],
         },
         {
           path: "calendar",
@@ -95,7 +119,7 @@ const App: React.FC = () => {
         },
         {
           path: "product-management",
-          element: <ProductManagement />
+          element: <ProductManagement />,
         },
         {
           path: "reports",
@@ -103,60 +127,48 @@ const App: React.FC = () => {
           children: [
             {
               path: "reports-turnover",
-              element: <TurnoverReport />
+              element: <TurnoverReport />,
             },
             {
               path: "reports-goods-balance",
-              element: <GoodsBalanceReport />
+              element: <GoodsBalanceReport />,
             },
             {
               path: "reports-table1",
-              element: <ReportTableOne />
+              element: <ReportTableOne />,
             },
             {
               path: "reports-table2",
-              element: <ReportTableOne />
+              element: <ReportTableOne />,
             },
             {
               path: "reports-table3",
-              element: <ReportTableOne />
+              element: <ReportTableOne />,
             },
-
-          ]
+          ],
         },
         {
           path: "reference",
           element: <Outlet />,
           children: [
             // Rekvizitlar
-            { path: "reference-requisites",
-              element: <ReferenceRequisites />
-            },
+            { path: "reference-requisites", element: <ReferenceRequisites /> },
             // Banklar
-            { path: "reference-bank",
-              element: <Bank />
-            },
+            { path: "reference-bank", element: <Bank /> },
             // Shartnomalar
-            { path: "reference-contracts",
-              element: <Contracts />
-            },
+            { path: "reference-contracts", element: <Contracts /> },
             // Tovarlar kirimi
-            { path: "reference-goods-in",
-              element: <GoodsIn />
-            },
+            { path: "reference-goods-in", element: <GoodsIn /> },
             // Tovarlar chiqimi
-            { path: "reference-goods-out",
-              element: <GoodsOut />
-            },
+            { path: "reference-goods-out", element: <GoodsOut /> },
             // Ombor o'tkazmalar
-            { path: "reference-warehouse-transfer",
-              element: <WareHouseTransfer />
+            {
+              path: "reference-warehouse-transfer",
+              element: <WareHouseTransfer />,
             },
             // Yillik reja
-            { path: "reference-year-plan",
-              element: <YearPlan />
-            }
-          ]
+            { path: "reference-year-plan", element: <YearPlan /> },
+          ],
         },
         {
           path: "statistics",
@@ -164,14 +176,14 @@ const App: React.FC = () => {
           children: [
             {
               path: "statistics-employee",
-              element: <Statistics />
-            }
-          ]
+              element: <Statistics />,
+            },
+          ],
         },
         {
           path: "new-document/:type",
-          element: <NewDocumentProduct />
-        }
+          element: <NewDocumentProduct />,
+        },
       ],
     },
     {
