@@ -5,9 +5,10 @@ import type { Letter } from "../LettersPage";
 
 interface IProps {
   letters: Letter[];
+  totalCount: number;
 }
 
-const StatusFilter: React.FC<IProps> = ({ letters }) => {
+const StatusFilter: React.FC<IProps> = ({ letters, totalCount }) => {
   const [statusFilter, setStatusFilter] = React.useState<'all' | 'completed' | 'overdue' | 'cancelled'>('all');
   const [showFilters, setShowFilters] = React.useState(false);
 
@@ -34,7 +35,7 @@ const StatusFilter: React.FC<IProps> = ({ letters }) => {
           <span
             className={`font-semibold text-xs ${statusFilter === "all" ? "text-white" : "text-gray-700"}`}
           >
-            {letters.length}
+            {totalCount}
           </span>
         </div>
       </Button>

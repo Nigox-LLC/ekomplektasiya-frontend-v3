@@ -33,7 +33,9 @@ export interface Letter {
 const LettersPage: React.FC = () => {
   const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null);
   const [letters, setLetters] = useState<Letter[]>([]);
+  // Pagination states
   const [page, setPage] = useState(1);
+  const [totalDocuments, setTotalDocuments] = useState(0);
 
   const { showFilters } = useAppSelector((state) => state.letters);
   const { status } = useParams();
@@ -112,7 +114,10 @@ const LettersPage: React.FC = () => {
           page: page,
         };
         const response = await axiosAPI.get("document/orders/", { params });
-        if (response.status === 200) setLetters(response.data.results);
+        if (response.status === 200) {
+          setLetters(response.data.results);
+          setTotalDocuments(response.data.count);
+        }
       } catch (error) {
         console.log(error);
       }
@@ -123,7 +128,7 @@ const LettersPage: React.FC = () => {
   return (
     <div className="flex flex-col gap-4 h-full">
       {/* Status Filters - YUQORIDA, TO'LIQ KENGLIKDA */}
-      <StatusFilter letters={letters} />
+      <StatusFilter letters={letters} totalCount={totalDocuments} />
 
       {/* Main Content */}
       <div className="flex gap-6 flex-1">
@@ -138,7 +143,7 @@ const LettersPage: React.FC = () => {
                 {filter === "info" && "Ma'lumot uchun"}
                 {filter === "instructions" && "Ko'rsatma xatlar"} */}
               </h2>
-              <p className="text-xs text-gray-500">Jami: {90} ta</p>
+              <p className="text-xs text-gray-500">Jami: {totalDocuments} ta</p>
             </div>
           </div>
 

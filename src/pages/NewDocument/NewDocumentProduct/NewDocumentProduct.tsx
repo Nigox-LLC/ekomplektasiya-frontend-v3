@@ -131,7 +131,7 @@ const NewDocumentProduct: React.FC<NewDocumentViewProps> = ({ onNavigateBack, hi
         if (parsedGoods && parsedGoods.length > 0) {
           setGoods(parsedGoods);
           toast.success('Saqlangan tovarlar yuklandi', {
-            duration: 2000
+            delay: 2000
           });
         }
       } catch (error) {
