@@ -1,0 +1,289 @@
+/* PostedProductModal Custom Styles */
+
+.posted-product-modal .ant-modal-content {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.posted-product-modal .ant-modal-header {
+  padding: 16px 24px;
+  border-bottom: none;
+}
+
+.posted-product-modal .ant-modal-body {
+  padding: 24px;
+}
+
+.posted-product-modal .ant-form-item {
+  margin-bottom: 20px;
+}
+
+.posted-product-modal .ant-form-item-label {
+  padding-bottom: 6px;
+}
+
+.posted-product-modal .ant-form-item-label > label {
+  font-weight: 500;
+  color: #374151;
+}
+
+/* Input styles */
+.posted-product-modal .ant-input {
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.posted-product-modal .ant-input:hover {
+  border-color: #3b82f6;
+}
+
+.posted-product-modal .ant-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* DatePicker styles */
+.posted-product-modal .ant-picker {
+  border-radius: 8px;
+  height: 44px;
+  border-color: #d1d5db;
+  transition: all 0.2s ease;
+}
+
+.posted-product-modal .ant-picker:hover {
+  border-color: #3b82f6;
+}
+
+.posted-product-modal .ant-picker-focused {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.posted-product-modal .ant-picker-input > input {
+  font-size: 14px;
+}
+
+/* Select styles */
+.posted-product-modal .ant-select-selector {
+  border-radius: 8px !important;
+  height: 44px !important;
+  display: flex;
+  align-items: center;
+  border-color: #d1d5db !important;
+}
+
+.posted-product-modal .ant-select:hover .ant-select-selector {
+  border-color: #3b82f6 !important;
+}
+
+.posted-product-modal .ant-select-focused .ant-select-selector {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+.posted-product-modal .ant-select-dropdown {
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.posted-product-modal .ant-select-item {
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.posted-product-modal .ant-select-item-option-selected {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 500;
+}
+
+.posted-product-modal .ant-select-item-option-active {
+  background-color: #f3f4f6;
+}
+
+/* Upload styles */
+.posted-product-modal .ant-upload {
+  width: auto !important;
+}
+
+.posted-product-modal .ant-upload-select {
+  display: block;
+}
+
+/* Button styles */
+.posted-product-modal .ant-btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.posted-product-modal .ant-btn-primary:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.posted-product-modal .ant-btn-default {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.posted-product-modal .ant-btn-default:hover {
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+/* Animation for modal appearance */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.posted-product-modal .ant-modal-content {
+  animation: modalSlideIn 0.2s ease-out;
+}
+
+/* Custom scrollbar for textarea */
+.posted-product-modal .ant-input-textarea textarea {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f3f4f6;
+}
+
+.posted-product-modal .ant-input-textarea textarea::-webkit-scrollbar {
+  width: 6px;
+}
+
+.posted-product-modal .ant-input-textarea textarea::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+
+.posted-product-modal .ant-input-textarea textarea::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.posted-product-modal .ant-input-textarea textarea::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Input count text styling */
+.posted-product-modal .ant-input-show-count-suffix {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+/* Loading spinner styling */
+.posted-product-modal .ant-spin-text {
+  color: #3b82f6;
+  font-size: 14px;
+}
+
+/* Image preview hover effect */
+.image-preview-container {
+  position: relative;
+}
+
+.image-preview-container .remove-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.image-preview-container:hover .remove-btn {
+  opacity: 1;
+}
+
+/* Upload area hover effects */
+.upload-area-image {
+  transition: all 0.2s ease;
+}
+
+.upload-area-image:hover {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+}
+
+.upload-area-pdf {
+  transition: all 0.2s ease;
+}
+
+.upload-area-pdf:hover {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+/* PDF file display */
+.pdf-file-display {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pdf-file-display .pdf-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Grid layout for date and category */
+.form-row-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .form-row-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Date picker calendar icon */
+.posted-product-modal .ant-picker-suffix {
+  color: #9ca3af;
+}
+
+/* Focus states */
+.posted-product-modal .ant-input:focus,
+.posted-product-modal .ant-picker-focused,
+.posted-product-modal .ant-select-focused .ant-select-selector {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Disabled state */
+.posted-product-modal .ant-btn-disabled,
+.posted-product-modal .ant-btn-disabled:hover {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

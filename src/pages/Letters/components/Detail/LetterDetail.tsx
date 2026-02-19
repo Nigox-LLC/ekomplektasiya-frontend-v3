@@ -14,6 +14,7 @@ import {
   HandshakeIcon,
   Pencil,
   GitBranch,
+  Globe,
 } from "lucide-react";
 import RelatedDocumentModal from "./RelatedDocumentModal";
 import { ExecutiveAction, type IjroStep } from "./ExecutiveAction";
@@ -27,6 +28,8 @@ import { SendDocumentModal } from "./SendDocumentModal";
 import { Badge, Button, Card, Input } from "antd";
 import { axiosAPI } from "@/service/axiosAPI";
 import SendModal from "@/pages/CreateDocument/components/SendModal";
+import PostedProductModal from "./PostedProductModal/PostedProductModal";
+import { toast } from "react-toastify";
 
 interface Document {
   id: number;
@@ -41,8 +44,22 @@ interface Document {
   hasAttachment?: boolean;
 }
 
+type PostedWebsiteData = {
+  id: number;
+  title: string;
+  text: string;
+  description?: string | null;
+  category_id: string;
+  category_name: string;
+  posted_file_url?: string | null;
+  file_pdf?: string | null;
+  created_at: string;
+} ;
+
+
 interface Product {
   id: number;
+  order_product_id?: number;
   type: string;
   yearPlan: any;
   name: string;
@@ -51,6 +68,7 @@ interface Product {
   unit: string;
   quantity: number;
   note: string;
+  posted_website?: PostedWebsiteData | null;
 }
 
 interface AttachmentFile {
@@ -96,13 +114,13 @@ interface DocumentDetailViewProps {
   onBack?: () => void;
   onClose?: () => void;
   category?:
-    | "execution"
-    | "signing"
-    | "resolution"
-    | "info"
-    | "approval"
-    | "for-signing"
-    | "backup";
+  | "execution"
+  | "signing"
+  | "resolution"
+  | "info"
+  | "approval"
+  | "for-signing"
+  | "backup";
   onSuccess?: (message: string) => void;
 }
 
@@ -132,6 +150,10 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
   // Har bir xat uchun alohida ijro qadamlari - xat ID bo'yicha
   const [ijroSteps, setIjroSteps] = useState<Record<number, IjroStep[]>>({});
 
+  // Posted product modal state
+  const [showPostedProductModal, setShowPostedProductModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
   // Joriy xatning ijro qadamlarini olish
   const currentDocumentSteps = documentProp?.id
     ? ijroSteps[documentProp.id] || []
@@ -139,87 +161,6 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
   // Order data from API
   const [orderData, setOrderData] = useState<OrderData | null>(null);
-
-  // Mock tovarlar ma'lumotlari - state ga o'zgartirdik
-  const [mockGoods, setMockGoods] = useState<Product[]>([
-    {
-      id: 1,
-      type: "Xarid qilish",
-      yearPlan: null,
-      name: "Qog'oz A4",
-      model: "Premium",
-      size: "210x297mm",
-      unit: "dona",
-      quantity: 500,
-      note: "Oq rang, 80g/m²",
-    },
-    {
-      id: 2,
-      type: "Xarid qilish",
-      yearPlan: null,
-      name: "Ruchka",
-      model: "Ball Pen",
-      size: "0.7mm",
-      unit: "dona",
-      quantity: 200,
-      note: "Ko'k rang",
-    },
-    {
-      id: 3,
-      type: "Zaxira",
-      yearPlan: null,
-      name: "Papka",
-      model: "Standart",
-      size: "A4",
-      unit: "dona",
-      quantity: 100,
-      note: "Plastik",
-    },
-    {
-      id: 4,
-      type: "Xarid qilish",
-      yearPlan: null,
-      name: "Marker",
-      model: "Permanent",
-      size: "3mm",
-      unit: "dona",
-      quantity: 50,
-      note: "Qora rang",
-    },
-    {
-      id: 5,
-      type: "Zaxira",
-      yearPlan: null,
-      name: "Skoch",
-      model: "Transparent",
-      size: "48mm x 50m",
-      unit: "dona",
-      quantity: 30,
-      note: "Shaffof",
-    },
-    {
-      id: 6,
-      type: "Ta'mir",
-      yearPlan: null,
-      name: "USB Flash",
-      model: "Kingston DT100",
-      size: "32GB",
-      unit: "dona",
-      quantity: 20,
-      note: "USB 3.0",
-    },
-    {
-      id: 7,
-      type: "Yangi jihozlash",
-      yearPlan: null,
-      name: "Stol",
-      model: "Офис-Люкс",
-      size: "120x60x75cm",
-      unit: "dona",
-      quantity: 5,
-      note: "Yog'och",
-    },
-  ]);
 
   const categoryNames: Record<string, string> = {
     reply: "Javob xati",
@@ -250,23 +191,33 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
     }
   };
 
+  const handleOpenPostedModal = (product: Product) => {
+    if (!product || !product.id) {
+      toast.error("Mahsulot ID si topilmadi");
+      return;
+    }
+    setSelectedProduct(product);
+    setShowPostedProductModal(true);
+  };
+
+
   // fetch orderData detail
   const fetchOrderData = async () => {
     try {
       const response = await axiosAPI.get(
-        `document/orders/${documentProp?.id}/`,
+        `document/orders/${documentProp?.id}/`
       );
+
       if (response.status === 200) {
-        setOrderData(response.data);
-        // Set products if available
-        if (response.data.products && response.data.products.length > 0) {
-          setMockGoods(response.data.products);
-        }
+        console.log("ORDER DATA:", response.data);
+        setOrderData(response.data); // 🔥 faqat shuni qoldiring
       }
     } catch (error) {
       console.log(error);
     }
   };
+
+
 
   useEffect(() => {
     if (documentProp?.id) {
@@ -301,6 +252,17 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
     return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
   };
 
+  // handle update orderdata products input onchange
+  const handleInputOnchange = (index: number, field: string, value: any) => {
+    const updatedGoods = [...orderData!.products];
+    // @ts-ignore
+    updatedGoods[index][field] = value;
+    setOrderData(prev => ({
+      ...prev!,
+      products: updatedGoods,
+    }))
+  }
+
   return (
     <div className="space-y-6">
       {/* Header - Ortga va Yuborish tugmalari - STICKY */}
@@ -323,15 +285,14 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               variant="outlined"
               size="medium"
               onClick={() => setShowAgreementModal(true)}
-              className={`gap-2 border-2 h-12 px-6 ${
-                agreementStatus === "roziman"
-                  ? "border-green-600 text-green-700 bg-green-50 hover:bg-green-100 hover:border-green-700"
-                  : agreementStatus === "rozi-emasman"
-                    ? "border-red-500 text-red-700 bg-red-50 hover:bg-red-100"
-                    : agreementStatus === "qisman"
-                      ? "border-yellow-500 text-yellow-700 bg-yellow-50 hover:bg-yellow-100"
-                      : "border-purple-300 text-purple-600 hover:border-purple-500 hover:bg-purple-50"
-              }`}
+              className={`gap-2 border-2 h-12 px-6 ${agreementStatus === "roziman"
+                ? "border-green-600 text-green-700 bg-green-50 hover:bg-green-100 hover:border-green-700"
+                : agreementStatus === "rozi-emasman"
+                  ? "border-red-500 text-red-700 bg-red-50 hover:bg-red-100"
+                  : agreementStatus === "qisman"
+                    ? "border-yellow-500 text-yellow-700 bg-yellow-50 hover:bg-yellow-100"
+                    : "border-purple-300 text-purple-600 hover:border-purple-500 hover:bg-purple-50"
+                }`}
             >
               {(!agreementStatus || agreementStatus === "roziman") && (
                 <HandshakeIcon className="w-4 h-4 mix-blend-multiply" />
@@ -388,7 +349,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 Buyurtma uchun kelgan tovarlar ro'yxati
               </h3>
               <p className="text-sm text-gray-500">
-                Jami: {mockGoods.length} ta tovar
+                Jami: {orderData?.products.length} ta tovar
               </p>
             </div>
           </div>
@@ -400,7 +361,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         </button>
 
         {showGoodsTable && (
-          <div className="border-t border-gray-200 p-6 animate-in slide-in-from-top-2 duration-200">
+          <div className="border-t border-gray-200 p-6 animate-in slide-in-from-top-2 du  ration-200">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
@@ -432,13 +393,16 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                     <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
                       Izoh
                     </th>
+                    <th className="border border-gray-300 px-4 py-3 text-center text-sm font-semibold text-gray-700 bg-blue-50">
+                      Saytga joylash
+                    </th>
                     <th className="border border-gray-300 px-4 py-3 text-center text-sm font-semibold text-gray-700">
                       Amallar
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {mockGoods.map((item, index) => (
+                  {orderData?.products.map((item, index) => (
                     <tr
                       key={item.id}
                       className="hover:bg-gray-50 transition-colors"
@@ -459,11 +423,10 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                             className="inline-flex items-center gap-2"
                           >
                             <Badge
-                              className={`cursor-pointer transition-colors ${
-                                item.type === "Tovar"
-                                  ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
-                                  : "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
-                              }`}
+                              className={`cursor-pointer transition-colors ${item.type === "Tovar"
+                                ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
+                                : "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
+                                }`}
                             >
                               {item.type}
                             </Badge>
@@ -474,9 +437,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                             <div className="absolute left-0 top-full mt-1 w-40 bg-white border border-gray-300 rounded-lg shadow-lg z-20">
                               <button
                                 onMouseDown={() => {
-                                  const updatedGoods = [...mockGoods];
-                                  updatedGoods[index].type = "Tovar";
-                                  setMockGoods(updatedGoods);
+                                  handleInputOnchange(index, "type", "Tovar");
                                   setShowTypeDropdown(null);
                                 }}
                                 className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2 rounded-t-lg transition-colors"
@@ -486,9 +447,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                               </button>
                               <button
                                 onMouseDown={() => {
-                                  const updatedGoods = [...mockGoods];
-                                  updatedGoods[index].type = "Xizmat";
-                                  setMockGoods(updatedGoods);
+                                  handleInputOnchange(index, "type", "Xizmat");
                                   setShowTypeDropdown(null);
                                 }}
                                 className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center gap-2 rounded-b-lg transition-colors"
@@ -529,9 +488,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                           type="text"
                           value={item.name}
                           onChange={(e) => {
-                            const updatedGoods = [...mockGoods];
-                            updatedGoods[index].name = e.target.value;
-                            setMockGoods(updatedGoods);
+                            handleInputOnchange(index, "name", e.target.value);
                           }}
                           className="text-sm font-medium border-0 focus:ring-1 focus:ring-blue-500"
                         />
@@ -543,9 +500,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                           type="text"
                           value={item.model}
                           onChange={(e) => {
-                            const updatedGoods = [...mockGoods];
-                            updatedGoods[index].model = e.target.value;
-                            setMockGoods(updatedGoods);
+                            handleInputOnchange(index, "model", e.target.value);
                           }}
                           className="text-sm border-0 focus:ring-1 focus:ring-blue-500"
                         />
@@ -557,9 +512,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                           type="text"
                           value={item.size}
                           onChange={(e) => {
-                            const updatedGoods = [...mockGoods];
-                            updatedGoods[index].size = e.target.value;
-                            setMockGoods(updatedGoods);
+                            handleInputOnchange(index, "size", e.target.value);
                           }}
                           className="text-sm border-0 focus:ring-1 focus:ring-blue-500"
                         />
@@ -571,9 +524,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                           type="text"
                           value={item.unit}
                           onChange={(e) => {
-                            const updatedGoods = [...mockGoods];
-                            updatedGoods[index].unit = e.target.value;
-                            setMockGoods(updatedGoods);
+                            handleInputOnchange(index, "unit", e.target.value);
                           }}
                           className="text-sm text-center border-0 focus:ring-1 focus:ring-blue-500"
                         />
@@ -585,10 +536,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                           type="number"
                           value={item.quantity}
                           onChange={(e) => {
-                            const updatedGoods = [...mockGoods];
-                            updatedGoods[index].quantity =
-                              parseInt(e.target.value) || 0;
-                            setMockGoods(updatedGoods);
+                            handleInputOnchange(index, "quantity", e.target.value);
                           }}
                           className="text-sm text-center font-semibold border-0 focus:ring-1 focus:ring-blue-500"
                         />
@@ -600,22 +548,36 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                           type="text"
                           value={item.note}
                           onChange={(e) => {
-                            const updatedGoods = [...mockGoods];
-                            updatedGoods[index].note = e.target.value;
-                            setMockGoods(updatedGoods);
+                            handleInputOnchange(index, "note", e.target.value);
                           }}
                           className="text-sm italic border-0 focus:ring-1 focus:ring-blue-500"
                         />
+                      </td>
+
+                      <td className="border border-gray-300 px-4 py-3 text-center bg-blue-50/50">
+                        <Button
+                          type="primary"
+                          size="small"
+                          onClick={() => handleOpenPostedModal(item)}
+                          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border-0 shadow-sm hover:shadow-md transition-all flex items-center gap-1.5 px-3 py-1 h-8"
+                          icon={<Globe className="w-3.5 h-3.5" />}
+                        >
+                          <span className="text-xs font-medium">Joylash</span>
+                        </Button>
                       </td>
 
                       {/* O'chirish tugmasi */}
                       <td className="border border-gray-300 px-4 py-3 text-center">
                         <button
                           onClick={() => {
-                            const updatedGoods = mockGoods.filter(
+                            const updatedGoods = orderData.products.filter(
                               (_, i) => i !== index,
                             );
-                            setMockGoods(updatedGoods);
+                            //@ts-ignore
+                            setOrderData(prev => ({
+                              ...prev,
+                              products: updatedGoods
+                            }))
                           }}
                           className="text-red-500 hover:text-red-700 transition-colors"
                         >
@@ -646,7 +608,11 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                     quantity: 0,
                     note: "",
                   };
-                  setMockGoods([...mockGoods, newRow]);
+                  // @ts-ignore
+                  setOrderData(prev => ({
+                    ...prev,
+                    products: [...(prev?.products || []), newRow]
+                  }))
                 }}
               >
                 <Plus className="size-4" />
@@ -775,9 +741,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               <label className="text-sm text-gray-500 w-48">Holat</label>
               <div className="flex-1">
                 <span
-                  className={`text-base font-medium ${
-                    orderData?.is_accepted ? "text-green-600" : "text-red-600"
-                  }`}
+                  className={`text-base font-medium ${orderData?.is_accepted ? "text-green-600" : "text-red-600"
+                    }`}
                 >
                   {orderData?.is_accepted
                     ? "Qabul qilingan"
@@ -822,8 +787,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
         {/* Fayllar grid */}
         {orderData &&
-        orderData.attachment_files &&
-        orderData.attachment_files.length > 0 ? (
+          orderData.attachment_files &&
+          orderData.attachment_files.length > 0 ? (
           <div className="grid grid-cols-2 gap-4 mb-6">
             {orderData.attachment_files.map((file) => {
               const fileExtension =
@@ -930,6 +895,30 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         }}
       />
 
+      <PostedProductModal
+        isOpen={showPostedProductModal}
+        onClose={() => setShowPostedProductModal(false)}
+        productName={selectedProduct?.name || ""}
+        productModel={selectedProduct?.model}
+        orderProductId={selectedProduct?.id ?? 0}
+        existingPost={selectedProduct?.posted_website}   // <-- muhim qism
+        onSuccess={() => {
+          onSuccess?.("Mahsulot muvaffaqiyatli saytga joylandi!");
+        }}
+      />
+
+      <PostedProductModal
+        isOpen={showPostedProductModal}
+        onClose={() => setShowPostedProductModal(false)}
+        productName={selectedProduct?.name || ""}
+        productModel={selectedProduct?.model}
+        orderProductId={selectedProduct?.id ?? 0}
+        existingPost={selectedProduct?.posted_website} 
+        onSuccess={() => {
+          onSuccess?.("Mahsulot muvaffaqiyatli saytga joylandi!");
+        }}
+      />
+
       {/* Executive Action Modal */}
       <ExecutiveAction
         isOpen={showExecutiveActionModal}
@@ -945,9 +934,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
           console.log("Selected year plan item:", item);
           // Bu yerda tanlangan tovarni jadvalga qo'shish logikasi
           if (selectedRowIndex !== null) {
-            const updatedGoods = [...mockGoods];
-            updatedGoods[selectedRowIndex].yearPlan = item;
-            setMockGoods(updatedGoods);
+            handleInputOnchange(selectedRowIndex, "yearPlan", item);
           }
           setShowYearPlanModal(false);
         }}
