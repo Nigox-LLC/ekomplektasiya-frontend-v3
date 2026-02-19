@@ -24,8 +24,10 @@ import {
   Statistics,
   PriceAnalysis,
   CreatePriceAnalysis,
+  CreateDocument,
 } from "@/pages";
 import NewDocumentProduct from "./pages/NewDocument/NewDocumentProduct/NewDocumentProduct";
+import { ToastContainer } from "react-toastify";
 
 const App: React.FC = () => {
   const hasAccess = () => {
@@ -114,6 +116,10 @@ const App: React.FC = () => {
           ],
         },
         {
+          path: "my_letter",
+          element: <LettersPage />,
+        },
+        {
           path: "users-management",
           element: <UsersManagement />,
         },
@@ -182,6 +188,10 @@ const App: React.FC = () => {
         },
         {
           path: "new-document/:type",
+          element: <CreateDocument />,
+        },
+        {
+          path: "test-new-document",
           element: <NewDocumentProduct />,
         },
       ],
@@ -195,6 +205,7 @@ const App: React.FC = () => {
   return (
     <>
       <RouterProvider router={router} />
+      <ToastContainer />
     </>
   );
 };

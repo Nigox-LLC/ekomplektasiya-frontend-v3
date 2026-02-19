@@ -18,3 +18,18 @@ interface SidebarCounts {
   };
   my_letter: number;
 }
+
+interface IDName {
+  id: number;
+  name: string;
+}
+
+interface SavedEimzoCert {
+  disk: string;
+  path: string;
+  name: string;
+  alias: string;
+  cn?: string;
+  validFrom?: string;
+  validTo?: string;
+}

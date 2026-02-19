@@ -20,3 +20,4 @@ export { default as PriceAnalysis } from "./PriceAnaliysis/PriceAnalysis";
 export { default as CreatePriceAnalysis } from "./PriceAnaliysis/CreatePriceAnalysis";
 export { default as AppealLetter } from "./AppealLetter/AppealLetter";
 export { default as Statistics } from "./EmployeeStatistics/Statistics";
+export {default as CreateDocument} from "./CreateDocument/CreateDocument";

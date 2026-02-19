@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   Send,
@@ -11,7 +11,6 @@ import {
   ChevronDown,
   ChevronUp,
   Trash2,
-  FileText as FileTextIcon,
   HandshakeIcon,
   Pencil,
   GitBranch,
@@ -22,13 +21,15 @@ import { YearPlanModal } from "./YearPlanModal";
 import { AddGoodsModal } from "./AddGoodsModal";
 import { AgreementModal } from "./AgreementModal";
 import { SearchFilterPanel } from "./SearchFilterPanel";
-import { SigningModal } from "./SigningModal";
+import SigningModal from "./SigningModal";
 import { SendDocumentModal } from "./SendDocumentModal";
 
 import { Badge, Button, Card, Input } from "antd";
+import { axiosAPI } from "@/service/axiosAPI";
+import SendModal from "@/pages/CreateDocument/components/SendModal";
 
 interface Document {
-  id: string;
+  id: number;
   number: string;
   title: string;
   category: string;
@@ -38,6 +39,56 @@ interface Document {
   isReceived: boolean;
   year?: string;
   hasAttachment?: boolean;
+}
+
+interface Product {
+  id: number;
+  type: string;
+  yearPlan: any;
+  name: string;
+  model: string;
+  size: string;
+  unit: string;
+  quantity: number;
+  note: string;
+}
+
+interface AttachmentFile {
+  id: number;
+  file: string;
+  file_name: string;
+  file_size: number;
+  created_at: string;
+}
+
+interface Participant {
+  id: number;
+  name: string;
+  position: string;
+  department: string;
+}
+
+interface OrderData {
+  id: number;
+  products: Product[];
+  attachment_files: AttachmentFile[];
+  participants: Participant[];
+  movement_files: any[];
+  department_name: string;
+  sub_department_name: string | null;
+  sender_name: string | null;
+  receiver_name: string;
+  father_id: string;
+  order_type: string;
+  created_at: string;
+  incoming_number: string;
+  outgoing_number: string | null;
+  movement_type: string;
+  direction: string;
+  comment: string;
+  is_accepted: boolean;
+  is_done: boolean | null;
+  done_date: string | null;
 }
 
 interface DocumentDetailViewProps {
@@ -56,9 +107,8 @@ interface DocumentDetailViewProps {
 }
 
 const LetterDetail: React.FC<DocumentDetailViewProps> = ({
-  document,
+  document: documentProp,
   onBack,
-  onClose,
   category,
   onSuccess,
 }) => {
@@ -80,13 +130,18 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
   const [showSendModal, setShowSendModal] = useState(false);
 
   // Har bir xat uchun alohida ijro qadamlari - xat ID bo'yicha
-  const [ijroSteps, setIjroSteps] = useState<Record<string, IjroStep[]>>({});
+  const [ijroSteps, setIjroSteps] = useState<Record<number, IjroStep[]>>({});
 
   // Joriy xatning ijro qadamlarini olish
-  const currentDocumentSteps = document?.id ? ijroSteps[document.id] || [] : [];
+  const currentDocumentSteps = documentProp?.id
+    ? ijroSteps[documentProp.id] || []
+    : [];
+
+  // Order data from API
+  const [orderData, setOrderData] = useState<OrderData | null>(null);
 
   // Mock tovarlar ma'lumotlari - state ga o'zgartirdik
-  const [mockGoods, setMockGoods] = useState([
+  const [mockGoods, setMockGoods] = useState<Product[]>([
     {
       id: 1,
       type: "Xarid qilish",
@@ -186,45 +241,64 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
     }
   };
 
-  const handleDownload = (fileName: string) => {
-    // Bu yerda yuklab olish logikasi
-    console.log("Downloading:", fileName);
-  };
-
-  // PDF ni ko'rish funksiyasi
-  const handleViewPDF = (fileName: string) => {
-    // Mock PDF URL - haqiqiy ilovada backend dan keladi
-    const pdfUrl = `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`;
-
-    // Yangi tabda ochish
-    window.open(pdfUrl, "_blank");
-  };
-
-  // PDF ni saqlash funksiyasi
-  const handleDownloadPDF = (fileName: string) => {
-    // Mock PDF URL - haqiqiy ilovada backend dan keladi
-    // Haqiqiy ilovada backend'dan fayl URL keladi va Content-Disposition: attachment header bilan yuboriladi
-    const pdfUrl = `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`;
-
-    // Yangi tabda ochish - brauzer o'zi yuklab olish yoki ko'rsatishni taklif qiladi
-    const link = window.open(pdfUrl, "_blank");
-
-    if (!link) {
-      alert("Iltimos, popup blocker ni o'chiring va qaytadan urinib ko'ring.");
-    }
-
-    // Haqiqiy backend'da quyidagi formatda bo'lishi kerak:
-    // GET /api/documents/download/{fileId}
-    // Response headers: Content-Disposition: attachment; filename="document.pdf"
-  };
-
   const handleAddStep = (step: IjroStep) => {
-    if (document?.id) {
+    if (documentProp?.id) {
       setIjroSteps((prev) => ({
         ...prev,
-        [document.id]: [...(prev[document.id] || []), step],
+        [documentProp.id]: [...(prev[documentProp.id] || []), step],
       }));
     }
+  };
+
+  // fetch orderData detail
+  const fetchOrderData = async () => {
+    try {
+      const response = await axiosAPI.get(
+        `document/orders/${documentProp?.id}/`,
+      );
+      if (response.status === 200) {
+        setOrderData(response.data);
+        // Set products if available
+        if (response.data.products && response.data.products.length > 0) {
+          setMockGoods(response.data.products);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (documentProp?.id) {
+      fetchOrderData();
+    }
+  }, [documentProp?.id]);
+
+  // Format file size
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + " bytes";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+  };
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const months = [
+      "yanvar",
+      "fevral",
+      "mart",
+      "aprel",
+      "may",
+      "iyun",
+      "iyul",
+      "avgust",
+      "sentabr",
+      "oktabr",
+      "noyabr",
+      "dekabr",
+    ];
+    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
   };
 
   return (
@@ -244,7 +318,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             </Button>
           )}
           {/* Kelishish tugmasi - backup bo'limida yashirilgan */}
-          {category !== "backup" && (
+          {orderData?.movement_type === "in_approval" && (
             <Button
               variant="outlined"
               size="medium"
@@ -280,7 +354,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             <span className="font-medium text-base">Ijro qadamlari</span>
           </Button>
           {/* Imzolash tugmasi - approval bo'limida yashirilgan */}
-          {category !== "approval" && (
+          {orderData?.movement_type !== "in_signing" && (
             <Button
               variant="outlined"
               size="medium"
@@ -588,9 +662,17 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         {/* Title */}
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">
-            {categoryNames[document.category] || document.category} -{" "}
-            <span className="text-blue-600">{document.number}</span> -{" "}
-            {document.date}
+            {categoryNames[
+              (orderData?.order_type || documentProp?.category) ?? ""
+            ] || documentProp?.category}{" "}
+            -{" "}
+            <span className="text-blue-600">
+              {orderData?.incoming_number || documentProp?.number}
+            </span>{" "}
+            -{" "}
+            {orderData?.created_at
+              ? formatDate(orderData.created_at)
+              : documentProp?.date}
           </h2>
         </div>
 
@@ -607,7 +689,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                   <Edit2 className="size-4" />
                 </button>
                 <span className="text-base text-gray-900 font-medium">
-                  {document.number}
+                  {orderData?.incoming_number || documentProp?.number}
                 </span>
               </div>
             </div>
@@ -618,7 +700,11 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 Hujjat sanasi
               </label>
               <div className="flex-1">
-                <span className="text-base text-gray-900">{document.date}</span>
+                <span className="text-base text-gray-900">
+                  {orderData?.created_at
+                    ? formatDate(orderData.created_at)
+                    : documentProp?.date}
+                </span>
               </div>
             </div>
 
@@ -627,38 +713,45 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               <label className="text-sm text-gray-500 w-48">Hujjat turi</label>
               <div className="flex-1">
                 <span className="text-base text-gray-900">
-                  {categoryNames[document.category] || document.category}
+                  {categoryNames[
+                    (orderData?.order_type || documentProp?.category) ?? ""
+                  ] || documentProp?.category}
                 </span>
               </div>
             </div>
 
-            {/* Jurnal */}
+            {/* Bo'lim */}
             <div className="flex items-center justify-between py-2 border-b border-gray-100">
-              <label className="text-sm text-gray-500 w-48">Jurnal</label>
+              <label className="text-sm text-gray-500 w-48">Bo'lim</label>
               <div className="flex-1 flex items-center gap-3">
                 <button className="text-gray-400 hover:text-gray-600">
                   <Edit2 className="size-4" />
                 </button>
-                <span className="text-base text-gray-900">Хизмат хати</span>
+                <span className="text-base text-gray-900">
+                  {orderData?.department_name || "-"}
+                </span>
               </div>
             </div>
 
-            {/* Masala */}
+            {/* Qabul qiluvchi */}
             <div className="flex items-center justify-between py-2 border-b border-gray-100">
-              <label className="text-sm text-gray-500 w-48">Masala</label>
+              <label className="text-sm text-gray-500 w-48">
+                Qabul qiluvchi
+              </label>
               <div className="flex-1">
-                <span className="text-base text-gray-900">-</span>
+                <span className="text-base text-gray-900">
+                  {orderData?.receiver_name || "-"}
+                </span>
               </div>
             </div>
 
-            {/* Hujjat nomi */}
+            {/* Jo'natuvchi */}
             <div className="flex items-center justify-between py-2 border-b border-gray-100">
-              <label className="text-sm text-gray-500 w-48">Hujjat nomi</label>
-              <div className="flex-1 flex items-center gap-3">
-                <button className="text-gray-400 hover:text-gray-600">
-                  <Edit2 className="size-4" />
-                </button>
-                <span className="text-base text-gray-900">Чиқувчи хужжат</span>
+              <label className="text-sm text-gray-500 w-48">Jo'natuvchi</label>
+              <div className="flex-1">
+                <span className="text-base text-gray-900">
+                  {orderData?.sender_name || "-"}
+                </span>
               </div>
             </div>
 
@@ -672,8 +765,24 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                   <Edit2 className="size-4" />
                 </button>
                 <p className="text-base text-gray-900 flex-1">
-                  {document.title}
+                  {orderData?.comment || "-"}
                 </p>
+              </div>
+            </div>
+
+            {/* Status */}
+            <div className="flex items-center justify-between py-2 border-b border-gray-100">
+              <label className="text-sm text-gray-500 w-48">Holat</label>
+              <div className="flex-1">
+                <span
+                  className={`text-base font-medium ${
+                    orderData?.is_accepted ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  {orderData?.is_accepted
+                    ? "Qabul qilingan"
+                    : "Qabul qilinmagan"}
+                </span>
               </div>
             </div>
 
@@ -697,7 +806,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               <div className="flex-1">
                 <Button className="gap-2 bg-green-600 hover:bg-green-700">
                   <Plus className="size-4" />
-                  Qa'shish
+                  Qo'shish
                 </Button>
               </div>
             </div>
@@ -711,110 +820,77 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <h3 className="text-base font-semibold text-gray-900 mb-4">Ilovalar</h3>
 
-        {/* Asosiy fayl - DOCX */}
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6"></div>
+        {/* Fayllar grid */}
+        {orderData &&
+        orderData.attachment_files &&
+        orderData.attachment_files.length > 0 ? (
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            {orderData.attachment_files.map((file) => {
+              const fileExtension =
+                file.file_name.split(".").pop()?.toUpperCase() || "FILE";
+              const bgColor =
+                fileExtension === "PDF"
+                  ? "bg-red-600"
+                  : fileExtension === "DOCX" || fileExtension === "DOC"
+                    ? "bg-blue-600"
+                    : "bg-gray-600";
 
-        {/* PDF fayllar grid */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          {/* PDF 1 */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex-shrink-0 size-12 bg-red-600 rounded flex items-center justify-center">
-                <span className="text-white text-xs font-bold">PDF</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-blue-600 truncate">
-                  DD33...5690.pdf
-                </p>
-                <p className="text-xs text-gray-500">0,04 mb</p>
-                <p className="text-xs text-gray-400">30 yanvar 2026 10:26</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-end gap-3">
-              <button
-                className="text-gray-400 hover:text-gray-600"
-                onClick={() => handleViewPDF("DD33...5690.pdf")}
-              >
-                <Eye className="size-5" />
-              </button>
-              <button
-                className="text-gray-400 hover:text-gray-600"
-                onClick={() => handleDownloadPDF("DD33...5690.pdf")}
-              >
-                <Download className="size-5" />
-              </button>
-              <button className="text-gray-400 hover:text-gray-600">
-                <MoreVertical className="size-5" />
-              </button>
-            </div>
+              return (
+                <div
+                  key={file.id}
+                  className="bg-white border border-gray-200 rounded-lg p-4"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div
+                      className={`shrink-0 size-12 ${bgColor} rounded flex items-center justify-center`}
+                    >
+                      <span className="text-white text-xs font-bold">
+                        {fileExtension}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-blue-600 truncate">
+                        {file.file_name}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {formatFileSize(file.file_size)}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {formatDate(file.created_at)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-end gap-3">
+                    <button
+                      className="text-gray-400 hover:text-gray-600"
+                      onClick={() => window.open(file.file, "_blank")}
+                    >
+                      <Eye className="size-5" />
+                    </button>
+                    <button
+                      className="text-gray-400 hover:text-gray-600"
+                      onClick={() => {
+                        const linkElement = window.document.createElement("a");
+                        linkElement.href = file.file;
+                        linkElement.download = file.file_name;
+                        linkElement.click();
+                      }}
+                    >
+                      <Download className="size-5" />
+                    </button>
+                    <button className="text-gray-400 hover:text-gray-600">
+                      <MoreVertical className="size-5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-
-          {/* PDF 2 */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex-shrink-0 size-12 bg-red-600 rounded flex items-center justify-center">
-                <span className="text-white text-xs font-bold">PDF</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-blue-600 truncate">
-                  қа...7098.pdf
-                </p>
-                <p className="text-xs text-gray-500">4,04 mb</p>
-                <p className="text-xs text-gray-400">30 yanvar 2026 10:26</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-end gap-3">
-              <button
-                className="text-gray-400 hover:text-gray-600"
-                onClick={() => handleViewPDF("қа...7098.pdf")}
-              >
-                <Eye className="size-5" />
-              </button>
-              <button
-                className="text-gray-400 hover:text-gray-600"
-                onClick={() => handleDownloadPDF("қа...7098.pdf")}
-              >
-                <Download className="size-5" />
-              </button>
-              <button className="text-gray-400 hover:text-gray-600">
-                <MoreVertical className="size-5" />
-              </button>
-            </div>
+        ) : (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 text-center text-gray-500">
+            Hech qanday ilova yo'q
           </div>
-
-          {/* PDF 3 */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex-shrink-0 size-12 bg-red-600 rounded flex items-center justify-center">
-                <span className="text-white text-xs font-bold">PDF</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-blue-600 truncate">
-                  QE31...3503.pdf
-                </p>
-                <p className="text-xs text-gray-500">0,35 mb</p>
-                <p className="text-xs text-gray-400">30 yanvar 2026 10:26</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-end gap-3">
-              <button
-                className="text-gray-400 hover:text-gray-600"
-                onClick={() => handleViewPDF("QE31...3503.pdf")}
-              >
-                <Eye className="size-5" />
-              </button>
-              <button
-                className="text-gray-400 hover:text-gray-600"
-                onClick={() => handleDownloadPDF("QE31...3503.pdf")}
-              >
-                <Download className="size-5" />
-              </button>
-              <button className="text-gray-400 hover:text-gray-600">
-                <MoreVertical className="size-5" />
-              </button>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* Qo'shish tugmalari */}
         <div className="flex items-center gap-3">
@@ -893,15 +969,15 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       <AgreementModal
         isOpen={showAgreementModal}
         onClose={() => setShowAgreementModal(false)}
-        documentNumber={document?.number}
-        documentId={document?.id}
+        documentNumber={documentProp?.number}
+        documentId={documentProp?.id?.toString()}
         status={agreementStatus}
         setStatus={setAgreementStatus}
         onAddStep={(step) => {
-          if (document?.id) {
+          if (documentProp?.id) {
             setIjroSteps((prev) => ({
               ...prev,
-              [document.id]: [...(prev[document.id] || []), step],
+              [documentProp.id]: [...(prev[documentProp.id] || []), step],
             }));
           }
         }}
@@ -917,66 +993,17 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       <SigningModal
         isOpen={showSigningModal}
         onClose={() => setShowSigningModal(false)}
-        documentNumber={document?.number}
+        documentNumber={documentProp?.number}
         onAddStep={handleAddStep}
       />
 
       {/* Send Document Modal */}
-      <SendDocumentModal
-        isOpen={showSendModal}
-        onClose={() => setShowSendModal(false)}
-        onSend={(employee, purpose) => {
-          // Ijro qadamlariga yozish
-          const now = new Date();
-          const formattedDate = `${now.getDate()} ${["yan", "fev", "mart", "apr", "may", "iyun", "iyul", "avg", "sen", "okt", "noy", "dek"][now.getMonth()]} ${now.getFullYear()}, ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-
-          const getPurposeText = (p: string) => {
-            switch (p) {
-              case "signing":
-                return "Imzolash uchun";
-              case "backup":
-                return "Ustixat uchun";
-              case "execution":
-                return "Ijro uchun";
-              default:
-                return p;
-            }
-          };
-
-          // Oldingi xodimni aniqlash (oxirgi qadamdan)
-          const previousStep =
-            currentDocumentSteps[currentDocumentSteps.length - 1];
-
-          const newStep: IjroStep = {
-            id: Date.now().toString(),
-            fromEmployee: previousStep?.employee || "Aliyev J.N.", // Kimdan
-            fromPosition: previousStep?.position || "Bosh mutaxassis",
-            fromDepartment: previousStep?.department || "Moliya bo'limi",
-            employee: employee.name, // Kimga
-            position: employee.position,
-            department: employee.department,
-            action: getPurposeText(purpose),
-            date: formattedDate,
-            status: "sent",
-          };
-
-          setIjroSteps((prev) => ({
-            ...prev,
-            [document?.id || ""]: [
-              ...(prev[document?.id || ""] || []),
-              newStep,
-            ],
-          }));
-          setShowSendModal(false);
-        }}
-        onSuccess={(message) => {
-          if (onSuccess) {
-            onSuccess(message);
-          }
-        }}
-        documentNumber={document?.number || ""}
-        documentTitle={document?.title || ""}
-      />
+      {showSendModal && (
+        <SendModal
+          orderDataID={orderData?.id!}
+          setIsSendModalOpen={setShowSendModal}
+        />
+      )}
     </div>
   );
 };

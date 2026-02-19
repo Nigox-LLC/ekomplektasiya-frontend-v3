@@ -7,13 +7,24 @@ const axiosAPI = axios.create({
   },
 });
 
-axiosAPI.interceptors.request.use(config => {
+axiosAPI.interceptors.request.use((config) => {
   const token = localStorage.getItem("v3_ganiwer");
-  if(token) {
+  if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
   return config;
-})
+});
+
+axiosAPI.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("v3_ganiwer");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  },
+);
 
 export { axiosAPI };

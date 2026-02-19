@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FileText,
   MapPin,
@@ -14,7 +14,7 @@ import { Button, Card, Input } from "antd";
 import LetterDetail from "./components/Detail/LetterDetail";
 import { useAppSelector } from "@/store/hooks/hooks";
 import { axiosAPI } from "@/service/axiosAPI";
-import { useParams } from "react-router";
+import { useLocation, useParams } from "react-router";
 
 export interface Letter {
   created_at: string;
@@ -36,9 +36,15 @@ const LettersPage: React.FC = () => {
   // Pagination states
   const [page, setPage] = useState(1);
   const [totalDocuments, setTotalDocuments] = useState(0);
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const lastTriggeredPageRef = useRef<number>(1);
+  
   const { showFilters } = useAppSelector((state) => state.letters);
   const { status } = useParams();
+  const location = useLocation();
 
   const getStatusColor = (is_accepted: boolean) => {
     return is_accepted ? "border-l-green-500" : "border-l-red-500";
@@ -106,24 +112,92 @@ const LettersPage: React.FC = () => {
     );
   };
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setPage(1);
+    setLetters([]);
+    setHasMore(true);
+    lastTriggeredPageRef.current = 1;
+  }, [status, location.pathname]);
+
+  // Fetch letters when page changes
   useEffect(() => {
     const fetchLetters = async () => {
+      // Prevent duplicate requests
+      if (isLoading) return;
+      
+      // Don't fetch if we know there's no more data (except for initial page)
+      if (page > 1 && !hasMore) return;
+      
+      setIsLoading(true);
       try {
         const params = {
-          status: status || "all",
+          status: status
+            ? status
+            : location.pathname.split("/").pop() === "my_letter"
+              ? "my_letter"
+              : "all",
           page: page,
         };
         const response = await axiosAPI.get("document/orders/", { params });
         if (response.status === 200) {
-          setLetters(response.data.results);
-          setTotalDocuments(response.data.count);
+          const newLetters = response.data.results;
+          const total = response.data.count;
+          
+          setTotalDocuments(total);
+          
+          // Append or replace based on page number
+          if (page === 1) {
+            setLetters(newLetters);
+            // Check if we have more data to load
+            setHasMore(newLetters.length < total);
+          } else {
+            setLetters((prev) => {
+              const updatedLetters = [...prev, ...newLetters];
+              // Check if we've loaded all data
+              const allDataLoaded = updatedLetters.length >= total || newLetters.length === 0;
+              setHasMore(!allDataLoaded);
+              return updatedLetters;
+            });
+          }
         }
       } catch (error) {
         console.log(error);
+      } finally {
+        setIsLoading(false);
       }
     };
+    
     fetchLetters();
-  }, [page, status]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
+  // Scroll handler for infinite scroll
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container || isLoading || !hasMore) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    
+    // Check if scrolled to bottom (with 50px threshold)
+    if (scrollTop + clientHeight >= scrollHeight - 50) {
+      // Only trigger if we haven't already triggered the next page
+      const nextPage = page + 1;
+      if (lastTriggeredPageRef.current < nextPage) {
+        lastTriggeredPageRef.current = nextPage;
+        setPage(nextPage);
+      }
+    }
+  }, [isLoading, hasMore, page]);
+
+  // Attach scroll event listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
 
   return (
     <div className="flex flex-col gap-4 h-full">
@@ -213,6 +287,7 @@ const LettersPage: React.FC = () => {
 
           {/* Letters List */}
           <div
+            ref={scrollContainerRef}
             className="flex flex-col gap-2 overflow-y-auto"
             style={{ maxHeight: "calc(100vh - 300px)" }}
           >
@@ -270,6 +345,27 @@ const LettersPage: React.FC = () => {
                 </Card>
               );
             })}
+            
+            {/* Loading indicator */}
+            {isLoading && (
+              <div className="flex justify-center items-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              </div>
+            )}
+            
+            {/* End of list message */}
+            {!hasMore && letters.length > 0 && (
+              <div className="text-center py-4 text-sm text-gray-500">
+                Barcha xatlar yuklandi
+              </div>
+            )}
+            
+            {/* Empty state */}
+            {!isLoading && letters.length === 0 && (
+              <div className="text-center py-8 text-sm text-gray-500">
+                Xatlar topilmadi
+              </div>
+            )}
           </div>
         </div>
 

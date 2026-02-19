@@ -6,16 +6,15 @@ import { ClipLoader } from "react-spinners";
 
 interface Props {
   loading: boolean;
-  onClick: () => void;
 }
 
-const SubmitButton: React.FC<Props> = React.memo(({ loading, onClick }) => {
+const SubmitButton: React.FC<Props> = React.memo(({ loading }) => {
   return (
     <Button
       type="primary"
+      htmlType="submit"
       className="w-full h-11"
       disabled={loading}
-      onClick={onClick}
     >
       <LogIn className="size-5 mr-2" />
       Kirish

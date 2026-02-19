@@ -30,7 +30,6 @@ const LoginForm = React.memo(() => {
 
       if (response.status === 200) {
         localStorage.setItem("v3_ganiwer", access);
-        console.log(refresh);
         navigate("/");
       }
     } catch (error) {
@@ -41,11 +40,17 @@ const LoginForm = React.memo(() => {
   }, [username, password, navigate]);
 
   return (
-    <div className="p-8 space-y-4">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit();
+      }}
+      className="p-8 space-y-4"
+    >
       <UsernameInput value={username} onChange={setUsername} />
       <PasswordInput value={password} onChange={setPassword} />
-      <SubmitButton loading={loading} onClick={handleSubmit} />
-    </div>
+      <SubmitButton loading={loading} />
+    </form>
   );
 });
 
