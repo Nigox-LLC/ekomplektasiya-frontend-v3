@@ -1,0 +1,270 @@
+{
+  "employee_statistics": [
+    {
+      "id": 4,
+      "name": "Rasulov Bekzod",
+      "position": "IT mutaxassisi",
+      "completed": 64,
+      "notCompleted": 6,
+      "delayed": 3,
+      "total": 73,
+      "letters": [
+        {
+          "id": "4101",
+          "number": "XAT-2026/0601",
+          "title": "Server konfiguratsiyasini yangilash",
+          "status": "completed",
+          "receivedDate": "10.02.2026",
+          "deadline": "13.02.2026",
+          "timeline": [
+            {
+              "id": 1,
+              "date": "10.02.2026",
+              "time": "09:10",
+              "action": "Vazifa qabul qilindi",
+              "performer": "Rasulov Bekzod",
+              "status": "completed"
+            },
+            {
+              "id": 2,
+              "date": "11.02.2026",
+              "time": "18:40",
+              "action": "Yangilash ishlari bajarildi",
+              "performer": "Rasulov Bekzod",
+              "status": "completed"
+            },
+            {
+              "id": 3,
+              "date": "12.02.2026",
+              "time": "10:00",
+              "action": "Test qilindi va ishga tushirildi",
+              "performer": "Rasulov Bekzod",
+              "status": "completed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Tursunova Malika",
+      "position": "Kadrlar bo'limi mutaxassisi",
+      "completed": 52,
+      "notCompleted": 5,
+      "delayed": 2,
+      "total": 59,
+      "letters": [
+        {
+          "id": "5101",
+          "number": "XAT-2026/0701",
+          "title": "Yangi xodimlarni ishga qabul qilish",
+          "status": "pending",
+          "receivedDate": "12.02.2026",
+          "deadline": "20.02.2026",
+          "timeline": [
+            {
+              "id": 1,
+              "date": "12.02.2026",
+              "time": "11:25",
+              "action": "Arizalar qabul qilindi",
+              "performer": "Tursunova Malika",
+              "status": "completed"
+            },
+            {
+              "id": 2,
+              "date": "13.02.2026",
+              "time": "15:00",
+              "action": "Suhbat jarayoni boshlandi",
+              "performer": "Tursunova Malika",
+              "status": "pending"
+            }
+          ]
+        },
+        {
+          "id": "5102",
+          "number": "XAT-2026/0702",
+          "title": "Mehnat shartnomalarini yangilash",
+          "status": "delayed",
+          "receivedDate": "08.02.2026",
+          "deadline": "14.02.2026",
+          "timeline": [
+            {
+              "id": 1,
+              "date": "08.02.2026",
+              "time": "09:00",
+              "action": "Vazifa belgilandi",
+              "performer": "Tursunova Malika",
+              "status": "completed"
+            },
+            {
+              "id": 2,
+              "date": "15.02.2026",
+              "time": "10:30",
+              "action": "Muddat o'tdi, kutilmoqda",
+              "performer": "-",
+              "status": "delayed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Ismoilov Sardor",
+      "position": "Marketing bo'yicha mutaxassis",
+      "completed": 83,
+      "notCompleted": 7,
+      "delayed": 5,
+      "total": 95,
+      "letters": [
+        {
+          "id": "6101",
+          "number": "XAT-2026/0801",
+          "title": "Reklama kampaniyasini rejalashtirish",
+          "status": "completed",
+          "receivedDate": "09.02.2026",
+          "deadline": "15.02.2026",
+          "timeline": [
+            {
+              "id": 1,
+              "date": "09.02.2026",
+              "time": "13:00",
+              "action": "Topshiriq olindi",
+              "performer": "Ismoilov Sardor",
+              "status": "completed"
+            },
+            {
+              "id": 2,
+              "date": "11.02.2026",
+              "time": "17:20",
+              "action": "Strategiya ishlab chiqildi",
+              "performer": "Ismoilov Sardor",
+              "status": "completed"
+            },
+            {
+              "id": 3,
+              "date": "13.02.2026",
+              "time": "10:45",
+              "action": "Rahbariyatga taqdim etildi",
+              "performer": "Ismoilov Sardor",
+              "status": "completed"
+            }
+          ]
+        },
+        {
+          "id": "6102",
+          "number": "XAT-2026/0802",
+          "title": "Bozor tahlili",
+          "status": "pending",
+          "receivedDate": "14.02.2026",
+          "deadline": "19.02.2026",
+          "timeline": [
+            {
+              "id": 1,
+              "date": "14.02.2026",
+              "time": "09:50",
+              "action": "Ma'lumotlar yig'ilmoqda",
+              "performer": "Ismoilov Sardor",
+              "status": "pending"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Aliyev Jamshid",
+      "position": "Bo'lim boshlig'i",
+      "completed": 142,
+      "notCompleted": 8,
+      "delayed": 6,
+      "total": 156,
+      "letters": [
+        {
+          "id": "7101",
+          "number": "XAT-2026/0901",
+          "title": "Moliya hisoboti taqdim etish",
+          "status": "completed",
+          "receivedDate": "10.02.2026",
+          "deadline": "15.02.2026",
+          "timeline": [
+            {
+              "id": 1,
+              "date": "10.02.2026",
+              "time": "09:30",
+              "action": "Xat qabul qilindi",
+              "performer": "Aliyev Jamshid",
+              "status": "completed"
+            },
+            {
+              "id": 2,
+              "date": "12.02.2026",
+              "time": "11:00",
+              "action": "Imzolandi",
+              "performer": "Aliyev Jamshid",
+              "status": "completed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Karimov Aziz",
+      "position": "Bosh mutaxassis",
+      "completed": 75,
+      "notCompleted": 10,
+      "delayed": 4,
+      "total": 89,
+      "letters": [
+        {
+          "id": "8101",
+          "number": "XAT-2026/1001",
+          "title": "Texnik hujjatlar tayyorlash",
+          "status": "completed",
+          "receivedDate": "09.02.2026",
+          "deadline": "14.02.2026",
+          "timeline": [
+            {
+              "id": 1,
+              "date": "09.02.2026",
+              "time": "10:00",
+              "action": "Topshiriq olindi",
+              "performer": "Karimov Aziz",
+              "status": "completed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Nazarova Dilnoza",
+      "position": "Yetakchi mutaxassis",
+      "completed": 108,
+      "notCompleted": 12,
+      "delayed": 4,
+      "total": 124,
+      "letters": [
+        {
+          "id": "9101",
+          "number": "XAT-2026/1101",
+          "title": "Kadrlar bo'yicha hisobot",
+          "status": "completed",
+          "receivedDate": "07.02.2026",
+          "deadline": "12.02.2026",
+          "timeline": [
+            {
+              "id": 1,
+              "date": "07.02.2026",
+              "time": "11:00",
+              "action": "Vazifa belgilandi",
+              "performer": "Nazarova Dilnoza",
+              "status": "completed"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -16,7 +16,6 @@ import { Mail, CheckCircle, Clock, XCircle } from "lucide-react";
 
 interface DashboardViewProps {
   hasAccess: (section: string) => boolean;
-  initialView?: "general" | "employees";
 }
 
 // Ma'lumotlar
@@ -57,10 +56,7 @@ const StatCard = ({
   </div>
 );
 
-const GenStatistics: React.FC<DashboardViewProps> = ({
-  hasAccess,
-  initialView = "general",
-}) => {
+const GenStatistics: React.FC<DashboardViewProps> = ({ hasAccess }) => {
   // Ruxsatni tekshirish
   if (!hasAccess("dashboard-statistics")) {
     return null;
@@ -70,14 +66,14 @@ const GenStatistics: React.FC<DashboardViewProps> = ({
     <div className="w-full flex flex-col items-center justify-center bg-gray-50/50">
       {/* Asosiy o'rab turuvchi Div - 3D chuqur soya bilan */}
       <div
-        className="w-full bg-white p-8 rounded-[24px] border border-gray-100"
+        className="w-full bg-white p-4 rounded-3xl border border-gray-100"
         style={{
           boxShadow:
             "0 20px 50px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.04)",
         }}
       >
         {/* Yuqori qism: Kartochkalar */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-4">
           <StatCard
             icon={Mail}
             title="Jami xatlar"

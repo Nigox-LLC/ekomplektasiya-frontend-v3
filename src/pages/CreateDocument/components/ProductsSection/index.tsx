@@ -152,36 +152,19 @@ const ProductsSection: React.FC<IProps> = ({
                 handleQuantityFocus={handleQuantityFocus}
                 handleDeleteRow={handleDeleteRow}
               />
-
-              {/* Yangi qator qo'shish */}
-              <div className="mt-4 flex items-center justify-between">
-                <Button
-                  type="default"
-                  variant="outlined"
-                  className="gap-2"
-                  onClick={handleAddRow}
-                >
-                  <Plus className="size-4" />
-                  Tovar qo'shish
-                </Button>
-              </div>
             </div>
-            {orderData.products.length === 0 && (
-              <>
-                {/* Yangi qator qo'shish */}
-                <div className="mt-4 flex justify-center">
-                  <Button
-                    type="default"
-                    variant="outlined"
-                    className="gap-2"
-                    onClick={handleAddRow}
-                  >
-                    <Plus className="size-4" />
-                    Tovar qo'shish
-                  </Button>
-                </div>
-              </>
-            )}
+            {/* Yangi qator qo'shish */}
+            <div className="mt-4 flex justify-center">
+              <Button
+                type="primary"
+                variant="outlined"
+                className="gap-2"
+                onClick={handleAddRow}
+              >
+                <Plus className="size-4" />
+                Tovar qo'shish
+              </Button>
+            </div>
           </>
         )}
       </Card>

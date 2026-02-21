@@ -12,7 +12,6 @@ import {
   Home,
   Inbox,
   Mail,
-  MessageCircle,
   Package,
   PenTool,
   Send,
@@ -40,23 +39,6 @@ const SidebarNav: React.FC = React.memo(() => {
       id: "dashboard",
       label: "Bosh sahifa",
       icon: <Home className="size-5" />,
-      subItems: [
-        {
-          id: "dashboard-main",
-          label: "Dashboard",
-          icon: null,
-        },
-        {
-          id: "general-statistics",
-          label: "Umumiy statistika",
-          icon: null,
-        },
-        {
-          id: "employee-statistics",
-          label: "Xodimlar statistikasi",
-          icon: null,
-        },
-      ],
     },
     {
       id: "calendar",

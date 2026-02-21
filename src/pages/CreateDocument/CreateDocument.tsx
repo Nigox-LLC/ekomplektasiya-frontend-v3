@@ -187,18 +187,6 @@ const CreateDocument: React.FC = () => {
         ) : (
           // External document sections
           <>
-            {/* Extra fields */}
-            {/* <div className="grid grid-cols-4 gap-4">
-            <div className="flex flex-col gap-2">
-              <label htmlFor="registration_journal_id">
-                Ro'yxatga olish jurnali*
-              </label>
-              <Select>
-                
-              </Select>
-            </div>
-          </div> */}
-
             {/* Table of products - ACCORDION */}
             <ProductsSection
               orderDataID={orderDataID}

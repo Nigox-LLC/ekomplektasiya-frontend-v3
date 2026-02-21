@@ -30,19 +30,6 @@ import NewDocumentProduct from "./pages/NewDocument/NewDocumentProduct/NewDocume
 import { ToastContainer } from "react-toastify";
 
 const App: React.FC = () => {
-  const hasAccess = () => {
-    return true;
-  };
-
-  const [currentUser, setCurrentUser] = useState({
-    username: "",
-    fullName: "",
-    permissions: [] as string[],
-  });
-  const [userRole, setUserRole] = useState<
-    "admin" | "manager" | "technical" | "employee"
-  >("employee");
-
   const router = createBrowserRouter([
     {
       path: "/",
@@ -50,34 +37,7 @@ const App: React.FC = () => {
       children: [
         {
           path: "dashboard",
-          element: <Outlet />,
-          children: [
-            {
-              path: "dashboard-main",
-              element: (
-                <Dashboard
-                  userName={currentUser.fullName}
-                  userPosition={
-                    userRole === "admin"
-                      ? "Administrator"
-                      : userRole === "manager"
-                        ? "Menejer"
-                        : userRole === "technical"
-                          ? "Texnik mutaxassis"
-                          : "Xodim"
-                  }
-                />
-              ),
-            },
-            {
-              path: "employee-statistics",
-              element: <EmployeeStatistics hasAccess={hasAccess} />,
-            },
-            {
-              path: "general-statistics",
-              element: <GenStatistics hasAccess={hasAccess} />,
-            },
-          ],
+          element: <Dashboard />,
         },
         {
           path: "appeal-letter",
