@@ -1,9 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router";
 import { Layout } from "@/components";
 import {
-  EmployeeStatistics,
-  GenStatistics,
   Login,
   Calendar,
   LettersPage,
