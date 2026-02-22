@@ -1,343 +1,3 @@
-// import React, { useMemo, useState } from "react";
-// import { useNavigate } from "react-router";
-// import {
-//   CheckCircle,
-//   ChevronLeft,
-//   ChevronRight,
-//   ChevronsLeft,
-//   ChevronsRight,
-//   Download,
-//   FileText,
-//   Info,
-//   Link2,
-//   Package,
-//   Plus,
-//   Printer,
-//   RefreshCw,
-//   Search,
-//   UploadCloud,
-//   Users,
-//   X,
-// } from "lucide-react";
-
-// const PriceAnalysis: React.FC = () => {
-//   // --- List state ---
-//   const [activeTab, setActiveTab] = useState<"all" | "approved" | "rejected">("all");
-
-//   const tableRows = useMemo(
-//     () => [
-//       {
-//         id: "000000091",
-//         date: "12.02.2026 18:50:41",
-//         name: "",
-//         employee: "Zubaydullaeva Adiba Urinbaevna",
-//         formed: true,
-//         approved: false,
-//       },
-//       {
-//         id: "000000090",
-//         date: "12.02.2026 18:21:48",
-//         name: "",
-//         employee: "Zubaydullaeva Adiba Urinbaevna",
-//         formed: true,
-//         approved: false,
-//       },
-//       {
-//         id: "000000089",
-//         date: "12.02.2026 18:20:35",
-//         name: "",
-//         employee: "Zubaydullaeva Adiba Urinbaevna",
-//         formed: true,
-//         approved: false,
-//       },
-//       {
-//         id: "000000088",
-//         date: "12.02.2026 18:19:19",
-//         name: "",
-//         employee: "Zubaydullaeva Adiba Urinbaevna",
-//         formed: true,
-//         approved: false,
-//       },
-//       {
-//         id: "000000087",
-//         date: "12.02.2026 18:07:56",
-//         name: "",
-//         employee: "Zubaydullaeva Adiba Urinbaevna",
-//         formed: true,
-//         approved: false,
-//       },
-//       {
-//         id: "000000086",
-//         date: "12.02.2026 16:08:45",
-//         name: "",
-//         employee: "Zubaydullaeva Adiba Urinbaevna",
-//         formed: true,
-//         approved: true,
-//       },
-//       {
-//         id: "000000085",
-//         date: "12.02.2026 15:56:56",
-//         name: "",
-//         employee: "Zubaydullaeva Adiba Urinbaevna",
-//         formed: true,
-//         approved: true,
-//       },
-//       {
-//         id: "000000077",
-//         date: "09.02.2026 18:35:47",
-//         name: "",
-//         employee: "Zubaydullaeva Adiba Urinbaevna",
-//         formed: true,
-//         approved: true,
-//       },
-//     ],
-//     [],
-//   );
-
-//   const filteredRows = useMemo(() => {
-//     if (activeTab === "approved") return tableRows.filter((r) => r.approved);
-//     if (activeTab === "rejected") return tableRows.filter((r) => !r.approved);
-//     return tableRows;
-//   }, [activeTab, tableRows]);
-
-//   const navigate = useNavigate();
-
-//   const stepTitles: Record<
-//     1 | 2 | 3 | 4,
-//     { title: string; subtitle: string; icon: React.ReactNode }
-//   > = {
-//     1: {
-//       title: "Yangi narx tahlili yaratish",
-//       subtitle: "Tovarlar - Qadam 1/4",
-//       icon: <Package className="h-4 w-4" />,
-//     },
-//     2: {
-//       title: "Yangi narx tahlili yaratish",
-//       subtitle: "Tijoriy takliflar - Qadam 2/4",
-//       icon: <FileText className="h-4 w-4" />,
-//     },
-//     3: {
-//       title: "Yangi narx tahlili yaratish",
-//       subtitle: "Imzolovchilar - Qadam 3/4",
-//       icon: <Users className="h-4 w-4" />,
-//     },
-//     4: {
-//       title: "Yangi narx tahlili yaratish",
-//       subtitle: "Narx tahlili - Qadam 4/4",
-//       icon: <FileText className="h-4 w-4" />,
-//     },
-//   };
-
-//   // when user wants to create, we navigate to the create page route
-//   const openCreate = () => navigate("create");
-
-//   const Btn = ({
-//     children,
-//     onClick,
-//     variant = "primary",
-//     className = "",
-//     disabled,
-//     title,
-//   }: {
-//     children: React.ReactNode;
-//     onClick?: () => void;
-//     variant?: "primary" | "secondary" | "ghost" | "danger";
-//     className?: string;
-//     disabled?: boolean;
-//     title?: string;
-//   }) => {
-//     const base =
-//       "inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed";
-//     const variants: Record<string, string> = {
-//       primary: "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
-//       secondary:
-//         "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50",
-//       ghost: "text-slate-700 hover:bg-slate-100",
-//       danger: "bg-red-600 text-white hover:bg-red-700 shadow-sm",
-//     };
-
-//     return (
-//       <button
-//         title={title}
-//         disabled={disabled}
-//         onClick={onClick}
-//         className={`${base} ${variants[variant]} ${className}`}
-//       >
-//         {children}
-//       </button>
-//     );
-//   };
-
-//   const Badge = ({ ok }: { ok: boolean }) => (
-//     <span
-//       className={`inline-flex items-center justify-center rounded-full p-1 ${ok ? "text-emerald-600" : "text-rose-500"}`}
-//     >
-//       {ok ? <CheckCircle className="h-5 w-5" /> : <X className="h-5 w-5" />}
-//     </span>
-//   );
-
-//   const Card = ({
-//     children,
-//     className = "",
-//   }: {
-//     children: React.ReactNode;
-//     className?: string;
-//   }) => (
-//     <div
-//       className={`rounded-lg border border-slate-200 bg-white shadow-sm ${className}`}
-//     >
-//       {children}
-//     </div>
-//   );
-
-//   // ModalShell and the create modal content are moved into a dedicated page component
-
-//   return (
-//     <div className="w-full h-full bg-slate-100 rounded-2xl p-2">
-//       <Card className="overflow-hidden w-full h-full">
-//         {/* Top tabs + actions */}
-//         <div className="flex flex-col gap-3 border-b border-slate-200 bg-white p-4 md:flex-row md:items-center md:justify-between">
-//           <div className="flex items-center gap-2">
-//             <button
-//               onClick={() => setActiveTab("all")}
-//               className={`rounded-full px-3 py-1 text-sm font-medium ${activeTab === "all" ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-50"}`}
-//             >
-//               Barchasi{" "}
-//               <span className="ml-1 rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-700">
-//                 {tableRows.length}
-//               </span>
-//             </button>
-//             <button
-//               onClick={() => setActiveTab("approved")}
-//               className={`rounded-full px-3 py-1 text-sm font-medium ${activeTab === "approved" ? "bg-emerald-50 text-emerald-800" : "text-slate-600 hover:bg-slate-50"}`}
-//             >
-//               Tasdiqlangan{" "}
-//               <span className="ml-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">
-//                 {tableRows.filter((r) => r.approved).length}
-//               </span>
-//             </button>
-//             <button
-//               onClick={() => setActiveTab("rejected")}
-//               className={`rounded-full px-3 py-1 text-sm font-medium ${activeTab === "rejected" ? "bg-rose-50 text-rose-800" : "text-slate-600 hover:bg-slate-50"}`}
-//             >
-//               Tasdiqlanmagan{" "}
-//               <span className="ml-1 rounded-full bg-rose-100 px-2 py-0.5 text-xs text-rose-700">
-//                 {tableRows.filter((r) => !r.approved).length}
-//               </span>
-//             </button>
-//           </div>
-
-//           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-//             <Btn variant="primary" onClick={openCreate}>
-//               <Plus className="h-4 w-4" />
-//               Yaratish
-//             </Btn>
-//             <Btn variant="secondary" onClick={() => {}}>
-//               <RefreshCw className="h-4 w-4" />
-//               Yangilash
-//             </Btn>
-//             <Btn variant="secondary" onClick={() => {}}>
-//               <Printer className="h-4 w-4" />
-//               Chop etish
-//             </Btn>
-//             <div className="relative w-full sm:w-72">
-//               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-//               <input
-//                 className="w-full rounded-md border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                 placeholder="Qidirish (Ctrl+F)"
-//               />
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Table */}
-//         <div className="overflow-auto">
-//           <table className="w-full h-full min-w-[1000px] border-collapse">
-//             <thead className="bg-slate-50">
-//               <tr className="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-//                 <th className="w-10 border-b border-slate-200 px-4 py-3">
-//                   <input type="checkbox" className="h-4 w-4" />
-//                 </th>
-//                 <th className="border-b border-slate-200 px-4 py-3">Nomer</th>
-//                 <th className="border-b border-slate-200 px-4 py-3">Sana</th>
-//                 <th className="border-b border-slate-200 px-4 py-3">Nomi</th>
-//                 <th className="border-b border-slate-200 px-4 py-3">Xodim</th>
-//                 <th className="border-b border-slate-200 px-4 py-3">
-//                   Shakllanish holati
-//                 </th>
-//                 <th className="border-b border-slate-200 px-4 py-3">
-//                   Tasdiqlanish holati
-//                 </th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {filteredRows.map((r) => (
-//                 <tr key={r.id} className="hover:bg-slate-50">
-//                   <td className="border-b border-slate-200 px-4 py-3">
-//                     <input type="checkbox" className="h-4 w-4" />
-//                   </td>
-//                   <td className="border-b border-slate-200 px-4 py-3 text-sm text-slate-800">
-//                     {r.id}
-//                   </td>
-//                   <td className="border-b border-slate-200 px-4 py-3 text-sm text-slate-700">
-//                     {r.date}
-//                   </td>
-//                   <td className="border-b border-slate-200 px-4 py-3 text-sm text-slate-700">
-//                     {r.name || "-"}
-//                   </td>
-//                   <td className="border-b border-slate-200 px-4 py-3 text-sm text-slate-700">
-//                     {r.employee}
-//                   </td>
-//                   <td className="border-b border-slate-200 px-4 py-3">
-//                     <Badge ok={r.formed} />
-//                   </td>
-//                   <td className="border-b border-slate-200 px-4 py-3">
-//                     <Badge ok={r.approved} />
-//                   </td>
-//                 </tr>
-//               ))}
-//             </tbody>
-//           </table>
-//         </div>
-
-//         {/* Footer pagination */}
-//         <div className="flex flex-col gap-2 border-t border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 md:flex-row md:items-center md:justify-between">
-//           <div>
-//             Jami: <span className="font-medium text-slate-800">{filteredRows.length}</span>
-//             ta buyurtma &nbsp;|&nbsp; Ko'rsatilmoqda:{" "}
-//             <span className="font-medium text-slate-800">
-//               1-{Math.min(8, filteredRows.length)}
-//             </span>
-//           </div>
-//           <div className="flex items-center justify-between gap-2 md:justify-end">
-//             <div className="flex items-center gap-1">
-//               <button className="rounded-md border border-slate-200 p-2 hover:bg-slate-50">
-//                 <ChevronsLeft className="h-4 w-4" />
-//               </button>
-//               <button className="rounded-md border border-slate-200 p-2 hover:bg-slate-50">
-//                 <ChevronLeft className="h-4 w-4" />
-//               </button>
-//               <span className="mx-2 inline-flex h-8 w-8 items-center justify-center rounded-md bg-blue-600 text-white">
-//                 1
-//               </span>
-//               <button className="rounded-md border border-slate-200 p-2 hover:bg-slate-50">
-//                 <ChevronRight className="h-4 w-4" />
-//               </button>
-//               <button className="rounded-md border border-slate-200 p-2 hover:bg-slate-50">
-//                 <ChevronsRight className="h-4 w-4" />
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-//       </Card>
-
-//       {/* create wizard moved to a dedicated page at /price-analysis/create */}
-//     </div>
-//   );
-// };
-
-// export default PriceAnalysis;
-
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -346,22 +6,16 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  Download,
-  FileText,
-  Info,
-  Link2,
-  Package,
+  X,
   Plus,
   Printer,
   RefreshCw,
   Search,
-  UploadCloud,
-  Users,
-  X,
 } from "lucide-react";
-import { axiosAPI } from "@/service/axiosAPI"; // ⚠️ Yo‘lni o‘zingizning loyihangizga moslang!
+import { axiosAPI } from "@/service/axiosAPI";
+import { Button, Input } from "antd";
 
-// API javobi uchun TypeScript tiplari
+// API response types
 interface AnalysisItem {
   id: number;
   employee_name: string;
@@ -377,272 +31,341 @@ interface ApiResponse {
   results: AnalysisItem[];
 }
 
-// Sanani formatlash (dd.mm.yyyy HH:MM:SS)
-const formatDate = (isoString: string): string => {
-  const date = new Date(isoString);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const seconds = String(date.getSeconds()).padStart(2, "0");
-  return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+// Date formatter
+const formatDate = (iso: string): string => {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 };
 
-const ANALYSIS_ENDPOINT = "/document/analysis/"; // BaseURL avtomatik qo‘shiladi
+const ITEMS_PER_PAGE = 10;
+const BASE_URL = "/document/analysis/";
 
 const PriceAnalysis: React.FC = () => {
   const navigate = useNavigate();
-
-  // --- Maʼlumotlar holati ---
-  const [items, setItems] = useState<AnalysisItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [nextPageUrl, setNextPageUrl] = useState<string | null>(ANALYSIS_ENDPOINT);
-  const [totalCount, setTotalCount] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-
-  // --- UI holati ---
-  const [activeTab, setActiveTab] = useState<"all" | "approved" | "rejected">("all");
+  const [printLoading, setPrintLoading] = useState(false);
+  const [data, setData] = useState<AnalysisItem[]>([]);
+  const [count, setCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState<"all" | "approved" | "unapproved">("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Infinite scroll uchun reflar
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const lastItemRef = useRef<HTMLTableRowElement | null>(null);
-
-  // --- Maʼlumotlarni yuklash funksiyasi (append qilish imkoniyati bilan) ---
-  const fetchItems = useCallback(async (url: string, append = false) => {
-    if (!url) return;
+  // Fetch list with pagination and optional filter
+  const fetchList = useCallback(async (page: number, status: typeof statusFilter) => {
     setLoading(true);
-    setError(null);
     try {
-      // axiosAPI yordamida GET so‘rov
-      const response = await axiosAPI.get<ApiResponse>(url);
-      const data = response.data;
-
-      setTotalCount(data.count);
-      setNextPageUrl(data.next);
-      setHasMore(!!data.next);
-
-      setItems(prev => (append ? [...prev, ...data.results] : data.results));
-    } catch (err: any) {
-      setError(err.message || "Nomaʼlum xatolik");
+      const offset = (page - 1) * ITEMS_PER_PAGE;
+      const params: any = { limit: ITEMS_PER_PAGE, offset };
+      if (status !== "all") {
+        params.is_signed = status === "approved";
+      }
+      const res = await axiosAPI.get<ApiResponse>(BASE_URL, { params });
+      setData(res.data.results);
+      setCount(res.data.count);
+    } catch (error) {
+      console.error("Failed to fetch price analysis list", error);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Dastlabki yuklash
   useEffect(() => {
-    fetchItems(ANALYSIS_ENDPOINT, false);
-  }, [fetchItems]);
+    fetchList(currentPage, statusFilter);
+  }, [currentPage, statusFilter, fetchList]);
 
-  // --- Infinite scroll observer ---
+  // Keyboard shortcut for search (Ctrl+F)
   useEffect(() => {
-    if (loading || !hasMore) return;
-
-    if (observerRef.current) observerRef.current.disconnect();
-
-    observerRef.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore && !loading && nextPageUrl) {
-        fetchItems(nextPageUrl, true);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        searchInputRef.current?.focus();
       }
-    });
-
-    if (lastItemRef.current) {
-      observerRef.current.observe(lastItemRef.current);
-    }
-
-    return () => observerRef.current?.disconnect();
-  }, [loading, hasMore, nextPageUrl, fetchItems]);
-
-  // --- Tab va qidiruv bo‘yicha filtratsiya ---
-  const filteredItems = useMemo(() => {
-    let filtered = items;
-    if (activeTab === "approved") {
-      filtered = filtered.filter(item => item.is_signed);
-    } else if (activeTab === "rejected") {
-      filtered = filtered.filter(item => !item.is_signed);
-    }
-
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(item =>
-        item.number.toLowerCase().includes(term) ||
-        item.employee_name.toLowerCase().includes(term)
-      );
-    }
-    return filtered;
-  }, [items, activeTab, searchTerm]);
-
-  // --- Event handlerlar ---
-  const handleRefresh = () => {
-    fetchItems(ANALYSIS_ENDPOINT, false);
-  };
-
-  const openCreate = () => navigate("create");
-
-  // --- Qayta ishlatiladigan UI komponentlar (asl holicha qoldirildi) ---
-  const Btn = ({ children, onClick, variant = "primary", className = "", disabled, title }: any) => {
-    const base = "inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed";
-    const variants: Record<string, string> = {
-      primary: "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
-      secondary: "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50",
-      ghost: "text-slate-700 hover:bg-slate-100",
-      danger: "bg-red-600 text-white hover:bg-red-700 shadow-sm",
     };
-    return (
-      <button title={title} disabled={disabled} onClick={onClick} className={`${base} ${variants[variant]} ${className}`}>
-        {children}
-      </button>
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Filter by search term locally
+  const filteredData = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return data;
+    return data.filter(
+      (item) =>
+        item.number.toLowerCase().includes(q) ||
+        item.employee_name.toLowerCase().includes(q)
     );
+  }, [data, searchTerm]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(count / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, count);
+
+  const goToFirst = () => setCurrentPage(1);
+  const goToLast = () => setCurrentPage(totalPages);
+  const goToPrev = () => setCurrentPage((p) => Math.max(1, p - 1));
+  const goToNext = () => setCurrentPage((p) => Math.min(totalPages, p + 1));
+
+  const getPageNumbers = () => {
+    const pages: number[] = [];
+    const maxVisible = 5;
+    let start = Math.max(1, currentPage - 2);
+    const end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
   };
 
-  const Badge = ({ ok }: { ok: boolean }) => (
-    <span className={`inline-flex items-center justify-center rounded-full p-1 ${ok ? "text-emerald-600" : "text-rose-500"}`}>
-      {ok ? <CheckCircle className="h-5 w-5" /> : <X className="h-5 w-5" />}
-    </span>
-  );
+  const handleRefresh = () => {
+    fetchList(currentPage, statusFilter);
+  };
 
-  const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-    <div className={`rounded-lg border border-slate-200 bg-white shadow-sm ${className}`}>{children}</div>
-  );
+  const handlePrint = async () => {
+    // Simplified print – fetch all pages and print
+    setPrintLoading(true);
+    try {
+      let allItems: AnalysisItem[] = [];
+      let nextUrl: string | null = BASE_URL;
+      while (nextUrl) {
+        const res = await axiosAPI.get<ApiResponse>(nextUrl);
+        allItems = [...allItems, ...res.data.results];
+        nextUrl = res.data.next;
+      }
+      // Apply status filter if needed
+      if (statusFilter !== "all") {
+        allItems = allItems.filter((item) =>
+          statusFilter === "approved" ? item.is_signed : !item.is_signed
+        );
+      }
+      // Apply search filter
+      if (searchTerm.trim()) {
+        const q = searchTerm.toLowerCase();
+        allItems = allItems.filter(
+          (item) =>
+            item.number.toLowerCase().includes(q) ||
+            item.employee_name.toLowerCase().includes(q)
+        );
+      }
+
+      // Generate print HTML
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) return;
+
+      const rows = allItems
+        .map(
+          (item, idx) => `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${item.number}</td>
+          <td>${formatDate(item.created_at)}</td>
+          <td>${item.employee_name}</td>
+          <td>${item.is_signed ? "Tasdiqlangan" : "Tasdiqlanmagan"}</td>
+        </tr>
+      `
+        )
+        .join("");
+
+      const html = `
+        <html>
+          <head><title>Narx tahlili hisoboti</title>
+          <style>
+            body { font-family: Arial; margin:20px; }
+            table { border-collapse: collapse; width:100%; }
+            th,td { border:1px solid #ccc; padding:8px; text-align:left; }
+            th { background:#1E56A0; color:white; }
+          </style>
+          </head>
+          <body>
+            <h2>Narx tahlili hujjatlari</h2>
+            <table>
+              <thead><tr><th>№</th><th>Hujjat raqami</th><th>Sana</th><th>Xodim</th><th>Holati</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+            <p>Jami: ${allItems.length} ta</p>
+          </body>
+        </html>
+      `;
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.print();
+    } catch (error) {
+      console.error("Print error", error);
+    } finally {
+      setPrintLoading(false);
+    }
+  };
 
   return (
-    <div className="w-full h-full bg-slate-100 rounded-2xl p-2">
-      <Card className="overflow-hidden w-full h-full flex flex-col">
-        {/* Yuqori panel: tablar va tugmalar */}
-        <div className="flex flex-col gap-3 border-b border-slate-200 bg-white p-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-2">
+    <section className="space-y-4 animate-in fade-in duration-700">
+      {/* Status bar and actions */}
+      <div className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm">
+        <div className="flex items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
             <button
-              onClick={() => setActiveTab("all")}
-              className={`rounded-full px-3 py-1 text-sm font-medium ${
-                activeTab === "all" ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-50"
-              }`}
+              onClick={() => { setCurrentPage(1); setStatusFilter("all"); }}
+              className={`flex items-center gap-1 px-2 py-1.5 rounded-md text-sm font-medium transition
+                ${statusFilter === "all"
+                  ? "bg-slate-100 border-slate-300 text-slate-900"
+                  : "text-slate-600 hover:bg-slate-50 border-transparent"}`}
             >
-              Barchasi{" "}
-              <span className="ml-1 rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-700">
-                {totalCount}
+              <span>Barchasi</span>
+              <span className="px-2 py-0.5 text-xs font-semibold bg-slate-200 text-slate-700 rounded-md">
+                {count}
               </span>
             </button>
             <button
-              onClick={() => setActiveTab("approved")}
-              className={`rounded-full px-3 py-1 text-sm font-medium ${
-                activeTab === "approved" ? "bg-emerald-50 text-emerald-800" : "text-slate-600 hover:bg-slate-50"
-              }`}
+              onClick={() => { setCurrentPage(1); setStatusFilter("approved"); }}
+              className={`flex items-center gap-1 px-2 py-1.5 rounded-md text-sm font-medium transition
+                ${statusFilter === "approved"
+                  ? "bg-emerald-50 border-emerald-300 text-emerald-800"
+                  : "text-slate-600 hover:bg-emerald-50 border-transparent"}`}
             >
-              Tasdiqlangan{" "}
-              <span className="ml-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">
-                {items.filter(i => i.is_signed).length}
+              <span>Tasdiqlangan</span>
+              <span className="px-2 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-700 rounded-md">
+                {data.filter((d) => d.is_signed).length}
               </span>
             </button>
             <button
-              onClick={() => setActiveTab("rejected")}
-              className={`rounded-full px-3 py-1 text-sm font-medium ${
-                activeTab === "rejected" ? "bg-rose-50 text-rose-800" : "text-slate-600 hover:bg-slate-50"
-              }`}
+              onClick={() => { setCurrentPage(1); setStatusFilter("unapproved"); }}
+              className={`flex items-center gap-1 px-2 py-1.5 rounded-md text-sm font-medium transition
+                ${statusFilter === "unapproved"
+                  ? "bg-rose-50 border-rose-300 text-rose-800"
+                  : "text-slate-600 hover:bg-rose-50 border-transparent"}`}
             >
-              Tasdiqlanmagan{" "}
-              <span className="ml-1 rounded-full bg-rose-100 px-2 py-0.5 text-xs text-rose-700">
-                {items.filter(i => !i.is_signed).length}
+              <span>Tasdiqlanmagan</span>
+              <span className="px-2 py-0.5 text-xs font-semibold bg-rose-100 text-rose-700 rounded-md">
+                {data.filter((d) => !d.is_signed).length}
               </span>
             </button>
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <Btn variant="primary" onClick={openCreate}>
-              <Plus className="h-4 w-4" />
-              Yaratish
-            </Btn>
-            <Btn variant="secondary" onClick={handleRefresh}>
-              <RefreshCw className="h-4 w-4" />
-              Yangilash
-            </Btn>
-            <Btn variant="secondary" onClick={() => {}}>
-              <Printer className="h-4 w-4" />
-              Chop etish
-            </Btn>
-            <div className="relative w-full sm:w-72">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <input
-                className="w-full rounded-md border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Qidirish (№ yoki xodim)"
+          <div className="flex items-center gap-3">
+            <Button onClick={() => navigate("create")}>
+              <Plus className="w-4 h-4 mr-1" /> Yaratish
+            </Button>
+            <Button onClick={handleRefresh} disabled={loading}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+              {loading ? "Yangilanmoqda..." : "Yangilash"}
+            </Button>
+            <Button variant="outlined" onClick={handlePrint} disabled={printLoading}>
+              <Printer className={`w-4 h-4 mr-2 ${printLoading ? "animate-spin" : ""}`} />
+              {printLoading ? "Chop etilmoqda..." : "Chop etish"}
+            </Button>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+              <Input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Qidirish (Ctrl+F)"
                 value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-64 h-8 pl-9 text-sm"
               />
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Jadval (infinite scroll) */}
-        <div className="overflow-auto flex-1">
-          <table className="w-full border-collapse">
-            <thead className="bg-slate-50 sticky top-0">
-              <tr className="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                <th className="border-b border-slate-200 px-4 py-3">Nomer</th>
-                <th className="border-b border-slate-200 px-4 py-3">Sana</th>
-                <th className="border-b border-slate-200 px-4 py-3">Xodim</th>
-                <th className="border-b border-slate-200 px-4 py-3">Tasdiqlanish holati</th>
+      {/* Table */}
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-slate-50 border-b border-slate-100">
+              <tr>
+                <th className="text-left px-4 py-3 text-sm font-semibold text-slate-700">Nomer</th>
+                <th className="text-center px-4 py-3 text-sm font-semibold text-slate-700">Sana</th>
+                <th className="text-center px-4 py-3 text-sm font-semibold text-slate-700">Xodim</th>
+                <th className="text-center px-4 py-3 text-sm font-semibold text-slate-700">Tasdiqlanish holati</th>
               </tr>
             </thead>
             <tbody>
-              {filteredItems.map((item, index) => (
-                <tr
-                  key={item.id}
-                  ref={index === filteredItems.length - 1 ? lastItemRef : null}
-                  className="hover:bg-slate-50"
-                >
-                  <td className="border-b border-slate-200 px-4 py-3 text-sm text-slate-800">
-                    {item.number}
-                  </td>
-                  <td className="border-b border-slate-200 px-4 py-3 text-sm text-slate-700">
-                    {formatDate(item.created_at)}
-                  </td>
-                  <td className="border-b border-slate-200 px-4 py-3 text-sm text-slate-700">
-                    {item.employee_name}
-                  </td>
-                  <td className="border-b border-slate-200 px-4 py-3">
-                    <Badge ok={item.is_signed} />
-                  </td>
-                </tr>
-              ))}
-              {loading && (
+              {filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-4 text-slate-500">
-                    Yuklanmoqda...
-                  </td>
-                </tr>
-              )}
-              {error && (
-                <tr>
-                  <td colSpan={6} className="text-center py-4 text-red-500">
-                    Xatolik: {error}
-                  </td>
-                </tr>
-              )}
-              {!loading && !error && filteredItems.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="text-center py-4 text-slate-500">
+                  <td colSpan={4} className="py-8 text-center text-slate-500">
                     Maʼlumot topilmadi
                   </td>
                 </tr>
+              ) : (
+                filteredData.map((item) => (
+                  <tr
+                    key={item.id}
+                    onClick={() => navigate(`/price-analysis/${item.id}`)}
+                    className="hover:bg-slate-50 cursor-pointer transition"
+                  >
+                    <td className="px-4 py-3 text-sm text-slate-800">{item.number}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700 text-center">
+                      {formatDate(item.created_at)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-700 text-center">
+                      {item.employee_name}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {item.is_signed ? (
+                        <CheckCircle className="text-emerald-500 inline w-5 h-5" />
+                      ) : (
+                        <X className="text-rose-500 inline w-5 h-5" />
+                      )}
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
         </div>
 
-        {/* Pastki holat qatori (paginatsiya oʻrniga) */}
-        <div className="border-t border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 flex justify-between items-center">
-          <div>
-            Jami: <span className="font-medium text-slate-800">{totalCount}</span> ta buyurtma
-            {filteredItems.length !== totalCount && (
-              <> | Koʻrsatilmoqda: {filteredItems.length}</>
-            )}
+        {/* Pagination */}
+        <div className="border-t border-slate-100 px-6 py-4 bg-slate-50/50">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-slate-600">
+              Jami: <span className="font-medium text-slate-900">{count}</span> ta
+              {count > 0 && (
+                <>
+                  <span className="mx-2 text-slate-300">|</span>
+                  Ko‘rsatilmoqda: {startIndex + 1}–{endIndex}
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <Button variant="outlined" size="small" onClick={goToFirst} disabled={currentPage === 1}>
+                <ChevronsLeft className="w-4 h-4" />
+              </Button>
+              <Button variant="outlined" size="small" onClick={goToPrev} disabled={currentPage === 1}>
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+
+              {getPageNumbers().map((pageNum) => (
+                <Button
+                  key={pageNum}
+                  variant={currentPage === pageNum ? "default" : "outline"}
+                  size="small"
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`h-8 w-8 p-0 ${
+                    currentPage === pageNum
+                      ? "bg-[#1E56A0] text-white"
+                      : "border-slate-300 text-slate-600 hover:bg-[#1E56A0]/70"
+                  }`}
+                >
+                  {pageNum}
+                </Button>
+              ))}
+
+              <Button variant="outlined" size="small" onClick={goToNext} disabled={currentPage === totalPages || totalPages === 0}>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+              <Button variant="outlined" size="small" onClick={goToLast} disabled={currentPage === totalPages || totalPages === 0}>
+                <ChevronsRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
-          {/* {!hasMore && <div className="text-slate-400">Barcha maʼlumotlar yuklandi</div>} */}
         </div>
-      </Card>
-    </div>
+      </div>
+    </section>
   );
 };
 

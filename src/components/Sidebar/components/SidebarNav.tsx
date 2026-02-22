@@ -248,11 +248,6 @@ const SidebarNav: React.FC = React.memo(() => {
       label: "Foydalanuvchilar boshqaruvsi",
       icon: <User className="size-5" />,
     },
-    {
-      id: "product-management",
-      label: "Maxsulotlar boshqaruvsi",
-      icon: <Package className="size-5" />,
-    },
   ];
 
   // fetch sidebar counts

@@ -9,7 +9,6 @@ import {
   LettersPage,
   Dashboard,
   UsersManagement,
-  ProductManagement,
   TurnoverReport,
   GoodsBalanceReport,
   ReportTableOne,
@@ -23,7 +22,8 @@ import {
   AppealLetter,
   Statistics,
   PriceAnalysis,
-  CreatePriceAnalysis,
+  PriceAnalysisForm,
+  PriceAnalysisDetail,
   CreateDocument,
 } from "@/pages";
 import NewDocumentProduct from "./pages/NewDocument/NewDocumentProduct/NewDocumentProduct";
@@ -88,7 +88,8 @@ const App: React.FC = () => {
           element: <Outlet />,
           children: [
             { index: true, element: <PriceAnalysis /> },
-            { path: "create", element: <CreatePriceAnalysis /> },
+            { path: "create", element: <PriceAnalysisForm /> },
+            { path: ":id", element: <PriceAnalysisDetail /> },
           ],
         },
         {
@@ -122,10 +123,6 @@ const App: React.FC = () => {
         {
           path: "users-management",
           element: <UsersManagement />,
-        },
-        {
-          path: "product-management",
-          element: <ProductManagement />,
         },
         {
           path: "reports",
