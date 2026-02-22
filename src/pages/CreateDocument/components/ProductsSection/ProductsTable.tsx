@@ -1,7 +1,7 @@
 import React from "react";
 import { Badge, Button, Input, InputNumber } from "antd";
 import { ChevronDown, CircleCheck, Trash2 } from "lucide-react";
-import type { CreateDocumentType, Product } from "../../CreateDocument";
+import type { CreateDocumentType, Product } from "../../External";
 import { axiosAPI } from "@/service/axiosAPI";
 import ProductFieldModal from "./ProductFieldModal";
 

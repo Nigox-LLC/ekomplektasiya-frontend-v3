@@ -18,19 +18,15 @@ const PasswordInput: React.FC<Props> = React.memo(({ value, onChange }) => {
       </label>
       <div className="relative">
         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-gray-400" />
-        <Input
-          type={showPassword ? "text" : "password"}
+        <Input.Password
+          // iconRender={(visible) =>
+          //   visible ? (<EyeOff className="size-5 text-gray-400" />) : (<Eye className="size-5 text-gray-400" />)
+          // }
+          placeholder="Parolni kiriting"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="pl-10 pr-10"
+          className="px-4! py-4! text-[16px]!"
         />
-        <button
-          type="button"
-          onClick={() => setShowPassword((p) => !p)}
-          className="absolute right-3 top-1/2 -translate-y-1/2"
-        >
-          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-        </button>
       </div>
     </div>
   );

@@ -20,7 +20,7 @@ const UsernameInput: React.FC<Props> = React.memo(({ value, onChange }) => {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Loginni kiriting"
-          className="pl-10"
+          className="px-4! py-4! text-[16px]!"
         />
       </div>
     </div>

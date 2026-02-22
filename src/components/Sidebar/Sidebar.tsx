@@ -4,19 +4,31 @@ import React from "react";
 import SidebarHeader from "./components/SidebarHeader";
 import SidebarFooter from "./components/SidebarFooter";
 import SidebarNav from "./components/SidebarNav";
+import { useAppDispatch } from "@/store/hooks/hooks";
+import { setCurrentUserInfo } from "@/store/slices/infoSlice";
+import { useNavigate } from "react-router";
 
 const Sidebar: React.FC = () => {
   const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
   const theme = localStorage.getItem("theme") || "light";
 
-  const confirmLogout = () => {};
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  const confirmLogout = () => {
+    dispatch(setCurrentUserInfo(null));
+    localStorage.removeItem("v3_ganiwer");
+    navigate("/login");
+  };
 
   return (
-    <div className={`flex h-screen overflow-hidden ${theme === "dark" ? "bg-gray-900" : "bg-gray-50"}`}>
+    <div
+      className={`flex h-screen overflow-hidden ${theme === "dark" ? "bg-gray-900" : "bg-gray-50"}`}
+    >
       <aside className="fixed left-0 top-0 h-screen w-72 bg-[#1a2332] text-white flex flex-col shadow-xl z-40">
         <SidebarHeader />
         <SidebarNav />
-        <SidebarFooter />
+        <SidebarFooter setShowLogoutConfirm={setShowLogoutConfirm} />
       </aside>
       <div className="w-90 flex-shrink-0" />
 

@@ -1,7 +1,7 @@
 import { axiosAPI } from "@/service/axiosAPI";
 import { Button, Table } from "antd";
 import React, { useEffect } from "react";
-import type { Product } from "../../CreateDocument";
+import type { Product } from "../../External";
 
 interface IProps {
   productFieldModal: {

@@ -22,7 +22,8 @@ import {
   Statistics,
   PriceAnalysis,
   CreatePriceAnalysis,
-  CreateDocument,
+  InternalCreate,
+  ExternalCreate,
 } from "@/pages";
 import NewDocumentProduct from "./pages/NewDocument/NewDocumentProduct/NewDocumentProduct";
 import { ToastContainer } from "react-toastify";
@@ -145,8 +146,18 @@ const App: React.FC = () => {
           ],
         },
         {
-          path: "new-document/:type",
-          element: <CreateDocument />,
+          path: "new-document/",
+          element: <Outlet />,
+          children: [
+            {
+              path: "internal",
+              element: <InternalCreate />
+            },
+            {
+              path: "external",
+              element: <ExternalCreate />
+            }
+          ]
         },
         {
           path: "test-new-document",

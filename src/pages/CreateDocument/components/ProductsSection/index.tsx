@@ -9,8 +9,8 @@ import {
 import React, { useRef, useState } from "react";
 import { toast } from "react-toastify";
 import ProductsTable from "./ProductsTable";
-import type { CreateDocumentType } from "../../CreateDocument";
-import type CreateDocument from "../../CreateDocument";
+import type { CreateDocumentType } from "../../External";
+import type CreateDocument from "../../External";
 import { axiosAPI } from "@/service/axiosAPI";
 
 interface IProps {

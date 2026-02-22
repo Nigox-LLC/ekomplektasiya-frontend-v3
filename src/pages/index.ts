@@ -4,11 +4,11 @@ export { default as LettersPage } from "./Letters/LettersPage";
 export { default as Calendar } from "./Calendar/CalendarStatistca";
 export { default as GenStatistics } from "./Dashboard/DashboardStats/GenStatistics";
 export { default as Dashboard } from "./Dashboard/DashboardPage/Dashboard";
-export { default as UsersManagement} from "./UsersManagement/UsersManagement";
-export { default as ProductManagement} from "./ProductManagement/ProductManagement";
-export { default as TurnoverReport} from "./Reports/TurnoverReport/TurnoverReport";
-export { default as GoodsBalanceReport} from "./Reports/GoodsMaterialsBalance/GoodsMaterialsBalance";
-export { default as ReportTableOne} from "./Reports/ReportTable/ReportTableOne";
+export { default as UsersManagement } from "./UsersManagement/UsersManagement";
+export { default as ProductManagement } from "./ProductManagement/ProductManagement";
+export { default as TurnoverReport } from "./Reports/TurnoverReport/TurnoverReport";
+export { default as GoodsBalanceReport } from "./Reports/GoodsMaterialsBalance/GoodsMaterialsBalance";
+export { default as ReportTableOne } from "./Reports/ReportTable/ReportTableOne";
 export { default as ReferenceRequisites } from "./Reference/Requisites/ReferenceRequisites";
 export { default as Bank } from "./Reference/Bank/Bank";
 export { default as Contracts } from "./Reference/Contracts/Contracts";
@@ -20,4 +20,7 @@ export { default as PriceAnalysis } from "./PriceAnaliysis/PriceAnalysis";
 export { default as CreatePriceAnalysis } from "./PriceAnaliysis/CreatePriceAnalysis";
 export { default as AppealLetter } from "./AppealLetter/AppealLetter";
 export { default as Statistics } from "./EmployeeStatistics/Statistics";
-export {default as CreateDocument} from "./CreateDocument/CreateDocument";
+
+// create order document pages
+export { default as ExternalCreate } from "./CreateDocument/External";
+export { default as InternalCreate } from "./CreateDocument/Internal";

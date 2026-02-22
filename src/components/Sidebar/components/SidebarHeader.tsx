@@ -62,10 +62,6 @@ interface Letter {
 const SidebarHeader: React.FC = React.memo(() => {
   const navigate = useNavigate();
   const [showNewDocDropdown, setShowNewDocDropdown] = useState(false);
-  const [activeView, setActiveView] = useState<ViewType>("calendar");
-  const [showLetterDetailDrawer, setShowLetterDetailDrawer] = useState(false);
-  const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null);
-  const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const openOnlyOffice = (documentType: "service" | "order") => {
     const title = documentType === "service" ? "Xizmat xati" : "Buyurtma xati";
@@ -80,21 +76,14 @@ const SidebarHeader: React.FC = React.memo(() => {
   return (
     <div className="p-6 border-b border-gray-700 relative">
       <div className="flex items-center gap-3 mb-2">
-        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-          <FileText className="size-6 text-white" />
+        <div className="w-10 h-10 flex items-center justify-center">
+          <img src="/hudud_logo.png" alt="logo" />
         </div>
         <div>
-          <h1 className="text-lg font-semibold text-white">Raqamli nazorat</h1>
+          <h1 className="text-lg font-semibold text-white">HITSUK</h1>
           <p className="text-xs text-gray-400">Hujjat ijrosi tizimi</p>
         </div>
       </div>
-      {/* <button
-        onClick={() => navigate("/new-document")}
-        className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all font-medium text-sm"
-      >
-        <Plus className="size-5" />
-        <span>Yangi hujjat</span>
-      </button> */}
       <button
         onClick={() => setShowNewDocDropdown((prev) => !prev)}
         className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all font-medium text-sm"
@@ -130,7 +119,7 @@ const SidebarHeader: React.FC = React.memo(() => {
 
           <button
             onClick={() => {
-              navigate("/new-document/outgoing");
+              navigate("/new-document/external");
               setShowNewDocDropdown(false);
             }}
             className="w-full px-4 py-3 text-left hover:bg-purple-50 transition-colors flex items-center gap-3 border-b border-gray-100"

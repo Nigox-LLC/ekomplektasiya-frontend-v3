@@ -13,7 +13,7 @@ const SubmitButton: React.FC<Props> = React.memo(({ loading }) => {
     <Button
       type="primary"
       htmlType="submit"
-      className="w-full h-11"
+      className="w-full h-11! text-lg!"
       disabled={loading}
     >
       <LogIn className="size-5 mr-2" />
