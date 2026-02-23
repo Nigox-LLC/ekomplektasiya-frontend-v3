@@ -44,19 +44,6 @@ const App: React.FC = () => {
           element: <Dashboard />,
         },
         {
-          path: "appeal-letter",
-          element: <AppealLetter />,
-        },
-        {
-          path: "price-analysis",
-          element: <Outlet />,
-          children: [
-            { index: true, element: <PriceAnalysis /> },
-            { path: "create", element: <PriceAnalysisForm /> },
-            { path: ":id", element: <PriceAnalysisDetail /> },
-          ],
-        },
-        {
           path: "calendar",
           element: <Calendar />,
         },
@@ -85,35 +72,19 @@ const App: React.FC = () => {
           element: <LettersPage />,
         },
         {
-          path: "users-management",
-          element: <UsersManagement />,
+          path: "appeal-letter",
+          element: <AppealLetter />,
         },
         {
-          path: "reports",
+          path: "price-analysis",
           element: <Outlet />,
           children: [
-            {
-              path: "reports-turnover",
-              element: <TurnoverReport />,
-            },
-            {
-              path: "reports-goods-balance",
-              element: <GoodsBalanceReport />,
-            },
-            {
-              path: "reports-table1",
-              element: <ReportTableOne />,
-            },
-            {
-              path: "reports-table2",
-              element: <ReportTableOne />,
-            },
-            {
-              path: "reports-table3",
-              element: <ReportTableOne />,
-            },
+            { index: true, element: <PriceAnalysis /> },
+            { path: "create", element: <PriceAnalysisForm /> },
+            { path: ":id", element: <PriceAnalysisDetail /> },
           ],
         },
+        // Maxsulotlar boshqaruvi qismi
         {
           path: "management",
           element: <Outlet />,
@@ -137,7 +108,7 @@ const App: React.FC = () => {
             },
             {
               path: "products-income",
-              element: <ProductsIncome  />,
+              element: <ProductsIncome />,
             },
             {
               path: "products-income-detail/:id",
@@ -197,6 +168,35 @@ const App: React.FC = () => {
             },
           ],
         },
+        // Hisobotlar qismi
+        {
+          path: "reports",
+          element: <Outlet />,
+          children: [
+            {
+              path: "reports-turnover",
+              element: <TurnoverReport />,
+            },
+            {
+              path: "reports-goods-balance",
+              element: <GoodsBalanceReport />,
+            },
+            {
+              path: "reports-table1",
+              element: <ReportTableOne />,
+            },
+            {
+              path: "reports-table2",
+              element: <ReportTableOne />,
+            },
+            {
+              path: "reports-table3",
+              element: <ReportTableOne />,
+            },
+          ],
+        },
+
+        // Malumotlar qismi
         {
           path: "reference",
           element: <Outlet />,
@@ -207,15 +207,6 @@ const App: React.FC = () => {
             { path: "reference-bank", element: <Bank /> },
             // Shartnomalar
             { path: "reference-contracts", element: <Contracts /> },
-            // Tovarlar kirimi
-            { path: "reference-goods-in", element: <GoodsIn /> },
-            // Tovarlar chiqimi
-            { path: "reference-goods-out", element: <GoodsOut /> },
-            // Ombor o'tkazmalar
-            {
-              path: "reference-warehouse-transfer",
-              element: <WareHouseTransfer />,
-            },
             // Yillik reja
             { path: "reference-year-plan", element: <YearPlan /> },
           ],
@@ -231,19 +222,25 @@ const App: React.FC = () => {
           ],
         },
         {
+          path: "users-management",
+          element: <UsersManagement />,
+        },
+        {
           path: "new-document/",
           element: <Outlet />,
           children: [
             {
               path: "internal",
-              element: <InternalCreate />
+              element: <InternalCreate />,
             },
             {
               path: "external",
-              element: <ExternalCreate />
-            }
-          ]
+              element: <ExternalCreate />,
+            },
+          ],
         },
+
+        // Test document create page
         {
           path: "test-new-document",
           element: <NewDocumentProduct />,

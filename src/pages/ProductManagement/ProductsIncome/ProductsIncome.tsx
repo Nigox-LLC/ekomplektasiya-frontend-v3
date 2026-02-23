@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import  ProductsBalanceReportModal  from "@/pages/ProductManagement/components/ProductsBalanceReportModal";
-import  ConfirmDialog  from "@/pages/ProductManagement/components/ConfirmDialog";
-import  ResizableTableColumn  from "@/pages/ProductManagement/components/ResizableTableColumn";
-import  TableLoadingSpinner  from "@/pages/ProductManagement/components/TableLoadingSpinner";
-import  SuccessNotification  from "@/pages/ProductManagement/components/SuccessNotification";
+import ProductsBalanceReportModal from "@/pages/ProductManagement/components/ProductsBalanceReportModal";
+import ConfirmDialog from "@/pages/ProductManagement/components/ConfirmDialog";
+import TableLoadingSpinner from "@/pages/ProductManagement/components/TableLoadingSpinner";
+import SuccessNotification from "@/pages/ProductManagement/components/SuccessNotification";
 import {
   Search,
   Filter,
@@ -70,53 +69,31 @@ const generateMockIncomes = (): ProductIncome[] => {
   const regions = [
     {
       name: "Buxoro viloyati",
-      districts: [
-        "Buxoro shahri",
-        "Kogon tumani",
-        "G'ijduvon tumani",
-      ],
+      districts: ["Buxoro shahri", "Kogon tumani", "G'ijduvon tumani"],
     },
     {
       name: "Namangan viloyati",
-      districts: [
-        "Namangan shahri",
-        "Pop tumani",
-        "Uychi tumani",
-      ],
+      districts: ["Namangan shahri", "Pop tumani", "Uychi tumani"],
     },
     {
       name: "Toshkent shahar",
-      districts: [
-        "Yunusobod tumani",
-        "Chilonzor tumani",
-        "Mirobod tumani",
-      ],
+      districts: ["Yunusobod tumani", "Chilonzor tumani", "Mirobod tumani"],
     },
     {
       name: "Farg'ona viloyati",
-      districts: [
-        "Farg'ona shahri",
-        "Qo'qon shahri",
-        "Marg'ilon shahri",
-      ],
+      districts: ["Farg'ona shahri", "Qo'qon shahri", "Marg'ilon shahri"],
     },
   ];
 
   const warehouses: { [key: string]: string[] } = {
     "Buxoro viloyati": ["Buxoro ombori №1", "Kogon ombori №2"],
-    "Namangan viloyati": [
-      "Namangan ombori №1",
-      "Pop ombori №2",
-    ],
+    "Namangan viloyati": ["Namangan ombori №1", "Pop ombori №2"],
     "Toshkent shahar": [
       "Markaziy ombor №1",
       "Yunusobod ombori №2",
       "Chilonzor ombori №3",
     ],
-    "Farg'ona viloyati": [
-      "Farg'ona ombori №1",
-      "Qo'qon ombori №2",
-    ],
+    "Farg'ona viloyati": ["Farg'ona ombori №1", "Qo'qon ombori №2"],
   };
 
   const responsiblePersons: { [key: string]: string[] } = {
@@ -169,11 +146,7 @@ const generateMockIncomes = (): ProductIncome[] => {
   ];
 
   const contractsByContractor: { [key: string]: string[] } = {
-    'MChJ "Texno Savdo"': [
-      "TS-2025/001",
-      "TS-2025/002",
-      "TS-2025/003",
-    ],
+    'MChJ "Texno Savdo"': ["TS-2025/001", "TS-2025/002", "TS-2025/003"],
     'QMJ "Mebel Olami"': ["MO-2025/001", "MO-2025/002"],
     'MChJ "IT Solutions"': [
       "IT-2025/001",
@@ -182,17 +155,9 @@ const generateMockIncomes = (): ProductIncome[] => {
       "IT-2025/004",
     ],
     'MChJ "Office Pro"': ["OP-2025/001", "OP-2025/002"],
-    'QMJ "Universal Trade"': [
-      "UT-2025/001",
-      "UT-2025/002",
-      "UT-2025/003",
-    ],
+    'QMJ "Universal Trade"': ["UT-2025/001", "UT-2025/002", "UT-2025/003"],
     'MChJ "Premium Furniture"': ["PF-2025/001", "PF-2025/002"],
-    'MChJ "Tech World"': [
-      "TW-2025/001",
-      "TW-2025/002",
-      "TW-2025/003",
-    ],
+    'MChJ "Tech World"': ["TW-2025/001", "TW-2025/002", "TW-2025/003"],
   };
 
   const users = [
@@ -210,53 +175,33 @@ const generateMockIncomes = (): ProductIncome[] => {
     "active",
     "archived",
   ];
-  const confirmStatuses: ("saved" | "confirmed")[] = [
-    "saved",
-    "confirmed",
-  ];
+  const confirmStatuses: ("saved" | "confirmed")[] = ["saved", "confirmed"];
 
   const incomes: ProductIncome[] = [];
 
   for (let i = 0; i < 50; i++) {
-    const regionData =
-      regions[Math.floor(Math.random() * regions.length)];
+    const regionData = regions[Math.floor(Math.random() * regions.length)];
     const region = regionData.name;
     const district =
       regionData.districts[
-      Math.floor(Math.random() * regionData.districts.length)
+        Math.floor(Math.random() * regionData.districts.length)
       ];
     const warehouseList = warehouses[region];
     const warehouse =
-      warehouseList[
-      Math.floor(Math.random() * warehouseList.length)
-      ];
+      warehouseList[Math.floor(Math.random() * warehouseList.length)];
     const responsibleList = responsiblePersons[warehouse];
     const responsiblePerson =
-      responsibleList[
-      Math.floor(Math.random() * responsibleList.length)
-      ];
+      responsibleList[Math.floor(Math.random() * responsibleList.length)];
     const contractor =
-      contractors[
-      Math.floor(Math.random() * contractors.length)
-      ];
+      contractors[Math.floor(Math.random() * contractors.length)];
     const contractList = contractsByContractor[contractor];
     const contract =
-      contractList[
-      Math.floor(Math.random() * contractList.length)
-      ];
+      contractList[Math.floor(Math.random() * contractList.length)];
 
-    const day = String(
-      Math.floor(Math.random() * 28) + 1,
-    ).padStart(2, "0");
-    const month = String(
-      Math.floor(Math.random() * 2) + 1,
-    ).padStart(2, "0");
-    const hour = String(
-      Math.floor(Math.random() * 24),
-    ).padStart(2, "0");
-    const minute = String(
-      Math.floor(Math.random() * 60),
-    ).padStart(2, "0");
+    const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, "0");
+    const month = String(Math.floor(Math.random() * 2) + 1).padStart(2, "0");
+    const hour = String(Math.floor(Math.random() * 24)).padStart(2, "0");
+    const minute = String(Math.floor(Math.random() * 60)).padStart(2, "0");
 
     incomes.push({
       id: String(i + 1),
@@ -269,21 +214,18 @@ const generateMockIncomes = (): ProductIncome[] => {
       contractor,
       contract,
       user: users[Math.floor(Math.random() * users.length)],
-      totalAmount:
-        (Math.floor(Math.random() * 800) + 100) * 1000000,
-      status:
-        statuses[Math.floor(Math.random() * statuses.length)],
+      totalAmount: (Math.floor(Math.random() * 800) + 100) * 1000000,
+      status: statuses[Math.floor(Math.random() * statuses.length)],
       confirmStatus:
-        i < 3 ? "confirmed" : confirmStatuses[
-          Math.floor(Math.random() * confirmStatuses.length)
-        ],
+        i < 3
+          ? "confirmed"
+          : confirmStatuses[Math.floor(Math.random() * confirmStatuses.length)],
     });
   }
 
   return incomes.sort(
     (a, b) =>
-      parseInt(b.number.split("-")[2]) -
-      parseInt(a.number.split("-")[2]),
+      parseInt(b.number.split("-")[2]) - parseInt(a.number.split("-")[2]),
   );
 };
 
@@ -370,8 +312,8 @@ const generateMockProducts = (): Product[] => {
       const quantity = Math.floor(Math.random() * 500) + 10;
       const basePrice =
         [
-          850000, 250000, 1500000, 4500000, 1200000, 35000,
-          3000, 2000000, 450000, 180000,
+          850000, 250000, 1500000, 4500000, 1200000, 35000, 3000, 2000000,
+          450000, 180000,
         ][idx] || 100000;
       const price = basePrice + i * basePrice * 0.2;
 
@@ -397,26 +339,18 @@ const mockIncomes = generateMockIncomes();
 const mockProducts = generateMockProducts();
 
 // Viloyatga qarab omborlarni olish
-const getWarehousesByRegions = (
-  regions: string[],
-): string[] => {
+const getWarehousesByRegions = (regions: string[]): string[] => {
   if (regions.length === 0) return [];
 
   const warehouses: { [key: string]: string[] } = {
     "Buxoro viloyati": ["Buxoro ombori №1", "Kogon ombori №2"],
-    "Namangan viloyati": [
-      "Namangan ombori №1",
-      "Pop ombori №2",
-    ],
+    "Namangan viloyati": ["Namangan ombori №1", "Pop ombori №2"],
     "Toshkent shahar": [
       "Markaziy ombor №1",
       "Yunusobod ombori №2",
       "Chilonzor ombori №3",
     ],
-    "Farg'ona viloyati": [
-      "Farg'ona ombori №1",
-      "Qo'qon ombori №2",
-    ],
+    "Farg'ona viloyati": ["Farg'ona ombori №1", "Qo'qon ombori №2"],
   };
 
   const result: string[] = [];
@@ -430,9 +364,7 @@ const getWarehousesByRegions = (
 };
 
 // Omborga qarab javobgar shaxslarni olish
-const getResponsiblesByWarehouses = (
-  warehouses: string[],
-): string[] => {
+const getResponsiblesByWarehouses = (warehouses: string[]): string[] => {
   if (warehouses.length === 0) return [];
 
   const responsiblePersons: { [key: string]: string[] } = {
@@ -485,17 +417,11 @@ const getResponsiblesByWarehouses = (
 };
 
 // Kontragentga qarab shartnomalarni olish
-const getContractsByContractors = (
-  contractors: string[],
-): string[] => {
+const getContractsByContractors = (contractors: string[]): string[] => {
   if (contractors.length === 0) return [];
 
   const contractsByContractor: { [key: string]: string[] } = {
-    'MChJ "Texno Savdo"': [
-      "TS-2025/001",
-      "TS-2025/002",
-      "TS-2025/003",
-    ],
+    'MChJ "Texno Savdo"': ["TS-2025/001", "TS-2025/002", "TS-2025/003"],
     'QMJ "Mebel Olami"': ["MO-2025/001", "MO-2025/002"],
     'MChJ "IT Solutions"': [
       "IT-2025/001",
@@ -504,17 +430,9 @@ const getContractsByContractors = (
       "IT-2025/004",
     ],
     'MChJ "Office Pro"': ["OP-2025/001", "OP-2025/002"],
-    'QMJ "Universal Trade"': [
-      "UT-2025/001",
-      "UT-2025/002",
-      "UT-2025/003",
-    ],
+    'QMJ "Universal Trade"': ["UT-2025/001", "UT-2025/002", "UT-2025/003"],
     'MChJ "Premium Furniture"': ["PF-2025/001", "PF-2025/002"],
-    'MChJ "Tech World"': [
-      "TW-2025/001",
-      "TW-2025/002",
-      "TW-2025/003",
-    ],
+    'MChJ "Tech World"': ["TW-2025/001", "TW-2025/002", "TW-2025/003"],
   };
 
   const result: string[] = [];
@@ -532,31 +450,27 @@ interface ProductsIncomeViewProps {
 }
 
 const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
-
   const [incomes, setIncomes] = useState<ProductIncome[]>(mockIncomes);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRegions, setSelectedRegions] = useState<
-    string[]
-  >([]);
-  const [selectedWarehouses, setSelectedWarehouses] = useState<
-    string[]
-  >([]);
-  const [selectedResponsibles, setSelectedResponsibles] =
-    useState<string[]>([]);
-  const [selectedContractors, setSelectedContractors] =
-    useState<string[]>([]);
-  const [selectedContracts, setSelectedContracts] = useState<
-    string[]
-  >([]);
+  const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
+  const [selectedWarehouses, setSelectedWarehouses] = useState<string[]>([]);
+  const [selectedResponsibles, setSelectedResponsibles] = useState<string[]>(
+    [],
+  );
+  const [selectedContractors, setSelectedContractors] = useState<string[]>([]);
+  const [selectedContracts, setSelectedContracts] = useState<string[]>([]);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedIncome, setSelectedIncome] =
-    useState<ProductIncome | null>(null);
+  const [selectedIncome, setSelectedIncome] = useState<ProductIncome | null>(
+    null,
+  );
   const [showReportModal, setShowReportModal] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const [showProductsModal, setShowProductsModal] = useState(false);
-  const [viewingIncome, setViewingIncome] = useState<ProductIncome | null>(null);
+  const [viewingIncome, setViewingIncome] = useState<ProductIncome | null>(
+    null,
+  );
 
   // Confirm dialog states
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -566,22 +480,16 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
   }>({ isOpen: false, type: "delete", income: null });
 
   // Dropdown states
-  const [openRegionDropdown, setOpenRegionDropdown] =
-    useState(false);
-  const [openWarehouseDropdown, setOpenWarehouseDropdown] =
-    useState(false);
-  const [openResponsibleDropdown, setOpenResponsibleDropdown] =
-    useState(false);
-  const [openContractorDropdown, setOpenContractorDropdown] =
-    useState(false);
-  const [openContractDropdown, setOpenContractDropdown] =
-    useState(false);
+  const [openRegionDropdown, setOpenRegionDropdown] = useState(false);
+  const [openWarehouseDropdown, setOpenWarehouseDropdown] = useState(false);
+  const [openResponsibleDropdown, setOpenResponsibleDropdown] = useState(false);
+  const [openContractorDropdown, setOpenContractorDropdown] = useState(false);
+  const [openContractDropdown, setOpenContractDropdown] = useState(false);
 
   // Search states for dropdowns
   const [regionSearch, setRegionSearch] = useState("");
   const [warehouseSearch, setWarehouseSearch] = useState("");
-  const [responsibleSearch, setResponsibleSearch] =
-    useState("");
+  const [responsibleSearch, setResponsibleSearch] = useState("");
   const [contractorSearch, setContractorSearch] = useState("");
   const [contractSearch, setContractSearch] = useState("");
 
@@ -591,7 +499,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
 
   // Sort states
   const [sortColumn, setSortColumn] = useState<string | null>(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   // Loading states
   const [initialLoading, setInitialLoading] = useState(true);
@@ -606,22 +514,13 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
   }>({ show: false, message: "", type: "success" });
 
   // Unique values
-  const allRegions = Array.from(
-    new Set(incomes.map((i) => i.region)),
-  );
-  const allContractors = Array.from(
-    new Set(incomes.map((i) => i.contractor)),
-  );
+  const allRegions = Array.from(new Set(incomes.map((i) => i.region)));
+  const allContractors = Array.from(new Set(incomes.map((i) => i.contractor)));
 
   // Cascade filters
-  const availableWarehouses =
-    getWarehousesByRegions(selectedRegions);
-  const availableResponsibles = getResponsiblesByWarehouses(
-    selectedWarehouses,
-  );
-  const availableContracts = getContractsByContractors(
-    selectedContractors,
-  );
+  const availableWarehouses = getWarehousesByRegions(selectedRegions);
+  const availableResponsibles = getResponsiblesByWarehouses(selectedWarehouses);
+  const availableContracts = getContractsByContractors(selectedContractors);
 
   // Highlight text function
   const highlightText = (text: string, query: string) => {
@@ -651,38 +550,23 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
     if (!dateStr) return null;
     const [datePart] = dateStr.split(" ");
     const [day, month, year] = datePart.split(".");
-    return new Date(
-      parseInt(year),
-      parseInt(month) - 1,
-      parseInt(day),
-    );
+    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
   };
 
   // Filtrlash
   const filteredIncomes = incomes.filter((income) => {
     const matchesSearch =
-      income.number
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
+      income.number.toLowerCase().includes(searchQuery.toLowerCase()) ||
       income.responsiblePerson
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      income.warehouse
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      income.contractor
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      income.contract
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      income.district
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+      income.warehouse.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      income.contractor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      income.contract.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      income.district.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesRegion =
-      selectedRegions.length === 0 ||
-      selectedRegions.includes(income.region);
+      selectedRegions.length === 0 || selectedRegions.includes(income.region);
     const matchesWarehouse =
       selectedWarehouses.length === 0 ||
       selectedWarehouses.includes(income.warehouse);
@@ -724,10 +608,10 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
   // Sort function
   const handleSort = (column: string) => {
     if (sortColumn === column) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortColumn(column);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
@@ -739,37 +623,35 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
     let bValue: any = b[sortColumn as keyof ProductIncome];
 
     // Handle date sorting
-    if (sortColumn === 'date') {
+    if (sortColumn === "date") {
       const aDate = parseDate(a.date);
       const bDate = parseDate(b.date);
       if (!aDate || !bDate) return 0;
-      return sortDirection === 'asc'
+      return sortDirection === "asc"
         ? aDate.getTime() - bDate.getTime()
         : bDate.getTime() - aDate.getTime();
     }
 
     // Handle number sorting
-    if (sortColumn === 'totalAmount' || sortColumn === 'totalItems') {
-      return sortDirection === 'asc'
-        ? aValue - bValue
-        : bValue - aValue;
+    if (sortColumn === "totalAmount" || sortColumn === "totalItems") {
+      return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
     }
 
     // Handle status sorting
-    if (sortColumn === 'confirmStatus') {
-      const statusOrder = { 'confirmed': 1, 'saved': 2 };
-      const aOrder = statusOrder[a.confirmStatus as keyof typeof statusOrder] || 999;
-      const bOrder = statusOrder[b.confirmStatus as keyof typeof statusOrder] || 999;
-      return sortDirection === 'asc'
-        ? aOrder - bOrder
-        : bOrder - aOrder;
+    if (sortColumn === "confirmStatus") {
+      const statusOrder = { confirmed: 1, saved: 2 };
+      const aOrder =
+        statusOrder[a.confirmStatus as keyof typeof statusOrder] || 999;
+      const bOrder =
+        statusOrder[b.confirmStatus as keyof typeof statusOrder] || 999;
+      return sortDirection === "asc" ? aOrder - bOrder : bOrder - aOrder;
     }
 
     // Handle string sorting
-    if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sortDirection === 'asc'
-        ? aValue.localeCompare(bValue, 'uz')
-        : bValue.localeCompare(aValue, 'uz');
+    if (typeof aValue === "string" && typeof bValue === "string") {
+      return sortDirection === "asc"
+        ? aValue.localeCompare(bValue, "uz")
+        : bValue.localeCompare(aValue, "uz");
     }
 
     return 0;
@@ -777,14 +659,11 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
 
   // Infinite scroll handler
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } =
-      e.currentTarget;
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
 
     if (scrollHeight - scrollTop <= clientHeight * 1.5) {
       if (displayedItems < sortedIncomes.length) {
-        setDisplayedItems((prev) =>
-          Math.min(prev + 10, sortedIncomes.length),
-        );
+        setDisplayedItems((prev) => Math.min(prev + 10, sortedIncomes.length));
       }
     }
   };
@@ -802,7 +681,16 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
     setDisplayedItems(10);
 
     // Filter loading
-    if (searchQuery || selectedRegions.length > 0 || selectedWarehouses.length > 0 || selectedResponsibles.length > 0 || selectedContractors.length > 0 || selectedContracts.length > 0 || dateFrom || dateTo) {
+    if (
+      searchQuery ||
+      selectedRegions.length > 0 ||
+      selectedWarehouses.length > 0 ||
+      selectedResponsibles.length > 0 ||
+      selectedContractors.length > 0 ||
+      selectedContracts.length > 0 ||
+      dateFrom ||
+      dateTo
+    ) {
       setFilterLoading(true);
       const timer = setTimeout(() => {
         setFilterLoading(false);
@@ -884,37 +772,27 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
 
   // Remove single filter
   const removeRegion = (region: string) => {
-    setSelectedRegions((prev) =>
-      prev.filter((r) => r !== region),
-    );
+    setSelectedRegions((prev) => prev.filter((r) => r !== region));
     setSelectedWarehouses([]);
     setSelectedResponsibles([]);
   };
 
   const removeWarehouse = (warehouse: string) => {
-    setSelectedWarehouses((prev) =>
-      prev.filter((w) => w !== warehouse),
-    );
+    setSelectedWarehouses((prev) => prev.filter((w) => w !== warehouse));
     setSelectedResponsibles([]);
   };
 
   const removeResponsible = (responsible: string) => {
-    setSelectedResponsibles((prev) =>
-      prev.filter((r) => r !== responsible),
-    );
+    setSelectedResponsibles((prev) => prev.filter((r) => r !== responsible));
   };
 
   const removeContractor = (contractor: string) => {
-    setSelectedContractors((prev) =>
-      prev.filter((c) => c !== contractor),
-    );
+    setSelectedContractors((prev) => prev.filter((c) => c !== contractor));
     setSelectedContracts([]);
   };
 
   const removeContract = (contract: string) => {
-    setSelectedContracts((prev) =>
-      prev.filter((c) => c !== contract),
-    );
+    setSelectedContracts((prev) => prev.filter((c) => c !== contract));
   };
 
   // Clear all filters
@@ -931,7 +809,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
 
   // Row selection function
   const handleRowClick = (incomeId: string) => {
-    setSelectedRowId(prev => prev === incomeId ? null : incomeId);
+    setSelectedRowId((prev) => (prev === incomeId ? null : incomeId));
   };
 
   const handleViewProducts = (income: ProductIncome) => {
@@ -971,33 +849,39 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
     const docNumber = confirmDialog.income.number;
 
     if (confirmDialog.type === "confirm") {
-      setIncomes(prev => prev.map(i =>
-        i.id === confirmDialog.income!.id
-          ? { ...i, confirmStatus: 'confirmed' as const }
-          : i
-      ));
+      setIncomes((prev) =>
+        prev.map((i) =>
+          i.id === confirmDialog.income!.id
+            ? { ...i, confirmStatus: "confirmed" as const }
+            : i,
+        ),
+      );
       setNotification({
         show: true,
         message: `${docNumber} raqamli hujjatni tasdiqladingiz`,
-        type: "success"
+        type: "success",
       });
     } else if (confirmDialog.type === "unconfirm") {
-      setIncomes(prev => prev.map(i =>
-        i.id === confirmDialog.income!.id
-          ? { ...i, confirmStatus: 'saved' as const }
-          : i
-      ));
+      setIncomes((prev) =>
+        prev.map((i) =>
+          i.id === confirmDialog.income!.id
+            ? { ...i, confirmStatus: "saved" as const }
+            : i,
+        ),
+      );
       setNotification({
         show: true,
         message: `${docNumber} raqamli hujjat tasdiqlashdan bekor qilindi`,
-        type: "danger"
+        type: "danger",
       });
     } else if (confirmDialog.type === "delete") {
-      setIncomes(prev => prev.filter(i => i.id !== confirmDialog.income!.id));
+      setIncomes((prev) =>
+        prev.filter((i) => i.id !== confirmDialog.income!.id),
+      );
       setNotification({
         show: true,
         message: `${docNumber} raqamli hujjat o'chirildi`,
-        type: "danger"
+        type: "danger",
       });
     }
   };
@@ -1005,14 +889,14 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
   const handleEdit = (income: ProductIncome) => {
     setSelectedIncome(income);
     // Navigate to detail view with document data
-    onNavigate?.('products-income-detail', income.id.toString(), {
+    onNavigate?.("products-income-detail", income.id.toString(), {
       number: income.number,
       date: income.date,
       region: income.region,
       district: income.district,
       warehouse: income.warehouse,
       responsiblePerson: income.responsiblePerson,
-      confirmStatus: income.confirmStatus
+      confirmStatus: income.confirmStatus,
     });
   };
 
@@ -1038,7 +922,9 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
         <SuccessNotification
           message={notification.message}
           type={notification.type}
-          onClose={() => setNotification({ show: false, message: "", type: "success" })}
+          onClose={() =>
+            setNotification({ show: false, message: "", type: "success" })
+          }
         />
       )}
 
@@ -1066,9 +952,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                 onClick={() => setShowFilters(!showFilters)}
               >
                 <Filter className="size-4 mr-2" />
-                {showFilters
-                  ? "Filtrlarni yashirish"
-                  : "Filtrlarni ko'rsatish"}
+                {showFilters ? "Filtrlarni yashirish" : "Filtrlarni ko'rsatish"}
               </Button>
               <Button variant="outlined" size="small">
                 <Download className="size-4 mr-2" />
@@ -1077,7 +961,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
               <Button
                 className="bg-blue-600 hover:bg-blue-700 text-white"
                 size="small"
-                onClick={() => onNavigate?.('products-income-detail', 'new')}
+                onClick={() => onNavigate?.("products-income-detail", "new")}
               >
                 <Plus className="size-4 mr-2" />
                 Yangi kirim
@@ -1091,9 +975,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
             <Card className="p-3 bg-white border border-gray-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">
-                    Jami hujjatlar
-                  </p>
+                  <p className="text-xs text-gray-500 mb-1">Jami hujjatlar</p>
                   <p className="text-xl font-bold text-gray-900">
                     {formatNumber(filteredIncomes.length)}
                   </p>
@@ -1111,9 +993,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">
-                    Jami maxsulotlar
-                  </p>
+                  <p className="text-xs text-gray-500 mb-1">Jami maxsulotlar</p>
                   <p className="text-xl font-bold text-gray-900">
                     {formatNumber(mockProducts.length)} ta
                   </p>
@@ -1128,9 +1008,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
             <Card className="p-3 bg-white border border-gray-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">
-                    Umumiy summa
-                  </p>
+                  <p className="text-xs text-gray-500 mb-1">Umumiy summa</p>
                   <p className="text-xl font-bold text-green-600">
                     {formatCurrency(
                       filteredIncomes.reduce(
@@ -1165,9 +1043,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                         placeholder="Hujjat raqam.."
                         className="pl-9 pr-9 bg-white"
                         value={searchQuery}
-                        onChange={(e) =>
-                          setSearchQuery(e.target.value)
-                        }
+                        onChange={(e) => setSearchQuery(e.target.value)}
                       />
                       {searchQuery && (
                         <button
@@ -1190,9 +1066,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                         type="date"
                         className="bg-white pr-9"
                         value={dateFrom}
-                        onChange={(e) =>
-                          setDateFrom(e.target.value)
-                        }
+                        onChange={(e) => setDateFrom(e.target.value)}
                         max={dateTo || undefined}
                       />
                       <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
@@ -1209,9 +1083,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                         type="date"
                         className="bg-white pr-9"
                         value={dateTo}
-                        onChange={(e) =>
-                          setDateTo(e.target.value)
-                        }
+                        onChange={(e) => setDateTo(e.target.value)}
                         min={dateFrom || undefined}
                       />
                       <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
@@ -1228,9 +1100,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                     </label>
                     <button
                       onClick={() => {
-                        setOpenRegionDropdown(
-                          !openRegionDropdown,
-                        );
+                        setOpenRegionDropdown(!openRegionDropdown);
                         setOpenWarehouseDropdown(false);
                         setOpenResponsibleDropdown(false);
                         setOpenContractorDropdown(false);
@@ -1253,17 +1123,13 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                           placeholder="Qidirish..."
                           className="px-3 py-2 border-b border-gray-300 bg-gray-100"
                           value={regionSearch}
-                          onChange={(e) =>
-                            setRegionSearch(e.target.value)
-                          }
+                          onChange={(e) => setRegionSearch(e.target.value)}
                         />
                         {allRegions
                           .filter((region) =>
                             region
                               .toLowerCase()
-                              .includes(
-                                regionSearch.toLowerCase(),
-                              ),
+                              .includes(regionSearch.toLowerCase()),
                           )
                           .map((region) => (
                             <label
@@ -1272,12 +1138,8 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                             >
                               <input
                                 type="checkbox"
-                                checked={selectedRegions.includes(
-                                  region,
-                                )}
-                                onChange={() =>
-                                  toggleRegion(region)
-                                }
+                                checked={selectedRegions.includes(region)}
+                                onChange={() => toggleRegion(region)}
                                 className="size-4 text-blue-600 rounded focus:ring-blue-500"
                               />
                               <span className="text-sm text-gray-700">
@@ -1318,9 +1180,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                     <button
                       onClick={() => {
                         if (availableWarehouses.length > 0) {
-                          setOpenWarehouseDropdown(
-                            !openWarehouseDropdown,
-                          );
+                          setOpenWarehouseDropdown(!openWarehouseDropdown);
                           setOpenRegionDropdown(false);
                           setOpenResponsibleDropdown(false);
                           setOpenContractorDropdown(false);
@@ -1348,17 +1208,13 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                             placeholder="Qidirish..."
                             className="px-3 py-2 border-b border-gray-300 bg-gray-100"
                             value={warehouseSearch}
-                            onChange={(e) =>
-                              setWarehouseSearch(e.target.value)
-                            }
+                            onChange={(e) => setWarehouseSearch(e.target.value)}
                           />
                           {availableWarehouses
                             .filter((warehouse) =>
                               warehouse
                                 .toLowerCase()
-                                .includes(
-                                  warehouseSearch.toLowerCase(),
-                                ),
+                                .includes(warehouseSearch.toLowerCase()),
                             )
                             .map((warehouse) => (
                               <label
@@ -1370,9 +1226,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                                   checked={selectedWarehouses.includes(
                                     warehouse,
                                   )}
-                                  onChange={() =>
-                                    toggleWarehouse(warehouse)
-                                  }
+                                  onChange={() => toggleWarehouse(warehouse)}
                                   className="size-4 text-blue-600 rounded focus:ring-blue-500"
                                 />
                                 <span className="text-sm text-gray-700">
@@ -1394,9 +1248,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                           >
                             {warehouse}
                             <button
-                              onClick={() =>
-                                removeWarehouse(warehouse)
-                              }
+                              onClick={() => removeWarehouse(warehouse)}
                               className="ml-1 hover:text-gray-900"
                             >
                               <X className="size-3" />
@@ -1415,18 +1267,14 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                     <button
                       onClick={() => {
                         if (availableResponsibles.length > 0) {
-                          setOpenResponsibleDropdown(
-                            !openResponsibleDropdown,
-                          );
+                          setOpenResponsibleDropdown(!openResponsibleDropdown);
                           setOpenRegionDropdown(false);
                           setOpenWarehouseDropdown(false);
                           setOpenContractorDropdown(false);
                           setOpenContractDropdown(false);
                         }
                       }}
-                      disabled={
-                        availableResponsibles.length === 0
-                      }
+                      disabled={availableResponsibles.length === 0}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-left text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-between disabled:bg-gray-100 disabled:cursor-not-allowed"
                     >
                       <span className="text-gray-500">
@@ -1455,9 +1303,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                             .filter((responsible) =>
                               responsible
                                 .toLowerCase()
-                                .includes(
-                                  responsibleSearch.toLowerCase(),
-                                ),
+                                .includes(responsibleSearch.toLowerCase()),
                             )
                             .map((responsible) => (
                               <label
@@ -1485,25 +1331,21 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                     {/* Selected responsibles badges */}
                     {selectedResponsibles.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-2">
-                        {selectedResponsibles.map(
-                          (responsible) => (
-                            <Badge
-                              key={responsible}
-                              variant="outline"
-                              className="bg-white text-gray-700 border-gray-300"
+                        {selectedResponsibles.map((responsible) => (
+                          <Badge
+                            key={responsible}
+                            variant="outline"
+                            className="bg-white text-gray-700 border-gray-300"
+                          >
+                            {responsible}
+                            <button
+                              onClick={() => removeResponsible(responsible)}
+                              className="ml-1 hover:text-gray-900"
                             >
-                              {responsible}
-                              <button
-                                onClick={() =>
-                                  removeResponsible(responsible)
-                                }
-                                className="ml-1 hover:text-gray-900"
-                              >
-                                <X className="size-3" />
-                              </button>
-                            </Badge>
-                          ),
-                        )}
+                              <X className="size-3" />
+                            </button>
+                          </Badge>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -1518,9 +1360,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                     </label>
                     <button
                       onClick={() => {
-                        setOpenContractorDropdown(
-                          !openContractorDropdown,
-                        );
+                        setOpenContractorDropdown(!openContractorDropdown);
                         setOpenRegionDropdown(false);
                         setOpenWarehouseDropdown(false);
                         setOpenResponsibleDropdown(false);
@@ -1543,17 +1383,13 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                           placeholder="Qidirish..."
                           className="px-3 py-2 border-b border-gray-300 bg-gray-100"
                           value={contractorSearch}
-                          onChange={(e) =>
-                            setContractorSearch(e.target.value)
-                          }
+                          onChange={(e) => setContractorSearch(e.target.value)}
                         />
                         {allContractors
                           .filter((contractor) =>
                             contractor
                               .toLowerCase()
-                              .includes(
-                                contractorSearch.toLowerCase(),
-                              ),
+                              .includes(contractorSearch.toLowerCase()),
                           )
                           .map((contractor) => (
                             <label
@@ -1565,9 +1401,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                                 checked={selectedContractors.includes(
                                   contractor,
                                 )}
-                                onChange={() =>
-                                  toggleContractor(contractor)
-                                }
+                                onChange={() => toggleContractor(contractor)}
                                 className="size-4 text-blue-600 rounded focus:ring-blue-500"
                               />
                               <span className="text-sm text-gray-700">
@@ -1589,9 +1423,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                           >
                             {contractor}
                             <button
-                              onClick={() =>
-                                removeContractor(contractor)
-                              }
+                              onClick={() => removeContractor(contractor)}
                               className="ml-1 hover:text-gray-900"
                             >
                               <X className="size-3" />
@@ -1610,9 +1442,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                     <button
                       onClick={() => {
                         if (availableContracts.length > 0) {
-                          setOpenContractDropdown(
-                            !openContractDropdown,
-                          );
+                          setOpenContractDropdown(!openContractDropdown);
                           setOpenRegionDropdown(false);
                           setOpenWarehouseDropdown(false);
                           setOpenResponsibleDropdown(false);
@@ -1632,48 +1462,39 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                       <ChevronDown className="size-4 text-gray-400" />
                     </button>
 
-                    {openContractDropdown &&
-                      availableContracts.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
-                          <Input
-                            type="text"
-                            placeholder="Qidirish..."
-                            className="px-3 py-2 border-b border-gray-300 bg-gray-100"
-                            value={contractSearch}
-                            onChange={(e) =>
-                              setContractSearch(e.target.value)
-                            }
-                          />
-                          {availableContracts
-                            .filter((contract) =>
-                              contract
-                                .toLowerCase()
-                                .includes(
-                                  contractSearch.toLowerCase(),
-                                ),
-                            )
-                            .map((contract) => (
-                              <label
-                                key={contract}
-                                className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={selectedContracts.includes(
-                                    contract,
-                                  )}
-                                  onChange={() =>
-                                    toggleContract(contract)
-                                  }
-                                  className="size-4 text-blue-600 rounded focus:ring-blue-500"
-                                />
-                                <span className="text-sm text-gray-700">
-                                  {contract}
-                                </span>
-                              </label>
-                            ))}
-                        </div>
-                      )}
+                    {openContractDropdown && availableContracts.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
+                        <Input
+                          type="text"
+                          placeholder="Qidirish..."
+                          className="px-3 py-2 border-b border-gray-300 bg-gray-100"
+                          value={contractSearch}
+                          onChange={(e) => setContractSearch(e.target.value)}
+                        />
+                        {availableContracts
+                          .filter((contract) =>
+                            contract
+                              .toLowerCase()
+                              .includes(contractSearch.toLowerCase()),
+                          )
+                          .map((contract) => (
+                            <label
+                              key={contract}
+                              className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedContracts.includes(contract)}
+                                onChange={() => toggleContract(contract)}
+                                className="size-4 text-blue-600 rounded focus:ring-blue-500"
+                              />
+                              <span className="text-sm text-gray-700">
+                                {contract}
+                              </span>
+                            </label>
+                          ))}
+                      </div>
+                    )}
 
                     {/* Selected contracts badges */}
                     {selectedContracts.length > 0 && (
@@ -1686,9 +1507,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                           >
                             {contract}
                             <button
-                              onClick={() =>
-                                removeContract(contract)
-                              }
+                              onClick={() => removeContract(contract)}
                               className="ml-1 hover:text-gray-900"
                             >
                               <X className="size-3" />
@@ -1709,18 +1528,18 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                   selectedContracts.length > 0 ||
                   dateFrom ||
                   dateTo) && (
-                    <div className="flex justify-end">
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={clearAllFilters}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <X className="size-4 mr-2" />
-                        Barcha filtrlarni tozalash
-                      </Button>
-                    </div>
-                  )}
+                  <div className="flex justify-end">
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={clearAllFilters}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <X className="size-4 mr-2" />
+                      Barcha filtrlarni tozalash
+                    </Button>
+                  </div>
+                )}
               </div>
             </Card>
           )}
@@ -1732,188 +1551,25 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
           onScroll={handleScroll}
           ref={scrollRef}
         >
-          <div className="bg-white rounded-lg border border-gray-200">
+          <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
             <table
               className="w-full border-collapse"
-              style={{ minWidth: "2200px" }}
             >
               <thead className="bg-gray-100 border-b border-gray-200">
                 <tr>
-                  <ResizableTableColumn
+                  <th
                     className="px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10"
-                    defaultWidth={60}
-                    minWidth={50}
                   >
                     №
-                  </ResizableTableColumn>
-                  <ResizableTableColumn
-                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors"
-                    defaultWidth={180}
-                    minWidth={120}
-                    onClick={() => handleSort('number')}
+                  </th>
+                  <th
+                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors min-w-max"
+                    onClick={() => handleSort("number")}
                   >
                     <div className="flex items-center gap-2">
                       <span>Hujjat raqami</span>
-                      {sortColumn === 'number' ? (
-                        sortDirection === 'asc' ? (
-                          <ChevronUp className="size-3.5" />
-                        ) : (
-                          <ChevronDown className="size-3.5" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="size-3.5 text-gray-400" />
-                      )}
-                    </div>
-                  </ResizableTableColumn>
-                  <ResizableTableColumn
-                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors"
-                    defaultWidth={160}
-                    minWidth={120}
-                    onClick={() => handleSort('date')}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span>Sana soat</span>
-                      {sortColumn === 'date' ? (
-                        sortDirection === 'asc' ? (
-                          <ChevronUp className="size-3.5" />
-                        ) : (
-                          <ChevronDown className="size-3.5" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="size-3.5 text-gray-400" />
-                      )}
-                    </div>
-                  </ResizableTableColumn>
-                  <ResizableTableColumn
-                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors"
-                    defaultWidth={220}
-                    minWidth={120}
-                    onClick={() => handleSort('region')}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span>Viloyat</span>
-                      {sortColumn === 'region' ? (
-                        sortDirection === 'asc' ? (
-                          <ChevronUp className="size-3.5" />
-                        ) : (
-                          <ChevronDown className="size-3.5" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="size-3.5 text-gray-400" />
-                      )}
-                    </div>
-                  </ResizableTableColumn>
-                  <ResizableTableColumn
-                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors"
-                    defaultWidth={250}
-                    minWidth={150}
-                    onClick={() => handleSort('warehouse')}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span>Ombor</span>
-                      {sortColumn === 'warehouse' ? (
-                        sortDirection === 'asc' ? (
-                          <ChevronUp className="size-3.5" />
-                        ) : (
-                          <ChevronDown className="size-3.5" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="size-3.5 text-gray-400" />
-                      )}
-                    </div>
-                  </ResizableTableColumn>
-                  <ResizableTableColumn
-                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors"
-                    defaultWidth={320}
-                    minWidth={150}
-                    onClick={() => handleSort('responsiblePerson')}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span>MJSH</span>
-                      {sortColumn === 'responsiblePerson' ? (
-                        sortDirection === 'asc' ? (
-                          <ChevronUp className="size-3.5" />
-                        ) : (
-                          <ChevronDown className="size-3.5" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="size-3.5 text-gray-400" />
-                      )}
-                    </div>
-                  </ResizableTableColumn>
-                  <ResizableTableColumn
-                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors"
-                    defaultWidth={250}
-                    minWidth={150}
-                    onClick={() => handleSort('contractor')}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span>Kontragent</span>
-                      {sortColumn === 'contractor' ? (
-                        sortDirection === 'asc' ? (
-                          <ChevronUp className="size-3.5" />
-                        ) : (
-                          <ChevronDown className="size-3.5" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="size-3.5 text-gray-400" />
-                      )}
-                    </div>
-                  </ResizableTableColumn>
-                  <ResizableTableColumn
-                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors"
-                    defaultWidth={180}
-                    minWidth={120}
-                    onClick={() => handleSort('contract')}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span>Shartnoma</span>
-                      {sortColumn === 'contract' ? (
-                        sortDirection === 'asc' ? (
-                          <ChevronUp className="size-3.5" />
-                        ) : (
-                          <ChevronDown className="size-3.5" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="size-3.5 text-gray-400" />
-                      )}
-                    </div>
-                  </ResizableTableColumn>
-                  <ResizableTableColumn
-                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors"
-                    defaultWidth={200}
-                    minWidth={120}
-                    onClick={() => handleSort('totalAmount')}
-                  >
-                    <div className="flex items-center gap-2 justify-end">
-                      <span>Jami summa</span>
-                      {sortColumn === 'totalAmount' ? (
-                        sortDirection === 'asc' ? (
-                          <ChevronUp className="size-3.5" />
-                        ) : (
-                          <ChevronDown className="size-3.5" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="size-3.5 text-gray-400" />
-                      )}
-                    </div>
-                  </ResizableTableColumn>
-                  <ResizableTableColumn
-                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10"
-                    defaultWidth={150}
-                    minWidth={100}
-                  >
-                    Foydalanuvchi
-                  </ResizableTableColumn>
-                  <th
-                    className="px-3 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky right-[110px] top-0 bg-gray-100 z-20 cursor-pointer hover:bg-gray-200 transition-colors shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.1)]"
-                    style={{ width: "150px" }}
-                    onClick={() => handleSort('confirmStatus')}
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <span>Status</span>
-                      {sortColumn === 'confirmStatus' ? (
-                        sortDirection === 'asc' ? (
+                      {sortColumn === "number" ? (
+                        sortDirection === "asc" ? (
                           <ChevronUp className="size-3.5" />
                         ) : (
                           <ChevronDown className="size-3.5" />
@@ -1924,8 +1580,148 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                     </div>
                   </th>
                   <th
-                    className="px-3 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider sticky right-0 top-0 bg-gray-100 z-20"
-                    style={{ width: "110px" }}
+                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors min-w-max"
+                    onClick={() => handleSort("date")}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>Sana soat</span>
+                      {sortColumn === "date" ? (
+                        sortDirection === "asc" ? (
+                          <ChevronUp className="size-3.5" />
+                        ) : (
+                          <ChevronDown className="size-3.5" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="size-3.5 text-gray-400" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors min-w-max"
+                    onClick={() => handleSort("region")}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>Viloyat</span>
+                      {sortColumn === "region" ? (
+                        sortDirection === "asc" ? (
+                          <ChevronUp className="size-3.5" />
+                        ) : (
+                          <ChevronDown className="size-3.5" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="size-3.5 text-gray-400" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors min-w-max"
+                    onClick={() => handleSort("warehouse")}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>Ombor</span>
+                      {sortColumn === "warehouse" ? (
+                        sortDirection === "asc" ? (
+                          <ChevronUp className="size-3.5" />
+                        ) : (
+                          <ChevronDown className="size-3.5" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="size-3.5 text-gray-400" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors min-w-max"
+                    onClick={() => handleSort("responsiblePerson")}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>MJSH</span>
+                      {sortColumn === "responsiblePerson" ? (
+                        sortDirection === "asc" ? (
+                          <ChevronUp className="size-3.5" />
+                        ) : (
+                          <ChevronDown className="size-3.5" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="size-3.5 text-gray-400" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors min-w-max"
+                    onClick={() => handleSort("contractor")}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>Kontragent</span>
+                      {sortColumn === "contractor" ? (
+                        sortDirection === "asc" ? (
+                          <ChevronUp className="size-3.5" />
+                        ) : (
+                          <ChevronDown className="size-3.5" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="size-3.5 text-gray-400" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors min-w-max"
+                    onClick={() => handleSort("contract")}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>Shartnoma</span>
+                      {sortColumn === "contract" ? (
+                        sortDirection === "asc" ? (
+                          <ChevronUp className="size-3.5" />
+                        ) : (
+                          <ChevronDown className="size-3.5" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="size-3.5 text-gray-400" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors min-w-max"
+                    onClick={() => handleSort("totalAmount")}
+                  >
+                    <div className="flex items-center gap-2 justify-end">
+                      <span>Jami summa</span>
+                      {sortColumn === "totalAmount" ? (
+                        sortDirection === "asc" ? (
+                          <ChevronUp className="size-3.5" />
+                        ) : (
+                          <ChevronDown className="size-3.5" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="size-3.5 text-gray-400" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 min-w-max"
+                  >
+                    Foydalanuvchi
+                  </th>
+                  <th
+                    className="px-3 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky right-[70px] top-0 bg-gray-100 z-20 cursor-pointer hover:bg-gray-200 transition-colors shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.1)] min-w-max"
+                    onClick={() => handleSort("confirmStatus")}
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <span>Status</span>
+                      {sortColumn === "confirmStatus" ? (
+                        sortDirection === "asc" ? (
+                          <ChevronUp className="size-3.5" />
+                        ) : (
+                          <ChevronDown className="size-3.5" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="size-3.5 text-gray-400" />
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    className="px-3 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider sticky right-0 top-0 bg-gray-100 z-20 min-w-max"
                   >
                     Amallar
                   </th>
@@ -1952,32 +1748,31 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                     .map((income, index) => (
                       <tr
                         key={income.id}
-                        className={`transition-colors ${selectedRowId === income.id ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+                        className={`transition-colors ${selectedRowId === income.id ? "bg-blue-50" : "hover:bg-gray-50"}`}
                       >
                         <td
-                          className={`px-2 py-2 whitespace-nowrap text-xs text-gray-500 border-r border-gray-200 ${selectedRowId === income.id ? 'bg-blue-50' : 'bg-white'}`}
-                          style={{ width: "60px" }}
+                          className={`px-2 py-2 whitespace-nowrap text-xs text-gray-500 border-r border-gray-200 ${selectedRowId === income.id ? "bg-blue-50" : "bg-white"}`}
                         >
                           {index + 1}
                         </td>
                         <td
-                          className={`px-3 py-2 whitespace-nowrap border-r border-gray-200 cursor-pointer ${selectedRowId === income.id ? 'bg-blue-50' : 'bg-white'}`}
-                          style={{ width: "180px" }}
+                          className={`px-3 py-2 whitespace-nowrap border-r border-gray-200 cursor-pointer ${selectedRowId === income.id ? "bg-blue-50" : "bg-white"} min-w-max`}
                           onClick={() => handleRowClick(income.id)}
                         >
                           <div className="flex items-center gap-2">
                             <div
-                              className={`size-6 rounded flex items-center justify-center flex-shrink-0 ${income.confirmStatus === "confirmed"
+                              className={`size-6 rounded flex items-center justify-center flex-shrink-0 ${
+                                income.confirmStatus === "confirmed"
                                   ? "bg-blue-100"
                                   : "bg-yellow-100"
-                                }`}
+                              }`}
                             >
                               <FileCheck
-                                className={`size-3.5 ${income.confirmStatus ===
-                                    "confirmed"
+                                className={`size-3.5 ${
+                                  income.confirmStatus === "confirmed"
                                     ? "text-blue-600"
                                     : "text-yellow-600"
-                                  }`}
+                                }`}
                               />
                             </div>
                             <span
@@ -1987,58 +1782,48 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                                 handleEdit(income);
                               }}
                             >
-                              {highlightText(
-                                income.number,
-                                searchQuery,
-                              )}
+                              {highlightText(income.number, searchQuery)}
                             </span>
                           </div>
                         </td>
                         <td
-                          className="px-3 py-2 whitespace-nowrap text-xs text-gray-700 border-r border-gray-200 cursor-pointer"
-                          style={{ width: "160px" }}
+                          className="px-3 py-2 whitespace-nowrap text-xs text-gray-700 border-r border-gray-200 cursor-pointer min-w-max"
                           onClick={() => handleRowClick(income.id)}
                         >
                           {income.date}
                         </td>
                         <td
-                          className="px-3 py-2 text-xs text-gray-700 border-r border-gray-200 cursor-pointer"
-                          style={{ width: "220px" }}
+                          className="px-3 py-2 text-xs text-gray-700 border-r border-gray-200 cursor-pointer min-w-max"
                           onClick={() => handleRowClick(income.id)}
                         >
                           {income.region}
                         </td>
                         <td
-                          className="px-3 py-2 text-xs text-gray-700 border-r border-gray-200 cursor-pointer"
-                          style={{ width: "250px" }}
+                          className="px-3 py-2 text-xs text-gray-700 border-r border-gray-200 cursor-pointer min-w-max"
                           onClick={() => handleRowClick(income.id)}
                         >
                           {income.warehouse}
                         </td>
                         <td
-                          className="px-3 py-2 text-xs text-gray-700 border-r border-gray-200 cursor-pointer"
-                          style={{ width: "320px" }}
+                          className="px-3 py-2 text-xs text-gray-700 border-r border-gray-200 cursor-pointer min-w-max"
                           onClick={() => handleRowClick(income.id)}
                         >
                           {income.responsiblePerson}
                         </td>
                         <td
-                          className="px-3 py-2 text-xs text-gray-700 border-r border-gray-200 cursor-pointer"
-                          style={{ width: "250px" }}
+                          className="px-3 py-2 text-xs text-gray-700 border-r border-gray-200 cursor-pointer min-w-max"
                           onClick={() => handleRowClick(income.id)}
                         >
                           {income.contractor}
                         </td>
                         <td
-                          className="px-3 py-2 text-xs text-gray-700 border-r border-gray-200 cursor-pointer"
-                          style={{ width: "180px" }}
+                          className="px-3 py-2 text-xs text-gray-700 border-r border-gray-200 cursor-pointer min-w-max"
                           onClick={() => handleRowClick(income.id)}
                         >
                           {income.contract}
                         </td>
                         <td
-                          className="px-3 py-2 whitespace-nowrap text-xs text-right border-r border-gray-200 cursor-pointer"
-                          style={{ width: "200px" }}
+                          className="px-3 py-2 whitespace-nowrap text-xs text-right border-r border-gray-200 cursor-pointer min-w-max"
                           onClick={() => handleRowClick(income.id)}
                         >
                           <div className="font-bold text-green-600">
@@ -2046,15 +1831,13 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                           </div>
                         </td>
                         <td
-                          className="px-3 py-2 text-xs text-gray-700 border-r border-gray-200 cursor-pointer"
-                          style={{ width: "150px" }}
+                          className="px-3 py-2 text-xs text-gray-700 border-r border-gray-200 cursor-pointer min-w-max"
                           onClick={() => handleRowClick(income.id)}
                         >
                           {income.user}
                         </td>
                         <td
-                          className={`px-3 py-2 whitespace-nowrap text-center border-r border-gray-200 sticky right-[110px] z-10 cursor-pointer shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.1)] ${selectedRowId === income.id ? 'bg-blue-50' : 'bg-white'}`}
-                          style={{ width: "150px" }}
+                          className={`px-3 py-2 whitespace-nowrap text-center border-r border-gray-200 sticky right-[70px] z-10 cursor-pointer shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.1)] ${selectedRowId === income.id ? "bg-blue-50" : "bg-white"} min-w-max`}
                           onClick={() => handleRowClick(income.id)}
                         >
                           <Badge
@@ -2070,8 +1853,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                           </Badge>
                         </td>
                         <td
-                          className={`px-3 py-2 whitespace-nowrap text-center sticky right-0 z-10 ${selectedRowId === income.id ? 'bg-blue-50' : 'bg-white'}`}
-                          style={{ width: "110px" }}
+                          className={`px-3 py-2 whitespace-nowrap text-center sticky right-0 z-10 ${selectedRowId === income.id ? "bg-blue-50" : "bg-white"} min-w-max`}
                         >
                           <div className="flex items-center justify-center gap-1">
                             <Button
@@ -2133,8 +1915,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
             {/* Loading more indicator */}
             {displayedItems < sortedIncomes.length && (
               <div className="text-center py-4 text-gray-500 text-xs border-t border-gray-200">
-                Yuklanmoqda... ({displayedItems} /{" "}
-                {sortedIncomes.length})
+                Yuklanmoqda... ({displayedItems} / {sortedIncomes.length})
               </div>
             )}
 
@@ -2166,7 +1947,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
             onClick={() => setShowProductsModal(false)}
           >
             <div
-              className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col"
+              className="bg-white rounded-xl shadow-2xl w-full h-full max-h-[90vh] md:max-w-5xl overflow-hidden flex flex-col mx-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -2176,8 +1957,12 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                     <Package className="size-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-white">{viewingIncome.number}</h2>
-                    <p className="text-sm text-blue-100">Hujjat raqamiga tegishli maxsulotlar ro'yxati</p>
+                    <h2 className="text-lg font-bold text-white">
+                      {viewingIncome.number}
+                    </h2>
+                    <p className="text-sm text-blue-100">
+                      Hujjat raqamiga tegishli maxsulotlar ro'yxati
+                    </p>
                   </div>
                 </div>
                 <Button
@@ -2196,31 +1981,49 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                   <table className="w-full border-collapse">
                     <thead className="bg-gray-100 border-b border-gray-200">
                       <tr>
-                        <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200" style={{ width: "60px" }}>
+                        <th
+                          className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 min-w-max"
+                        >
                           №
                         </th>
-                        <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200" style={{ width: "150px" }}>
+                        <th
+                          className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 min-w-max"
+                        >
                           Shtrix kod
                         </th>
-                        <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200" style={{ width: "200px" }}>
+                        <th
+                          className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 min-w-max"
+                        >
                           Tovar turi
                         </th>
-                        <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200" style={{ width: "150px" }}>
+                        <th
+                          className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 min-w-max"
+                        >
                           Model
                         </th>
-                        <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200" style={{ width: "120px" }}>
+                        <th
+                          className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 min-w-max"
+                        >
                           O'lcham
                         </th>
-                        <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200" style={{ width: "120px" }}>
+                        <th
+                          className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 min-w-max"
+                        >
                           O'lchov birligi
                         </th>
-                        <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200" style={{ width: "100px" }}>
+                        <th
+                          className="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 min-w-max"
+                        >
                           Soni
                         </th>
-                        <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200" style={{ width: "150px" }}>
+                        <th
+                          className="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 min-w-max"
+                        >
                           Narxi
                         </th>
-                        <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider" style={{ width: "180px" }}>
+                        <th
+                          className="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider min-w-max"
+                        >
                           Summasi
                         </th>
                       </tr>
@@ -2260,17 +2063,28 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                     </tbody>
                     <tfoot className="bg-gray-50 border-t-2 border-gray-300">
                       <tr>
-                        <td colSpan={6} className="px-3 py-3 text-sm font-bold text-gray-900 text-right">
+                        <td
+                          colSpan={6}
+                          className="px-3 py-3 text-sm font-bold text-gray-900 text-right"
+                        >
                           Jami:
                         </td>
                         <td className="px-3 py-3 text-sm font-bold text-gray-900 text-right border-r border-gray-200">
-                          {formatNumber(mockProducts.slice(0, 15).reduce((sum, p) => sum + p.quantity, 0))}
+                          {formatNumber(
+                            mockProducts
+                              .slice(0, 15)
+                              .reduce((sum, p) => sum + p.quantity, 0),
+                          )}
                         </td>
                         <td className="px-3 py-3 text-sm font-bold text-gray-900 text-right border-r border-gray-200">
                           -
                         </td>
                         <td className="px-3 py-3 text-sm font-bold text-green-600 text-right">
-                          {formatCurrency(mockProducts.slice(0, 15).reduce((sum, p) => sum + p.total, 0))}
+                          {formatCurrency(
+                            mockProducts
+                              .slice(0, 15)
+                              .reduce((sum, p) => sum + p.total, 0),
+                          )}
                         </td>
                       </tr>
                     </tfoot>
@@ -2280,7 +2094,10 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
 
               {/* Footer */}
               <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-end">
-                <Button variant="outlined" onClick={() => setShowProductsModal(false)}>
+                <Button
+                  variant="outlined"
+                  onClick={() => setShowProductsModal(false)}
+                >
                   Yopish
                 </Button>
               </div>
@@ -2291,7 +2108,7 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
         {/* Detail Modal */}
         {selectedIncome && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-8">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-white rounded-xl shadow-2xl w-full h-full max-h-[90vh] md:max-w-4xl overflow-hidden flex flex-col mx-auto">
               {/* Header */}
               <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -2390,14 +2207,12 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
                     </label>
                     <Badge
                       className={
-                        selectedIncome.confirmStatus ===
-                          "confirmed"
+                        selectedIncome.confirmStatus === "confirmed"
                           ? "bg-blue-100 text-blue-700"
                           : "bg-yellow-100 text-yellow-700"
                       }
                     >
-                      {selectedIncome.confirmStatus ===
-                        "confirmed"
+                      {selectedIncome.confirmStatus === "confirmed"
                         ? "Tasdiqlangan"
                         : "Saqlangan"}
                     </Badge>
@@ -2458,6 +2273,6 @@ const ProductsIncome: React.FC<ProductsIncomeViewProps> = ({ onNavigate }) => {
       </div>
     </>
   );
-}
+};
 
 export default ProductsIncome;

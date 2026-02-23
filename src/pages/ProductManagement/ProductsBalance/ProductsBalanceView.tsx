@@ -33,8 +33,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Badge, Button, Card, Input } from "antd";
-import { useNavigate } from 'react-router';
-
+import { useNavigate } from "react-router";
 
 interface ProductBalance {
   id: string;
@@ -72,53 +71,31 @@ const generateMockBalances = (): ProductBalance[] => {
   const regions = [
     {
       name: "Buxoro viloyati",
-      districts: [
-        "Buxoro shahri",
-        "Kogon tumani",
-        "G'ijduvon tumani",
-      ],
+      districts: ["Buxoro shahri", "Kogon tumani", "G'ijduvon tumani"],
     },
     {
       name: "Namangan viloyati",
-      districts: [
-        "Namangan shahri",
-        "Pop tumani",
-        "Uychi tumani",
-      ],
+      districts: ["Namangan shahri", "Pop tumani", "Uychi tumani"],
     },
     {
       name: "Toshkent shahar",
-      districts: [
-        "Yunusobod tumani",
-        "Chilonzor tumani",
-        "Mirobod tumani",
-      ],
+      districts: ["Yunusobod tumani", "Chilonzor tumani", "Mirobod tumani"],
     },
     {
       name: "Farg'ona viloyati",
-      districts: [
-        "Farg'ona shahri",
-        "Qo'qon shahri",
-        "Marg'ilon shahri",
-      ],
+      districts: ["Farg'ona shahri", "Qo'qon shahri", "Marg'ilon shahri"],
     },
   ];
 
   const warehouses: { [key: string]: string[] } = {
     "Buxoro viloyati": ["Buxoro ombori №1", "Kogon ombori №2"],
-    "Namangan viloyati": [
-      "Namangan ombori №1",
-      "Pop ombori №2",
-    ],
+    "Namangan viloyati": ["Namangan ombori №1", "Pop ombori №2"],
     "Toshkent shahar": [
       "Markaziy ombor №1",
       "Yunusobod ombori №2",
       "Chilonzor ombori №3",
     ],
-    "Farg'ona viloyati": [
-      "Farg'ona ombori №1",
-      "Qo'qon ombori №2",
-    ],
+    "Farg'ona viloyati": ["Farg'ona ombori №1", "Qo'qon ombori №2"],
   };
 
   const responsiblePersons: { [key: string]: string[] } = {
@@ -175,38 +152,26 @@ const generateMockBalances = (): ProductBalance[] => {
     "active",
     "archived",
   ];
-  const confirmStatuses: ("saved" | "confirmed")[] = [
-    "saved",
-    "confirmed",
-  ];
+  const confirmStatuses: ("saved" | "confirmed")[] = ["saved", "confirmed"];
 
   const balances: ProductBalance[] = [];
 
   for (let i = 0; i < 50; i++) {
-    const regionData =
-      regions[Math.floor(Math.random() * regions.length)];
+    const regionData = regions[Math.floor(Math.random() * regions.length)];
     const region = regionData.name;
     const district =
       regionData.districts[
-      Math.floor(Math.random() * regionData.districts.length)
+        Math.floor(Math.random() * regionData.districts.length)
       ];
     const warehouseList = warehouses[region];
     const warehouse =
-      warehouseList[
-      Math.floor(Math.random() * warehouseList.length)
-      ];
+      warehouseList[Math.floor(Math.random() * warehouseList.length)];
     const responsibleList = responsiblePersons[warehouse];
     const responsiblePerson =
-      responsibleList[
-      Math.floor(Math.random() * responsibleList.length)
-      ];
+      responsibleList[Math.floor(Math.random() * responsibleList.length)];
 
-    const day = String(
-      Math.floor(Math.random() * 28) + 1,
-    ).padStart(2, "0");
-    const month = String(
-      Math.floor(Math.random() * 2) + 1,
-    ).padStart(2, "0");
+    const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, "0");
+    const month = String(Math.floor(Math.random() * 2) + 1).padStart(2, "0");
 
     balances.push({
       id: String(i + 1),
@@ -218,21 +183,18 @@ const generateMockBalances = (): ProductBalance[] => {
       responsiblePerson,
       user: users[Math.floor(Math.random() * users.length)],
       totalItems: Math.floor(Math.random() * 300) + 50,
-      totalAmount:
-        (Math.floor(Math.random() * 500) + 50) * 1000000,
-      status:
-        statuses[Math.floor(Math.random() * statuses.length)],
+      totalAmount: (Math.floor(Math.random() * 500) + 50) * 1000000,
+      status: statuses[Math.floor(Math.random() * statuses.length)],
       confirmStatus:
-        i < 3 ? "confirmed" : confirmStatuses[
-          Math.floor(Math.random() * confirmStatuses.length)
-        ],
+        i < 3
+          ? "confirmed"
+          : confirmStatuses[Math.floor(Math.random() * confirmStatuses.length)],
     });
   }
 
   return balances.sort(
     (a, b) =>
-      parseInt(b.number.split("-")[2]) -
-      parseInt(a.number.split("-")[2]),
+      parseInt(b.number.split("-")[2]) - parseInt(a.number.split("-")[2]),
   );
 };
 
@@ -241,53 +203,31 @@ const generateMockOutcomes = (): ProductBalance[] => {
   const regions = [
     {
       name: "Buxoro viloyati",
-      districts: [
-        "Buxoro shahri",
-        "Kogon tumani",
-        "G'ijduvon tumani",
-      ],
+      districts: ["Buxoro shahri", "Kogon tumani", "G'ijduvon tumani"],
     },
     {
       name: "Namangan viloyati",
-      districts: [
-        "Namangan shahri",
-        "Pop tumani",
-        "Uychi tumani",
-      ],
+      districts: ["Namangan shahri", "Pop tumani", "Uychi tumani"],
     },
     {
       name: "Toshkent shahar",
-      districts: [
-        "Yunusobod tumani",
-        "Chilonzor tumani",
-        "Mirobod tumani",
-      ],
+      districts: ["Yunusobod tumani", "Chilonzor tumani", "Mirobod tumani"],
     },
     {
       name: "Farg'ona viloyati",
-      districts: [
-        "Farg'ona shahri",
-        "Qo'qon shahri",
-        "Marg'ilon shahri",
-      ],
+      districts: ["Farg'ona shahri", "Qo'qon shahri", "Marg'ilon shahri"],
     },
   ];
 
   const warehouses: { [key: string]: string[] } = {
     "Buxoro viloyati": ["Buxoro ombori №1", "Kogon ombori №2"],
-    "Namangan viloyati": [
-      "Namangan ombori №1",
-      "Pop ombori №2",
-    ],
+    "Namangan viloyati": ["Namangan ombori №1", "Pop ombori №2"],
     "Toshkent shahar": [
       "Markaziy ombor №1",
       "Yunusobod ombori №2",
       "Chilonzor ombori №3",
     ],
-    "Farg'ona viloyati": [
-      "Farg'ona ombori №1",
-      "Qo'qon ombori №2",
-    ],
+    "Farg'ona viloyati": ["Farg'ona ombori №1", "Qo'qon ombori №2"],
   };
 
   const responsiblePersons: { [key: string]: string[] } = {
@@ -344,38 +284,26 @@ const generateMockOutcomes = (): ProductBalance[] => {
     "active",
     "archived",
   ];
-  const confirmStatuses: ("saved" | "confirmed")[] = [
-    "saved",
-    "confirmed",
-  ];
+  const confirmStatuses: ("saved" | "confirmed")[] = ["saved", "confirmed"];
 
   const outcomes: ProductBalance[] = [];
 
   for (let i = 0; i < 50; i++) {
-    const regionData =
-      regions[Math.floor(Math.random() * regions.length)];
+    const regionData = regions[Math.floor(Math.random() * regions.length)];
     const region = regionData.name;
     const district =
       regionData.districts[
-      Math.floor(Math.random() * regionData.districts.length)
+        Math.floor(Math.random() * regionData.districts.length)
       ];
     const warehouseList = warehouses[region];
     const warehouse =
-      warehouseList[
-      Math.floor(Math.random() * warehouseList.length)
-      ];
+      warehouseList[Math.floor(Math.random() * warehouseList.length)];
     const responsibleList = responsiblePersons[warehouse];
     const responsiblePerson =
-      responsibleList[
-      Math.floor(Math.random() * responsibleList.length)
-      ];
+      responsibleList[Math.floor(Math.random() * responsibleList.length)];
 
-    const day = String(
-      Math.floor(Math.random() * 28) + 1,
-    ).padStart(2, "0");
-    const month = String(
-      Math.floor(Math.random() * 2) + 1,
-    ).padStart(2, "0");
+    const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, "0");
+    const month = String(Math.floor(Math.random() * 2) + 1).padStart(2, "0");
 
     outcomes.push({
       id: String(i + 1),
@@ -387,21 +315,16 @@ const generateMockOutcomes = (): ProductBalance[] => {
       responsiblePerson,
       user: users[Math.floor(Math.random() * users.length)],
       totalItems: Math.floor(Math.random() * 200) + 30,
-      totalAmount:
-        (Math.floor(Math.random() * 300) + 30) * 1000000,
-      status:
-        statuses[Math.floor(Math.random() * statuses.length)],
+      totalAmount: (Math.floor(Math.random() * 300) + 30) * 1000000,
+      status: statuses[Math.floor(Math.random() * statuses.length)],
       confirmStatus:
-        confirmStatuses[
-        Math.floor(Math.random() * confirmStatuses.length)
-        ],
+        confirmStatuses[Math.floor(Math.random() * confirmStatuses.length)],
     });
   }
 
   return outcomes.sort(
     (a, b) =>
-      parseInt(b.number.split("-")[2]) -
-      parseInt(a.number.split("-")[2]),
+      parseInt(b.number.split("-")[2]) - parseInt(a.number.split("-")[2]),
   );
 };
 
@@ -559,10 +482,9 @@ const generateMockProducts = (): Product[] => {
       const quantity = Math.floor(Math.random() * 500) + 10;
       const basePrice =
         [
-          850000, 250000, 1500000, 4500000, 1200000, 35000,
-          3000, 2000000, 450000, 180000, 12000, 5000, 25000,
-          8000, 6500000, 3200000, 850000, 320000, 750000,
-          950000,
+          850000, 250000, 1500000, 4500000, 1200000, 35000, 3000, 2000000,
+          450000, 180000, 12000, 5000, 25000, 8000, 6500000, 3200000, 850000,
+          320000, 750000, 950000,
         ][idx] || 100000;
       const price = basePrice + i * basePrice * 0.2;
 
@@ -587,9 +509,18 @@ const generateMockProducts = (): Product[] => {
 // Mock ma'lumotlar - Qaytarishlar uchun
 const generateMockReturns = (): ProductBalance[] => {
   const regions = [
-    { name: "Namangan viloyati", districts: ["Namangan shahri", "Pop tumani", "Uychi tumani"] },
-    { name: "Toshkent shahar", districts: ["Yunusobod tumani", "Chilonzor tumani", "Mirobod tumani"] },
-    { name: "Farg'ona viloyati", districts: ["Farg'ona shahri", "Qo'qon shahri", "Marg'ilon shahri"] },
+    {
+      name: "Namangan viloyati",
+      districts: ["Namangan shahri", "Pop tumani", "Uychi tumani"],
+    },
+    {
+      name: "Toshkent shahar",
+      districts: ["Yunusobod tumani", "Chilonzor tumani", "Mirobod tumani"],
+    },
+    {
+      name: "Farg'ona viloyati",
+      districts: ["Farg'ona shahri", "Qo'qon shahri", "Marg'ilon shahri"],
+    },
   ];
 
   const warehouses: { [key: string]: string[] } = {
@@ -599,16 +530,39 @@ const generateMockReturns = (): ProductBalance[] => {
   };
 
   const responsiblePersons: { [key: string]: string[] } = {
-    "Namangan ombori №1": ["Rahimov Otabek Shavkatovich", "Qodirova Sevara Ilhomovna"],
-    "Pop ombori №2": ["Nazarov Dilshod Muzaffarovich", "Azimova Gulnora Anvarovna"],
-    "Markaziy ombor №1": ["Karimov Jasur Akmalovich", "Alieva Nodira Shavkatovna"],
-    "Yunusobod ombori №2": ["Tursunov Aziz Bakhtiyorovich", "Yusupova Malika Rustamovna"],
-    "Farg'ona ombori №1": ["Tursunov Aziz Bakhtiyorovich", "Rahmonova Dildora Fazliddinovna"],
-    "Qo'qon ombori №2": ["Yuldashev Sardor Ulug'bekovich", "Karimova Feruza Toxirovna"],
+    "Namangan ombori №1": [
+      "Rahimov Otabek Shavkatovich",
+      "Qodirova Sevara Ilhomovna",
+    ],
+    "Pop ombori №2": [
+      "Nazarov Dilshod Muzaffarovich",
+      "Azimova Gulnora Anvarovna",
+    ],
+    "Markaziy ombor №1": [
+      "Karimov Jasur Akmalovich",
+      "Alieva Nodira Shavkatovna",
+    ],
+    "Yunusobod ombori №2": [
+      "Tursunov Aziz Bakhtiyorovich",
+      "Yusupova Malika Rustamovna",
+    ],
+    "Farg'ona ombori №1": [
+      "Tursunov Aziz Bakhtiyorovich",
+      "Rahmonova Dildora Fazliddinovna",
+    ],
+    "Qo'qon ombori №2": [
+      "Yuldashev Sardor Ulug'bekovich",
+      "Karimova Feruza Toxirovna",
+    ],
   };
 
   const users = ["admin", "operator1", "operator2", "warehouse_manager"];
-  const statuses: ("active" | "archived")[] = ["active", "active", "active", "archived"];
+  const statuses: ("active" | "archived")[] = [
+    "active",
+    "active",
+    "active",
+    "archived",
+  ];
   const confirmStatuses: ("saved" | "confirmed")[] = ["saved", "confirmed"];
   const returnTypes: ("warehouse" | "supplier")[] = ["warehouse", "supplier"];
 
@@ -617,16 +571,22 @@ const generateMockReturns = (): ProductBalance[] => {
   for (let i = 0; i < 50; i++) {
     const regionData = regions[Math.floor(Math.random() * regions.length)];
     const region = regionData.name;
-    const district = regionData.districts[Math.floor(Math.random() * regionData.districts.length)];
+    const district =
+      regionData.districts[
+        Math.floor(Math.random() * regionData.districts.length)
+      ];
     const warehouseList = warehouses[region];
-    const warehouse = warehouseList[Math.floor(Math.random() * warehouseList.length)];
+    const warehouse =
+      warehouseList[Math.floor(Math.random() * warehouseList.length)];
     const responsibleList = responsiblePersons[warehouse];
-    const responsiblePerson = responsibleList[Math.floor(Math.random() * responsibleList.length)];
+    const responsiblePerson =
+      responsibleList[Math.floor(Math.random() * responsibleList.length)];
 
     const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, "0");
     const month = String(Math.floor(Math.random() * 2) + 1).padStart(2, "0");
 
-    const returnType = returnTypes[Math.floor(Math.random() * returnTypes.length)];
+    const returnType =
+      returnTypes[Math.floor(Math.random() * returnTypes.length)];
 
     returns.push({
       id: String(i + 1),
@@ -640,54 +600,119 @@ const generateMockReturns = (): ProductBalance[] => {
       totalItems: Math.floor(Math.random() * 150) + 20,
       totalAmount: (Math.floor(Math.random() * 200) + 20) * 1000000,
       status: statuses[Math.floor(Math.random() * statuses.length)],
-      confirmStatus: confirmStatuses[Math.floor(Math.random() * confirmStatuses.length)],
+      confirmStatus:
+        confirmStatuses[Math.floor(Math.random() * confirmStatuses.length)],
       returnType: returnType,
-      outcomeDocNumber: returnType === "warehouse" ? `CHQ-2026-${String(Math.floor(Math.random() * 50) + 1).padStart(3, "0")}` : undefined,
-      incomeDocNumber: returnType === "supplier" ? `KRM-2026-${String(Math.floor(Math.random() * 50) + 1).padStart(3, "0")}` : undefined,
+      outcomeDocNumber:
+        returnType === "warehouse"
+          ? `CHQ-2026-${String(Math.floor(Math.random() * 50) + 1).padStart(3, "0")}`
+          : undefined,
+      incomeDocNumber:
+        returnType === "supplier"
+          ? `KRM-2026-${String(Math.floor(Math.random() * 50) + 1).padStart(3, "0")}`
+          : undefined,
     });
   }
 
-  return returns.sort((a, b) => parseInt(b.number.split("-")[2]) - parseInt(a.number.split("-")[2]));
+  return returns.sort(
+    (a, b) =>
+      parseInt(b.number.split("-")[2]) - parseInt(a.number.split("-")[2]),
+  );
 };
 
 // Mock ma'lumotlar - Ombordan omborga o'tkazish uchun
 const generateMockTransfers = (): ProductBalance[] => {
   const regions = [
-    { name: "Namangan viloyati", districts: ["Namangan shahri", "Pop tumani", "Uychi tumani"] },
-    { name: "Toshkent shahar", districts: ["Yunusobod tumani", "Chilonzor tumani", "Mirobod tumani"] },
-    { name: "Farg'ona viloyati", districts: ["Farg'ona shahri", "Qo'qon shahri", "Marg'ilon shahri"] },
+    {
+      name: "Namangan viloyati",
+      districts: ["Namangan shahri", "Pop tumani", "Uychi tumani"],
+    },
+    {
+      name: "Toshkent shahar",
+      districts: ["Yunusobod tumani", "Chilonzor tumani", "Mirobod tumani"],
+    },
+    {
+      name: "Farg'ona viloyati",
+      districts: ["Farg'ona shahri", "Qo'qon shahri", "Marg'ilon shahri"],
+    },
   ];
 
   const warehouses: { [key: string]: string[] } = {
     "Namangan viloyati": ["Namangan ombori №1", "Pop ombori №2"],
-    "Toshkent shahar": ["Markaziy ombor №1", "Yunusobod ombori №2", "Chilonzor ombori №3"],
+    "Toshkent shahar": [
+      "Markaziy ombor №1",
+      "Yunusobod ombori №2",
+      "Chilonzor ombori №3",
+    ],
     "Farg'ona viloyati": ["Farg'ona ombori №1", "Qo'qon ombori №2"],
   };
 
   const responsiblePersons: { [key: string]: string[] } = {
-    "Namangan ombori №1": ["Rahimov Otabek Shavkatovich", "Qodirova Sevara Ilhomovna"],
-    "Pop ombori №2": ["Nazarov Dilshod Muzaffarovich", "Azimova Gulnora Anvarovna"],
-    "Markaziy ombor №1": ["Karimov Jasur Akmalovich", "Alieva Nodira Shavkatovna"],
-    "Yunusobod ombori №2": ["Tursunov Aziz Bakhtiyorovich", "Yusupova Malika Rustamovna"],
-    "Chilonzor ombori №3": ["Rahimov Otabek Shavkatovich", "Nazarova Dilnoza Akramovna"],
-    "Farg'ona ombori №1": ["Tursunov Aziz Bakhtiyorovich", "Rahmonova Dildora Fazliddinovna"],
-    "Qo'qon ombori №2": ["Yuldashev Sardor Ulug'bekovich", "Karimova Feruza Toxirovna"],
+    "Namangan ombori №1": [
+      "Rahimov Otabek Shavkatovich",
+      "Qodirova Sevara Ilhomovna",
+    ],
+    "Pop ombori №2": [
+      "Nazarov Dilshod Muzaffarovich",
+      "Azimova Gulnora Anvarovna",
+    ],
+    "Markaziy ombor №1": [
+      "Karimov Jasur Akmalovich",
+      "Alieva Nodira Shavkatovna",
+    ],
+    "Yunusobod ombori №2": [
+      "Tursunov Aziz Bakhtiyorovich",
+      "Yusupova Malika Rustamovna",
+    ],
+    "Chilonzor ombori №3": [
+      "Rahimov Otabek Shavkatovich",
+      "Nazarova Dilnoza Akramovna",
+    ],
+    "Farg'ona ombori №1": [
+      "Tursunov Aziz Bakhtiyorovich",
+      "Rahmonova Dildora Fazliddinovna",
+    ],
+    "Qo'qon ombori №2": [
+      "Yuldashev Sardor Ulug'bekovich",
+      "Karimova Feruza Toxirovna",
+    ],
   };
 
-  const users = ["admin", "operator1", "operator2", "warehouse_manager", "manager1"];
-  const statuses: ("active" | "archived")[] = ["active", "active", "active", "active", "archived"];
-  const confirmStatuses: ("saved" | "confirmed")[] = ["saved", "saved", "confirmed"];
+  const users = [
+    "admin",
+    "operator1",
+    "operator2",
+    "warehouse_manager",
+    "manager1",
+  ];
+  const statuses: ("active" | "archived")[] = [
+    "active",
+    "active",
+    "active",
+    "active",
+    "archived",
+  ];
+  const confirmStatuses: ("saved" | "confirmed")[] = [
+    "saved",
+    "saved",
+    "confirmed",
+  ];
 
   const transfers: ProductBalance[] = [];
 
   for (let i = 0; i < 50; i++) {
     const regionData = regions[Math.floor(Math.random() * regions.length)];
     const region = regionData.name;
-    const district = regionData.districts[Math.floor(Math.random() * regionData.districts.length)];
+    const district =
+      regionData.districts[
+        Math.floor(Math.random() * regionData.districts.length)
+      ];
     const warehouseList = warehouses[region];
-    const warehouse = warehouseList[Math.floor(Math.random() * warehouseList.length)];
+    const warehouse =
+      warehouseList[Math.floor(Math.random() * warehouseList.length)];
     const responsibleList = responsiblePersons[warehouse];
-    const responsiblePerson = responsibleList[Math.floor(Math.random() * responsibleList.length)];
+    const responsiblePerson =
+      responsibleList[Math.floor(Math.random() * responsibleList.length)];
 
     const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, "0");
     const month = String(Math.floor(Math.random() * 2) + 1).padStart(2, "0");
@@ -704,20 +729,36 @@ const generateMockTransfers = (): ProductBalance[] => {
       totalItems: Math.floor(Math.random() * 250) + 40,
       totalAmount: (Math.floor(Math.random() * 350) + 50) * 1000000,
       status: statuses[Math.floor(Math.random() * statuses.length)],
-      confirmStatus: confirmStatuses[Math.floor(Math.random() * confirmStatuses.length)],
+      confirmStatus:
+        confirmStatuses[Math.floor(Math.random() * confirmStatuses.length)],
     });
   }
 
-  return transfers.sort((a, b) => parseInt(b.number.split("-")[2]) - parseInt(a.number.split("-")[2]));
+  return transfers.sort(
+    (a, b) =>
+      parseInt(b.number.split("-")[2]) - parseInt(a.number.split("-")[2]),
+  );
 };
 
 // Mock ma'lumotlar - Qoldig'ni to'g'irlash uchun
 const generateMockCorrections = (): ProductBalance[] => {
   const regions = [
-    { name: "Namangan viloyati", districts: ["Namangan shahri", "Pop tumani", "Uychi tumani"] },
-    { name: "Toshkent shahar", districts: ["Yunusobod tumani", "Chilonzor tumani", "Mirobod tumani"] },
-    { name: "Farg'ona viloyati", districts: ["Farg'ona shahri", "Qo'qon shahri", "Marg'ilon shahri"] },
-    { name: "Buxoro viloyati", districts: ["Buxoro shahri", "Kogon tumani", "G'ijduvon tumani"] },
+    {
+      name: "Namangan viloyati",
+      districts: ["Namangan shahri", "Pop tumani", "Uychi tumani"],
+    },
+    {
+      name: "Toshkent shahar",
+      districts: ["Yunusobod tumani", "Chilonzor tumani", "Mirobod tumani"],
+    },
+    {
+      name: "Farg'ona viloyati",
+      districts: ["Farg'ona shahri", "Qo'qon shahri", "Marg'ilon shahri"],
+    },
+    {
+      name: "Buxoro viloyati",
+      districts: ["Buxoro shahri", "Kogon tumani", "G'ijduvon tumani"],
+    },
   ];
 
   const warehouses: { [key: string]: string[] } = {
@@ -728,18 +769,47 @@ const generateMockCorrections = (): ProductBalance[] => {
   };
 
   const responsiblePersons: { [key: string]: string[] } = {
-    "Namangan ombori №1": ["Rahimov Otabek Shavkatovich", "Qodirova Sevara Ilhomovna"],
-    "Pop ombori №2": ["Nazarov Dilshod Muzaffarovich", "Azimova Gulnora Anvarovna"],
-    "Markaziy ombor №1": ["Karimov Jasur Akmalovich", "Alieva Nodira Shavkatovna"],
-    "Yunusobod ombori №2": ["Tursunov Aziz Bakhtiyorovich", "Yusupova Malika Rustamovna"],
-    "Farg'ona ombori №1": ["Tursunov Aziz Bakhtiyorovich", "Rahmonova Dildora Fazliddinovna"],
-    "Qo'qon ombori №2": ["Yuldashev Sardor Ulug'bekovich", "Karimova Feruza Toxirovna"],
-    "Buxoro ombori №1": ["Nazarov Dilshod Muzaffarovich", "Sultonova Madina Rustamovna"],
-    "Kogon ombori №2": ["Abdullayev Jamshid Akramovich", "Xolmatova Zilola Toxirovna"],
+    "Namangan ombori №1": [
+      "Rahimov Otabek Shavkatovich",
+      "Qodirova Sevara Ilhomovna",
+    ],
+    "Pop ombori №2": [
+      "Nazarov Dilshod Muzaffarovich",
+      "Azimova Gulnora Anvarovna",
+    ],
+    "Markaziy ombor №1": [
+      "Karimov Jasur Akmalovich",
+      "Alieva Nodira Shavkatovna",
+    ],
+    "Yunusobod ombori №2": [
+      "Tursunov Aziz Bakhtiyorovich",
+      "Yusupova Malika Rustamovna",
+    ],
+    "Farg'ona ombori №1": [
+      "Tursunov Aziz Bakhtiyorovich",
+      "Rahmonova Dildora Fazliddinovna",
+    ],
+    "Qo'qon ombori №2": [
+      "Yuldashev Sardor Ulug'bekovich",
+      "Karimova Feruza Toxirovna",
+    ],
+    "Buxoro ombori №1": [
+      "Nazarov Dilshod Muzaffarovich",
+      "Sultonova Madina Rustamovna",
+    ],
+    "Kogon ombori №2": [
+      "Abdullayev Jamshid Akramovich",
+      "Xolmatova Zilola Toxirovna",
+    ],
   };
 
   const users = ["admin", "operator1", "warehouse_manager", "manager1"];
-  const statuses: ("active" | "archived")[] = ["active", "active", "active", "archived"];
+  const statuses: ("active" | "archived")[] = [
+    "active",
+    "active",
+    "active",
+    "archived",
+  ];
   const confirmStatuses: ("saved" | "confirmed")[] = ["saved", "confirmed"];
 
   const corrections: ProductBalance[] = [];
@@ -747,11 +817,16 @@ const generateMockCorrections = (): ProductBalance[] => {
   for (let i = 0; i < 50; i++) {
     const regionData = regions[Math.floor(Math.random() * regions.length)];
     const region = regionData.name;
-    const district = regionData.districts[Math.floor(Math.random() * regionData.districts.length)];
+    const district =
+      regionData.districts[
+        Math.floor(Math.random() * regionData.districts.length)
+      ];
     const warehouseList = warehouses[region];
-    const warehouse = warehouseList[Math.floor(Math.random() * warehouseList.length)];
+    const warehouse =
+      warehouseList[Math.floor(Math.random() * warehouseList.length)];
     const responsibleList = responsiblePersons[warehouse];
-    const responsiblePerson = responsibleList[Math.floor(Math.random() * responsibleList.length)];
+    const responsiblePerson =
+      responsibleList[Math.floor(Math.random() * responsibleList.length)];
 
     const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, "0");
     const month = String(Math.floor(Math.random() * 2) + 1).padStart(2, "0");
@@ -768,11 +843,15 @@ const generateMockCorrections = (): ProductBalance[] => {
       totalItems: Math.floor(Math.random() * 100) + 15,
       totalAmount: (Math.floor(Math.random() * 180) + 25) * 1000000,
       status: statuses[Math.floor(Math.random() * statuses.length)],
-      confirmStatus: confirmStatuses[Math.floor(Math.random() * confirmStatuses.length)],
+      confirmStatus:
+        confirmStatuses[Math.floor(Math.random() * confirmStatuses.length)],
     });
   }
 
-  return corrections.sort((a, b) => parseInt(b.number.split("-")[2]) - parseInt(a.number.split("-")[2]));
+  return corrections.sort(
+    (a, b) =>
+      parseInt(b.number.split("-")[2]) - parseInt(a.number.split("-")[2]),
+  );
 };
 
 const mockBalances = generateMockBalances();
@@ -783,26 +862,18 @@ const mockCorrections = generateMockCorrections();
 const mockProducts = generateMockProducts();
 
 // Viloyatga qarab omborlarni olish
-const getWarehousesByRegions = (
-  regions: string[],
-): string[] => {
+const getWarehousesByRegions = (regions: string[]): string[] => {
   if (regions.length === 0) return [];
 
   const warehouses: { [key: string]: string[] } = {
     "Buxoro viloyati": ["Buxoro ombori №1", "Kogon ombori №2"],
-    "Namangan viloyati": [
-      "Namangan ombori №1",
-      "Pop ombori №2",
-    ],
+    "Namangan viloyati": ["Namangan ombori №1", "Pop ombori №2"],
     "Toshkent shahar": [
       "Markaziy ombor №1",
       "Yunusobod ombori №2",
       "Chilonzor ombori №3",
     ],
-    "Farg'ona viloyati": [
-      "Farg'ona ombori №1",
-      "Qo'qon ombori №2",
-    ],
+    "Farg'ona viloyati": ["Farg'ona ombori №1", "Qo'qon ombori №2"],
   };
 
   const result: string[] = [];
@@ -816,9 +887,7 @@ const getWarehousesByRegions = (
 };
 
 // Omborga qarab javobgar shaxslarni olish
-const getResponsiblesByWarehouses = (
-  warehouses: string[],
-): string[] => {
+const getResponsiblesByWarehouses = (warehouses: string[]): string[] => {
   if (warehouses.length === 0) return [];
 
   const responsiblePersons: { [key: string]: string[] } = {
@@ -875,7 +944,10 @@ interface ProductsBalanceViewProps {
   reportTitle?: string;
 }
 
-const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, reportTitle }) => {
+const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({
+  title,
+  reportTitle,
+}) => {
   // Title ga qarab kerakli ma'lumotlarni tanlash
   const isOutcome = title?.includes("chiqimi");
   const isReturn = title?.includes("qaytarish");
@@ -895,24 +967,24 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
   const [balances, setBalances] = useState<ProductBalance[]>(initialData);
   const [initialLoading, setInitialLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRegions, setSelectedRegions] = useState<
-    string[]
-  >([]);
-  const [selectedWarehouses, setSelectedWarehouses] = useState<
-    string[]
-  >([]);
-  const [selectedResponsibles, setSelectedResponsibles] =
-    useState<string[]>([]);
+  const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
+  const [selectedWarehouses, setSelectedWarehouses] = useState<string[]>([]);
+  const [selectedResponsibles, setSelectedResponsibles] = useState<string[]>(
+    [],
+  );
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [showReturnTypeMenu, setShowReturnTypeMenu] = useState(false);
-  const [selectedBalance, setSelectedBalance] =
-    useState<ProductBalance | null>(null);
+  const [selectedBalance, setSelectedBalance] = useState<ProductBalance | null>(
+    null,
+  );
   const [showReportModal, setShowReportModal] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const [showProductsModal, setShowProductsModal] = useState(false);
-  const [viewingBalance, setViewingBalance] = useState<ProductBalance | null>(null);
+  const [viewingBalance, setViewingBalance] = useState<ProductBalance | null>(
+    null,
+  );
 
   // Confirm dialog states
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -922,18 +994,14 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
   }>({ isOpen: false, type: "delete", balance: null });
 
   // Dropdown states
-  const [openRegionDropdown, setOpenRegionDropdown] =
-    useState(false);
-  const [openWarehouseDropdown, setOpenWarehouseDropdown] =
-    useState(false);
-  const [openResponsibleDropdown, setOpenResponsibleDropdown] =
-    useState(false);
+  const [openRegionDropdown, setOpenRegionDropdown] = useState(false);
+  const [openWarehouseDropdown, setOpenWarehouseDropdown] = useState(false);
+  const [openResponsibleDropdown, setOpenResponsibleDropdown] = useState(false);
 
   // Search states for dropdowns
   const [regionSearch, setRegionSearch] = useState("");
   const [warehouseSearch, setWarehouseSearch] = useState("");
-  const [responsibleSearch, setResponsibleSearch] =
-    useState("");
+  const [responsibleSearch, setResponsibleSearch] = useState("");
 
   // Infinite scroll states
   const [displayedItems, setDisplayedItems] = useState(10);
@@ -941,7 +1009,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
 
   // Sort states
   const [sortColumn, setSortColumn] = useState<string | null>(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   // Loading states
   const [filterLoading, setFilterLoading] = useState(false);
@@ -955,37 +1023,32 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
   }>({ show: false, message: "", type: "success" });
 
   // Unique regions
-  const allRegions = Array.from(
-    new Set(balances.map((b) => b.region)),
-  );
+  const allRegions = Array.from(new Set(balances.map((b) => b.region)));
 
   // Viloyatga qarab omborlar
-  const availableWarehouses =
-    getWarehousesByRegions(selectedRegions);
+  const availableWarehouses = getWarehousesByRegions(selectedRegions);
 
   // Omborga qarab javobgar shaxslar
-  const availableResponsibles = getResponsiblesByWarehouses(
-    selectedWarehouses,
-  );
+  const availableResponsibles = getResponsiblesByWarehouses(selectedWarehouses);
 
   const handleEdit = (balance: ProductBalance) => {
-    let detailPath = '';
-    if (isOutcome) detailPath = 'products-outcome-detail';
-    else if (isReturn) detailPath = 'products-return-detail';
-    else if (isTransfer) detailPath = 'products-warehouse-transfer-detail';
-    else if (isCorrection) detailPath = 'products-balance-correction-detail';
-    else detailPath = 'products-balance-detail';
+    let detailPath = "";
+    if (isOutcome) detailPath = "products-outcome-detail";
+    else if (isReturn) detailPath = "products-return-detail";
+    else if (isTransfer) detailPath = "products-warehouse-transfer-detail";
+    else if (isCorrection) detailPath = "products-balance-correction-detail";
+    else detailPath = "products-balance-detail";
 
     navigate(`/management/${detailPath}/${balance.id}`, { state: balance });
   };
 
   const handleNewDocument = () => {
-    let detailPath = '';
-    if (isOutcome) detailPath = 'products-outcome-detail';
-    else if (isReturn) detailPath = 'products-return-detail';
-    else if (isTransfer) detailPath = 'products-warehouse-transfer-detail';
-    else if (isCorrection) detailPath = 'products-balance-correction-detail';
-    else detailPath = 'products-balance-detail';
+    let detailPath = "";
+    if (isOutcome) detailPath = "products-outcome-detail";
+    else if (isReturn) detailPath = "products-return-detail";
+    else if (isTransfer) detailPath = "products-warehouse-transfer-detail";
+    else if (isCorrection) detailPath = "products-balance-correction-detail";
+    else detailPath = "products-balance-detail";
 
     navigate(`/management/${detailPath}/new`);
   };
@@ -1017,32 +1080,21 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
   const parseDate = (dateStr: string): Date | null => {
     if (!dateStr) return null;
     const [day, month, year] = dateStr.split(".");
-    return new Date(
-      parseInt(year),
-      parseInt(month) - 1,
-      parseInt(day),
-    );
+    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
   };
 
   // Filtrlash
   const filteredBalances = balances.filter((balance) => {
     const matchesSearch =
-      balance.number
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
+      balance.number.toLowerCase().includes(searchQuery.toLowerCase()) ||
       balance.responsiblePerson
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      balance.warehouse
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      balance.district
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+      balance.warehouse.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      balance.district.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesRegion =
-      selectedRegions.length === 0 ||
-      selectedRegions.includes(balance.region);
+      selectedRegions.length === 0 || selectedRegions.includes(balance.region);
     const matchesWarehouse =
       selectedWarehouses.length === 0 ||
       selectedWarehouses.includes(balance.warehouse);
@@ -1076,10 +1128,10 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
   // Sort function
   const handleSort = (column: string) => {
     if (sortColumn === column) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortColumn(column);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
@@ -1091,37 +1143,35 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
     let bValue: any = b[sortColumn as keyof ProductBalance];
 
     // Handle date sorting
-    if (sortColumn === 'date') {
+    if (sortColumn === "date") {
       const aDate = parseDate(a.date);
       const bDate = parseDate(b.date);
       if (!aDate || !bDate) return 0;
-      return sortDirection === 'asc'
+      return sortDirection === "asc"
         ? aDate.getTime() - bDate.getTime()
         : bDate.getTime() - aDate.getTime();
     }
 
     // Handle number sorting
-    if (sortColumn === 'totalAmount' || sortColumn === 'totalItems') {
-      return sortDirection === 'asc'
-        ? aValue - bValue
-        : bValue - aValue;
+    if (sortColumn === "totalAmount" || sortColumn === "totalItems") {
+      return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
     }
 
     // Handle status sorting
-    if (sortColumn === 'confirmStatus') {
-      const statusOrder = { 'confirmed': 1, 'saved': 2 };
-      const aOrder = statusOrder[a.confirmStatus as keyof typeof statusOrder] || 999;
-      const bOrder = statusOrder[b.confirmStatus as keyof typeof statusOrder] || 999;
-      return sortDirection === 'asc'
-        ? aOrder - bOrder
-        : bOrder - aOrder;
+    if (sortColumn === "confirmStatus") {
+      const statusOrder = { confirmed: 1, saved: 2 };
+      const aOrder =
+        statusOrder[a.confirmStatus as keyof typeof statusOrder] || 999;
+      const bOrder =
+        statusOrder[b.confirmStatus as keyof typeof statusOrder] || 999;
+      return sortDirection === "asc" ? aOrder - bOrder : bOrder - aOrder;
     }
 
     // Handle string sorting
-    if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sortDirection === 'asc'
-        ? aValue.localeCompare(bValue, 'uz')
-        : bValue.localeCompare(aValue, 'uz');
+    if (typeof aValue === "string" && typeof bValue === "string") {
+      return sortDirection === "asc"
+        ? aValue.localeCompare(bValue, "uz")
+        : bValue.localeCompare(aValue, "uz");
     }
 
     return 0;
@@ -1129,14 +1179,11 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
 
   // Infinite scroll handler
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } =
-      e.currentTarget;
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
 
     if (scrollHeight - scrollTop <= clientHeight * 1.5) {
       if (displayedItems < sortedBalances.length) {
-        setDisplayedItems((prev) =>
-          Math.min(prev + 10, sortedBalances.length),
-        );
+        setDisplayedItems((prev) => Math.min(prev + 10, sortedBalances.length));
       }
     }
   };
@@ -1156,7 +1203,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
     setDateFrom("");
     setDateTo("");
     setSortColumn(null);
-    setSortDirection('asc');
+    setSortDirection("asc");
 
     // Spinner ko'rsatish uchun kechikish
     const timer = setTimeout(() => {
@@ -1170,7 +1217,14 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
     setDisplayedItems(10);
 
     // Filter loading
-    if (searchQuery || selectedRegions.length > 0 || selectedWarehouses.length > 0 || selectedResponsibles.length > 0 || dateFrom || dateTo) {
+    if (
+      searchQuery ||
+      selectedRegions.length > 0 ||
+      selectedWarehouses.length > 0 ||
+      selectedResponsibles.length > 0 ||
+      dateFrom ||
+      dateTo
+    ) {
       setFilterLoading(true);
       const timer = setTimeout(() => {
         setFilterLoading(false);
@@ -1231,24 +1285,18 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
 
   // Remove single filter
   const removeRegion = (region: string) => {
-    setSelectedRegions((prev) =>
-      prev.filter((r) => r !== region),
-    );
+    setSelectedRegions((prev) => prev.filter((r) => r !== region));
     setSelectedWarehouses([]);
     setSelectedResponsibles([]);
   };
 
   const removeWarehouse = (warehouse: string) => {
-    setSelectedWarehouses((prev) =>
-      prev.filter((w) => w !== warehouse),
-    );
+    setSelectedWarehouses((prev) => prev.filter((w) => w !== warehouse));
     setSelectedResponsibles([]);
   };
 
   const removeResponsible = (responsible: string) => {
-    setSelectedResponsibles((prev) =>
-      prev.filter((r) => r !== responsible),
-    );
+    setSelectedResponsibles((prev) => prev.filter((r) => r !== responsible));
   };
 
   // Clear all filters
@@ -1263,7 +1311,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
 
   // Row selection function
   const handleRowClick = (balanceId: string) => {
-    setSelectedRowId(prev => prev === balanceId ? null : balanceId);
+    setSelectedRowId((prev) => (prev === balanceId ? null : balanceId));
   };
 
   const handleViewProducts = (balance: ProductBalance) => {
@@ -1303,33 +1351,39 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
     const docNumber = confirmDialog.balance.number;
 
     if (confirmDialog.type === "confirm") {
-      setBalances(prev => prev.map(b =>
-        b.id === confirmDialog.balance!.id
-          ? { ...b, confirmStatus: 'confirmed' as const }
-          : b
-      ));
+      setBalances((prev) =>
+        prev.map((b) =>
+          b.id === confirmDialog.balance!.id
+            ? { ...b, confirmStatus: "confirmed" as const }
+            : b,
+        ),
+      );
       setNotification({
         show: true,
         message: `${docNumber} raqamli hujjatni tasdiqladingiz`,
-        type: "success"
+        type: "success",
       });
     } else if (confirmDialog.type === "unconfirm") {
-      setBalances(prev => prev.map(b =>
-        b.id === confirmDialog.balance!.id
-          ? { ...b, confirmStatus: 'saved' as const }
-          : b
-      ));
+      setBalances((prev) =>
+        prev.map((b) =>
+          b.id === confirmDialog.balance!.id
+            ? { ...b, confirmStatus: "saved" as const }
+            : b,
+        ),
+      );
       setNotification({
         show: true,
         message: `${docNumber} raqamli hujjat tasdiqlashdan bekor qilindi`,
-        type: "danger"
+        type: "danger",
       });
     } else if (confirmDialog.type === "delete") {
-      setBalances(prev => prev.filter(b => b.id !== confirmDialog.balance!.id));
+      setBalances((prev) =>
+        prev.filter((b) => b.id !== confirmDialog.balance!.id),
+      );
       setNotification({
         show: true,
         message: `${docNumber} raqamli hujjat o'chirildi`,
-        type: "danger"
+        type: "danger",
       });
     }
   };
@@ -1371,13 +1425,15 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
   };
 
   return (
-    <>
+    <div>
       {/* Notification */}
       {notification.show && (
         <SuccessNotification
           message={notification.message}
           type={notification.type}
-          onClose={() => setNotification({ show: false, message: "", type: "success" })}
+          onClose={() =>
+            setNotification({ show: false, message: "", type: "success" })
+          }
         />
       )}
 
@@ -1390,7 +1446,6 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
               <h2 className="text-2xl font-bold text-gray-900">
                 {title || "Maxsulotlar qoldig'i ro'yxati"}
               </h2>
-
             </div>
             <div className="flex items-center gap-3">
               <Button
@@ -1399,9 +1454,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                 onClick={() => setShowFilters(!showFilters)}
               >
                 <Filter className="size-4 mr-2" />
-                {showFilters
-                  ? "Filtrlarni yashirish"
-                  : "Filtrlarni ko'rsatish"}
+                {showFilters ? "Filtrlarni yashirish" : "Filtrlarni ko'rsatish"}
               </Button>
               <Button variant="outlined" size="small">
                 <Download className="size-4 mr-2" />
@@ -1434,7 +1487,9 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                         <button
                           onClick={() => {
                             setShowReturnTypeMenu(false);
-                            onNavigate?.('products-return-detail', 'new', { returnType: 'warehouse' });
+                            onNavigate?.("products-return-detail", "new", {
+                              returnType: "warehouse",
+                            });
                           }}
                           className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-blue-50 transition-colors flex items-center gap-2 border-b border-gray-100"
                         >
@@ -1444,7 +1499,9 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                         <button
                           onClick={() => {
                             setShowReturnTypeMenu(false);
-                            onNavigate?.('products-return-detail', 'new', { returnType: 'supplier' });
+                            onNavigate?.("products-return-detail", "new", {
+                              returnType: "supplier",
+                            });
                           }}
                           className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-green-50 transition-colors flex items-center gap-2"
                         >
@@ -1462,7 +1519,13 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                   onClick={handleNewDocument}
                 >
                   <Plus className="size-4 mr-2" />
-                  {isOutcome ? 'Yangi chiqim' : isTransfer ? 'Yangi o\'tkazish' : isCorrection ? 'Yangi to\'g\'irlash' : 'Yangi qoldiq'}
+                  {isOutcome
+                    ? "Yangi chiqim"
+                    : isTransfer
+                      ? "Yangi o'tkazish"
+                      : isCorrection
+                        ? "Yangi to'g'irlash"
+                        : "Yangi qoldiq"}
                 </Button>
               )}
             </div>
@@ -1474,9 +1537,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
             <Card className="p-3 bg-white border border-gray-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">
-                    Jami hujjatlar
-                  </p>
+                  <p className="text-xs text-gray-500 mb-1">Jami hujjatlar</p>
                   <p className="text-xl font-bold text-gray-900">
                     {formatNumber(filteredBalances.length)}
                   </p>
@@ -1494,9 +1555,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">
-                    Jami maxsulotlar
-                  </p>
+                  <p className="text-xs text-gray-500 mb-1">Jami maxsulotlar</p>
                   <p className="text-xl font-bold text-gray-900">
                     {formatNumber(
                       filteredBalances.reduce(
@@ -1517,9 +1576,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
             <Card className="p-3 bg-white border border-gray-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">
-                    Umumiy summa
-                  </p>
+                  <p className="text-xs text-gray-500 mb-1">Umumiy summa</p>
                   <p className="text-xl font-bold text-green-600">
                     {formatCurrency(
                       filteredBalances.reduce(
@@ -1554,9 +1611,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                         placeholder="Hujjat raqam..."
                         className="pl-9 pr-9 bg-white"
                         value={searchQuery}
-                        onChange={(e) =>
-                          setSearchQuery(e.target.value)
-                        }
+                        onChange={(e) => setSearchQuery(e.target.value)}
                       />
                       {searchQuery && (
                         <button
@@ -1579,9 +1634,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                         type="date"
                         className="bg-white pr-9"
                         value={dateFrom}
-                        onChange={(e) =>
-                          setDateFrom(e.target.value)
-                        }
+                        onChange={(e) => setDateFrom(e.target.value)}
                         max={dateTo || undefined}
                       />
                       <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
@@ -1598,9 +1651,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                         type="date"
                         className="bg-white pr-9"
                         value={dateTo}
-                        onChange={(e) =>
-                          setDateTo(e.target.value)
-                        }
+                        onChange={(e) => setDateTo(e.target.value)}
                         min={dateFrom || undefined}
                       />
                       <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
@@ -1617,9 +1668,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                     </label>
                     <button
                       onClick={() => {
-                        setOpenRegionDropdown(
-                          !openRegionDropdown,
-                        );
+                        setOpenRegionDropdown(!openRegionDropdown);
                         setOpenWarehouseDropdown(false);
                         setOpenResponsibleDropdown(false);
                       }}
@@ -1641,9 +1690,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                             placeholder="Qidirish..."
                             className="text-xs h-7 flex-1 mr-2"
                             value={regionSearch}
-                            onChange={(e) =>
-                              setRegionSearch(e.target.value)
-                            }
+                            onChange={(e) => setRegionSearch(e.target.value)}
                           />
                           {selectedRegions.length > 0 && (
                             <button
@@ -1664,9 +1711,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                             .filter((region) =>
                               region
                                 .toLowerCase()
-                                .includes(
-                                  regionSearch.toLowerCase(),
-                                ),
+                                .includes(regionSearch.toLowerCase()),
                             )
                             .map((region) => (
                               <label
@@ -1675,12 +1720,8 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                               >
                                 <input
                                   type="checkbox"
-                                  checked={selectedRegions.includes(
-                                    region,
-                                  )}
-                                  onChange={() =>
-                                    toggleRegion(region)
-                                  }
+                                  checked={selectedRegions.includes(region)}
+                                  onChange={() => toggleRegion(region)}
                                   className="size-4 text-blue-600 rounded focus:ring-blue-500"
                                 />
                                 <span className="text-sm text-gray-700">
@@ -1722,9 +1763,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                     <button
                       onClick={() => {
                         if (availableWarehouses.length > 0) {
-                          setOpenWarehouseDropdown(
-                            !openWarehouseDropdown,
-                          );
+                          setOpenWarehouseDropdown(!openWarehouseDropdown);
                           setOpenRegionDropdown(false);
                           setOpenResponsibleDropdown(false);
                         }
@@ -1773,9 +1812,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                               .filter((warehouse) =>
                                 warehouse
                                   .toLowerCase()
-                                  .includes(
-                                    warehouseSearch.toLowerCase(),
-                                  ),
+                                  .includes(warehouseSearch.toLowerCase()),
                               )
                               .map((warehouse) => (
                                 <label
@@ -1787,9 +1824,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                                     checked={selectedWarehouses.includes(
                                       warehouse,
                                     )}
-                                    onChange={() =>
-                                      toggleWarehouse(warehouse)
-                                    }
+                                    onChange={() => toggleWarehouse(warehouse)}
                                     className="size-4 text-blue-600 rounded focus:ring-blue-500"
                                   />
                                   <span className="text-sm text-gray-700">
@@ -1812,9 +1847,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                           >
                             {warehouse}
                             <button
-                              onClick={() =>
-                                removeWarehouse(warehouse)
-                              }
+                              onClick={() => removeWarehouse(warehouse)}
                               className="ml-1 hover:text-gray-900"
                             >
                               <X className="size-3" />
@@ -1833,16 +1866,12 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                     <button
                       onClick={() => {
                         if (availableResponsibles.length > 0) {
-                          setOpenResponsibleDropdown(
-                            !openResponsibleDropdown,
-                          );
+                          setOpenResponsibleDropdown(!openResponsibleDropdown);
                           setOpenRegionDropdown(false);
                           setOpenWarehouseDropdown(false);
                         }
                       }}
-                      disabled={
-                        availableResponsibles.length === 0
-                      }
+                      disabled={availableResponsibles.length === 0}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-left text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-between disabled:bg-gray-100 disabled:cursor-not-allowed"
                     >
                       <span className="text-gray-500">
@@ -1865,16 +1894,12 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                               className="text-xs h-7 flex-1 mr-2"
                               value={responsibleSearch}
                               onChange={(e) =>
-                                setResponsibleSearch(
-                                  e.target.value,
-                                )
+                                setResponsibleSearch(e.target.value)
                               }
                             />
                             {selectedResponsibles.length > 0 && (
                               <button
-                                onClick={() =>
-                                  setSelectedResponsibles([])
-                                }
+                                onClick={() => setSelectedResponsibles([])}
                                 className="text-gray-500 hover:text-red-600 p-1"
                                 title="Hammasini o'chirish"
                               >
@@ -1887,9 +1912,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                               .filter((responsible) =>
                                 responsible
                                   .toLowerCase()
-                                  .includes(
-                                    responsibleSearch.toLowerCase(),
-                                  ),
+                                  .includes(responsibleSearch.toLowerCase()),
                               )
                               .map((responsible) => (
                                 <label
@@ -1902,9 +1925,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                                       responsible,
                                     )}
                                     onChange={() =>
-                                      toggleResponsible(
-                                        responsible,
-                                      )
+                                      toggleResponsible(responsible)
                                     }
                                     className="size-4 text-blue-600 rounded focus:ring-blue-500"
                                   />
@@ -1920,25 +1941,21 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                     {/* Selected responsibles badges */}
                     {selectedResponsibles.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-2">
-                        {selectedResponsibles.map(
-                          (responsible) => (
-                            <Badge
-                              key={responsible}
-                              variant="outline"
-                              className="bg-white text-gray-700 border-gray-300"
+                        {selectedResponsibles.map((responsible) => (
+                          <Badge
+                            key={responsible}
+                            variant="outline"
+                            className="bg-white text-gray-700 border-gray-300"
+                          >
+                            {responsible}
+                            <button
+                              onClick={() => removeResponsible(responsible)}
+                              className="ml-1 hover:text-gray-900"
                             >
-                              {responsible}
-                              <button
-                                onClick={() =>
-                                  removeResponsible(responsible)
-                                }
-                                className="ml-1 hover:text-gray-900"
-                              >
-                                <X className="size-3" />
-                              </button>
-                            </Badge>
-                          ),
-                        )}
+                              <X className="size-3" />
+                            </button>
+                          </Badge>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -1951,18 +1968,18 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                   selectedResponsibles.length > 0 ||
                   dateFrom ||
                   dateTo) && (
-                    <div className="flex justify-end">
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={clearAllFilters}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <X className="size-4 mr-2" />
-                        Barcha filtrlarni tozalash
-                      </Button>
-                    </div>
-                  )}
+                  <div className="flex justify-end">
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={clearAllFilters}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <X className="size-4 mr-2" />
+                      Barcha filtrlarni tozalash
+                    </Button>
+                  </div>
+                )}
               </div>
             </Card>
           )}
@@ -1975,29 +1992,22 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
           ref={scrollRef}
         >
           <div className="bg-white rounded-lg border border-gray-200">
-            <table
-              className="w-full border-collapse"
-              style={{ minWidth: "1800px" }}
-            >
+            <table className="w-full border-collapse">
               <thead className="bg-gray-100 border-b border-gray-200">
                 <tr>
                   <ResizableTableColumn
                     className="px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10"
-                    defaultWidth={60}
-                    minWidth={50}
                   >
                     №
                   </ResizableTableColumn>
                   <ResizableTableColumn
                     className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors"
-                    defaultWidth={200}
-                    minWidth={120}
-                    onClick={() => handleSort('number')}
+                    onClick={() => handleSort("number")}
                   >
                     <div className="flex items-center gap-2">
                       <span>Hujjat raqami</span>
-                      {sortColumn === 'number' ? (
-                        sortDirection === 'asc' ? (
+                      {sortColumn === "number" ? (
+                        sortDirection === "asc" ? (
                           <ChevronUp className="size-3.5" />
                         ) : (
                           <ChevronDown className="size-3.5" />
@@ -2009,14 +2019,12 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                   </ResizableTableColumn>
                   <ResizableTableColumn
                     className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors"
-                    defaultWidth={150}
-                    minWidth={100}
-                    onClick={() => handleSort('date')}
+                    onClick={() => handleSort("date")}
                   >
                     <div className="flex items-center gap-2">
                       <span>Sana</span>
-                      {sortColumn === 'date' ? (
-                        sortDirection === 'asc' ? (
+                      {sortColumn === "date" ? (
+                        sortDirection === "asc" ? (
                           <ChevronUp className="size-3.5" />
                         ) : (
                           <ChevronDown className="size-3.5" />
@@ -2028,14 +2036,12 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                   </ResizableTableColumn>
                   <ResizableTableColumn
                     className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors"
-                    defaultWidth={250}
-                    minWidth={120}
-                    onClick={() => handleSort('region')}
+                    onClick={() => handleSort("region")}
                   >
                     <div className="flex items-center gap-2">
                       <span>Viloyat</span>
-                      {sortColumn === 'region' ? (
-                        sortDirection === 'asc' ? (
+                      {sortColumn === "region" ? (
+                        sortDirection === "asc" ? (
                           <ChevronUp className="size-3.5" />
                         ) : (
                           <ChevronDown className="size-3.5" />
@@ -2047,14 +2053,12 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                   </ResizableTableColumn>
                   <ResizableTableColumn
                     className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors"
-                    defaultWidth={300}
-                    minWidth={150}
-                    onClick={() => handleSort('warehouse')}
+                    onClick={() => handleSort("warehouse")}
                   >
                     <div className="flex items-center gap-2">
                       <span>Ombor</span>
-                      {sortColumn === 'warehouse' ? (
-                        sortDirection === 'asc' ? (
+                      {sortColumn === "warehouse" ? (
+                        sortDirection === "asc" ? (
                           <ChevronUp className="size-3.5" />
                         ) : (
                           <ChevronDown className="size-3.5" />
@@ -2066,14 +2070,12 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                   </ResizableTableColumn>
                   <ResizableTableColumn
                     className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors"
-                    defaultWidth={350}
-                    minWidth={150}
-                    onClick={() => handleSort('responsiblePerson')}
+                    onClick={() => handleSort("responsiblePerson")}
                   >
                     <div className="flex items-center gap-2">
                       <span>Javobgar shaxs</span>
-                      {sortColumn === 'responsiblePerson' ? (
-                        sortDirection === 'asc' ? (
+                      {sortColumn === "responsiblePerson" ? (
+                        sortDirection === "asc" ? (
                           <ChevronUp className="size-3.5" />
                         ) : (
                           <ChevronDown className="size-3.5" />
@@ -2087,15 +2089,11 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                     <>
                       <ResizableTableColumn
                         className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10"
-                        defaultWidth={180}
-                        minWidth={120}
                       >
                         <span>Qaytarish turi</span>
                       </ResizableTableColumn>
                       <ResizableTableColumn
                         className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10"
-                        defaultWidth={200}
-                        minWidth={120}
                       >
                         <span>Manba hujjat</span>
                       </ResizableTableColumn>
@@ -2103,14 +2101,12 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                   )}
                   <ResizableTableColumn
                     className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky top-0 bg-gray-100 z-10 cursor-pointer hover:bg-gray-200 transition-colors"
-                    defaultWidth={200}
-                    minWidth={120}
-                    onClick={() => handleSort('totalAmount')}
+                    onClick={() => handleSort("totalAmount")}
                   >
                     <div className="flex items-center gap-2 justify-end">
                       <span>Jami</span>
-                      {sortColumn === 'totalAmount' ? (
-                        sortDirection === 'asc' ? (
+                      {sortColumn === "totalAmount" ? (
+                        sortDirection === "asc" ? (
                           <ChevronUp className="size-3.5" />
                         ) : (
                           <ChevronDown className="size-3.5" />
@@ -2123,12 +2119,12 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                   <th
                     className="px-3 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky right-[110px] top-0 bg-gray-100 z-20 cursor-pointer hover:bg-gray-200 transition-colors shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.1)]"
                     style={{ width: "150px" }}
-                    onClick={() => handleSort('confirmStatus')}
+                    onClick={() => handleSort("confirmStatus")}
                   >
                     <div className="flex items-center justify-center gap-2">
                       <span>Status</span>
-                      {sortColumn === 'confirmStatus' ? (
-                        sortDirection === 'asc' ? (
+                      {sortColumn === "confirmStatus" ? (
+                        sortDirection === "asc" ? (
                           <ChevronUp className="size-3.5" />
                         ) : (
                           <ChevronDown className="size-3.5" />
@@ -2167,33 +2163,33 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                     .map((balance, index) => (
                       <tr
                         key={balance.id}
-                        className={`transition-colors ${selectedRowId === balance.id ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+                        className={`transition-colors ${selectedRowId === balance.id ? "bg-blue-50" : "hover:bg-gray-50"}`}
                       >
                         <td
-                          className={`px-2 py-2 whitespace-nowrap text-xs text-gray-500 border-r border-gray-200 ${selectedRowId === balance.id ? 'bg-blue-50' : 'bg-white'}`}
+                          className={`px-2 py-2 whitespace-nowrap text-xs text-gray-500 border-r border-gray-200 ${selectedRowId === balance.id ? "bg-blue-50" : "bg-white"}`}
                           style={{ width: "60px" }}
                         >
                           {index + 1}
                         </td>
                         <td
-                          className={`px-3 py-2 whitespace-nowrap border-r border-gray-200 cursor-pointer ${selectedRowId === balance.id ? 'bg-blue-50' : 'bg-white'}`}
+                          className={`px-3 py-2 whitespace-nowrap border-r border-gray-200 cursor-pointer ${selectedRowId === balance.id ? "bg-blue-50" : "bg-white"}`}
                           style={{ width: "200px" }}
                           onClick={() => handleRowClick(balance.id)}
                         >
                           <div className="flex items-center gap-2">
                             <div
-                              className={`size-6 rounded flex items-center justify-center flex-shrink-0 ${balance.confirmStatus ===
-                                  "confirmed"
+                              className={`size-6 rounded flex items-center justify-center flex-shrink-0 ${
+                                balance.confirmStatus === "confirmed"
                                   ? "bg-blue-100"
                                   : "bg-yellow-100"
-                                }`}
+                              }`}
                             >
                               <FileCheck
-                                className={`size-3.5 ${balance.confirmStatus ===
-                                    "confirmed"
+                                className={`size-3.5 ${
+                                  balance.confirmStatus === "confirmed"
                                     ? "text-blue-600"
                                     : "text-yellow-600"
-                                  }`}
+                                }`}
                               />
                             </div>
                             <span
@@ -2203,10 +2199,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                                 handleEdit(balance);
                               }}
                             >
-                              {highlightText(
-                                balance.number,
-                                searchQuery,
-                              )}
+                              {highlightText(balance.number, searchQuery)}
                             </span>
                           </div>
                         </td>
@@ -2278,7 +2271,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                           </div>
                         </td>
                         <td
-                          className={`px-3 py-2 whitespace-nowrap text-center border-r border-gray-200 sticky right-[110px] z-10 cursor-pointer shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.1)] ${selectedRowId === balance.id ? 'bg-blue-50' : 'bg-white'}`}
+                          className={`px-3 py-2 whitespace-nowrap text-center border-r border-gray-200 sticky right-[110px] z-10 cursor-pointer shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.1)] ${selectedRowId === balance.id ? "bg-blue-50" : "bg-white"}`}
                           style={{ width: "150px" }}
                           onClick={() => handleRowClick(balance.id)}
                         >
@@ -2295,7 +2288,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                           </Badge>
                         </td>
                         <td
-                          className={`px-3 py-2 whitespace-nowrap text-center sticky right-0 z-10 ${selectedRowId === balance.id ? 'bg-blue-50' : 'bg-white'}`}
+                          className={`px-3 py-2 whitespace-nowrap text-center sticky right-0 z-10 ${selectedRowId === balance.id ? "bg-blue-50" : "bg-white"}`}
                           style={{ width: "110px" }}
                         >
                           <div className="flex items-center justify-center gap-1">
@@ -2358,20 +2351,22 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
             {/* Loading more indicator */}
             {displayedItems < sortedBalances.length && (
               <div className="text-center py-4 text-gray-500 text-xs border-t border-gray-200">
-                Yuklanmoqda... ({displayedItems} /{" "}
-                {sortedBalances.length})
+                Yuklanmoqda... ({displayedItems} / {sortedBalances.length})
               </div>
             )}
 
             {/* Empty state */}
-            {!initialLoading && !filterLoading && !sortLoading && filteredBalances.length === 0 && (
-              <div className="text-center py-12">
-                <Package className="size-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm">
-                  Hech qanday ma'lumot topilmadi
-                </p>
-              </div>
-            )}
+            {!initialLoading &&
+              !filterLoading &&
+              !sortLoading &&
+              filteredBalances.length === 0 && (
+                <div className="text-center py-12">
+                  <Package className="size-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 text-sm">
+                    Hech qanday ma'lumot topilmadi
+                  </p>
+                </div>
+              )}
           </div>
         </div>
 
@@ -2401,8 +2396,12 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                     <Package className="size-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-white">{viewingBalance.number}</h2>
-                    <p className="text-sm text-blue-100">Hujjat raqamiga tegishli maxsulotlar ro'yxati</p>
+                    <h2 className="text-lg font-bold text-white">
+                      {viewingBalance.number}
+                    </h2>
+                    <p className="text-sm text-blue-100">
+                      Hujjat raqamiga tegishli maxsulotlar ro'yxati
+                    </p>
                   </div>
                 </div>
                 <Button
@@ -2421,31 +2420,58 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                   <table className="w-full border-collapse">
                     <thead className="bg-gray-100 border-b border-gray-200">
                       <tr>
-                        <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200" style={{ width: "60px" }}>
+                        <th
+                          className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200"
+                          style={{ width: "60px" }}
+                        >
                           №
                         </th>
-                        <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200" style={{ width: "150px" }}>
+                        <th
+                          className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200"
+                          style={{ width: "150px" }}
+                        >
                           Shtrix kod
                         </th>
-                        <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200" style={{ width: "200px" }}>
+                        <th
+                          className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200"
+                          style={{ width: "200px" }}
+                        >
                           Tovar turi
                         </th>
-                        <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200" style={{ width: "150px" }}>
+                        <th
+                          className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200"
+                          style={{ width: "150px" }}
+                        >
                           Model
                         </th>
-                        <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200" style={{ width: "120px" }}>
+                        <th
+                          className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200"
+                          style={{ width: "120px" }}
+                        >
                           O'lcham
                         </th>
-                        <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200" style={{ width: "120px" }}>
+                        <th
+                          className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200"
+                          style={{ width: "120px" }}
+                        >
                           O'lchov birligi
                         </th>
-                        <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200" style={{ width: "100px" }}>
+                        <th
+                          className="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200"
+                          style={{ width: "100px" }}
+                        >
                           Soni
                         </th>
-                        <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200" style={{ width: "150px" }}>
+                        <th
+                          className="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200"
+                          style={{ width: "150px" }}
+                        >
                           Narxi
                         </th>
-                        <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider" style={{ width: "180px" }}>
+                        <th
+                          className="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider"
+                          style={{ width: "180px" }}
+                        >
                           Summasi
                         </th>
                       </tr>
@@ -2485,17 +2511,28 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                     </tbody>
                     <tfoot className="bg-gray-50 border-t-2 border-gray-300">
                       <tr>
-                        <td colSpan={6} className="px-3 py-3 text-sm font-bold text-gray-900 text-right">
+                        <td
+                          colSpan={6}
+                          className="px-3 py-3 text-sm font-bold text-gray-900 text-right"
+                        >
                           Jami:
                         </td>
                         <td className="px-3 py-3 text-sm font-bold text-gray-900 text-right border-r border-gray-200">
-                          {formatNumber(mockProducts.slice(0, 15).reduce((sum, p) => sum + p.quantity, 0))}
+                          {formatNumber(
+                            mockProducts
+                              .slice(0, 15)
+                              .reduce((sum, p) => sum + p.quantity, 0),
+                          )}
                         </td>
                         <td className="px-3 py-3 text-sm font-bold text-gray-900 text-right border-r border-gray-200">
                           -
                         </td>
                         <td className="px-3 py-3 text-sm font-bold text-green-600 text-right">
-                          {formatCurrency(mockProducts.slice(0, 15).reduce((sum, p) => sum + p.total, 0))}
+                          {formatCurrency(
+                            mockProducts
+                              .slice(0, 15)
+                              .reduce((sum, p) => sum + p.total, 0),
+                          )}
                         </td>
                       </tr>
                     </tfoot>
@@ -2505,7 +2542,10 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
 
               {/* Footer */}
               <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-end">
-                <Button variant="outlined" onClick={() => setShowProductsModal(false)}>
+                <Button
+                  variant="outlined"
+                  onClick={() => setShowProductsModal(false)}
+                >
                   Yopish
                 </Button>
               </div>
@@ -2599,14 +2639,12 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                     </label>
                     <Badge
                       className={
-                        selectedBalance.confirmStatus ===
-                          "confirmed"
+                        selectedBalance.confirmStatus === "confirmed"
                           ? "bg-blue-100 text-blue-700"
                           : "bg-yellow-100 text-yellow-700"
                       }
                     >
-                      {selectedBalance.confirmStatus ===
-                        "confirmed"
+                      {selectedBalance.confirmStatus === "confirmed"
                         ? "Tasdiqlangan"
                         : "Saqlangan"}
                     </Badge>
@@ -2616,8 +2654,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                       Jami maxsulotlar
                     </label>
                     <p className="text-base font-semibold text-gray-900">
-                      {formatNumber(selectedBalance.totalItems)}{" "}
-                      ta
+                      {formatNumber(selectedBalance.totalItems)} ta
                     </p>
                   </div>
                   <div>
@@ -2625,9 +2662,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
                       Jami summa
                     </label>
                     <p className="text-base font-semibold text-gray-900">
-                      {formatCurrency(
-                        selectedBalance.totalAmount,
-                      )}
+                      {formatCurrency(selectedBalance.totalAmount)}
                     </p>
                   </div>
                 </div>
@@ -2676,7 +2711,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, report
           type={confirmDialog.type === "delete" ? "danger" : "info"}
         />
       </div>
-    </>
+    </div>
   );
-}
+};
 export default ProductsBalanceView;

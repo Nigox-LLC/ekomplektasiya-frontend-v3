@@ -191,21 +191,21 @@ const SidebarNav: React.FC = React.memo(() => {
           label: "Shartnomalar",
           icon: null,
         },
-        {
-          id: "reference-goods-in",
-          label: "Tovarlar kirimi",
-          icon: null,
-        },
-        {
-          id: "reference-goods-out",
-          label: "Tovarlar chiqimi",
-          icon: null,
-        },
-        {
-          id: "reference-warehouse-transfer",
-          label: "Ombor o'tkazmalar",
-          icon: null,
-        },
+        // {
+        //   id: "reference-goods-in",
+        //   label: "Tovarlar kirimi",
+        //   icon: null,
+        // },
+        // {
+        //   id: "reference-goods-out",
+        //   label: "Tovarlar chiqimi",
+        //   icon: null,
+        // },
+        // {
+        //   id: "reference-warehouse-transfer",
+        //   label: "Ombor o'tkazmalar",
+        //   icon: null,
+        // },
         {
           id: "reference-year-plan",
           label: "Yillik reja",
@@ -213,18 +213,18 @@ const SidebarNav: React.FC = React.memo(() => {
         },
       ],
     },
-    {
-      id: "statistics",
-      label: "Statistika",
-      icon: <BarChart3 className="size-5" />,
-      subItems: [
-        {
-          id: "statistics-employee",
-          label: "Xodimlar statistikasi",
-          icon: null,
-        },
-      ],
-    },
+    // {
+    //   id: "statistics",
+    //   label: "Statistika",
+    //   icon: <BarChart3 className="size-5" />,
+    //   subItems: [
+    //     {
+    //       id: "statistics-employee",
+    //       label: "Xodimlar statistikasi",
+    //       icon: null,
+    //     },
+    //   ],
+    // },
     {
       id: "reports",
       label: "Hisobotlar",
