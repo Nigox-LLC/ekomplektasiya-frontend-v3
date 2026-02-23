@@ -80,7 +80,7 @@ const SidebarHeader: React.FC = React.memo(() => {
           <img src="/hudud_logo.png" alt="logo" />
         </div>
         <div>
-          <h1 className="text-lg font-semibold text-white">HITSUK</h1>
+          <h1 className="text-lg font-semibold text-white">Ekomplektasiya</h1>
           <p className="text-xs text-gray-400">Hujjat ijrosi tizimi</p>
         </div>
       </div>
