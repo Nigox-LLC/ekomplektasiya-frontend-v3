@@ -1,4 +1,4 @@
-import { Button } from "antd";
+import { Button, Collapse } from "antd";
 import { ArrowLeft, CircleCheck, FileText, Send } from "lucide-react";
 import React from "react";
 import ProductsSection from "../components/ProductsSection";
@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import TextArea from "antd/es/input/TextArea";
 import MainDocument from "../components/MainDocument/MainDocument";
 import SendModal from "../components/SendModal";
+import SignerCardSection from "./SignerCardSection";
 
 export type Product = {
   order_product_type: "product" | "service";
@@ -64,6 +65,10 @@ const CreateDocument: React.FC = () => {
   });
   const [orderDataID, setOrderDataID] = React.useState<number | null>(null);
   const [isSendModalOpen, setIsSendModalOpen] = React.useState(false);
+  const [activeAccordion, setActiveAccordion] = React.useState<string[]>([
+    "products",
+    "signers",
+  ]);
 
   const navigate = useNavigate();
 
@@ -180,13 +185,13 @@ const CreateDocument: React.FC = () => {
         </div>
 
         {/* Conditional Rendering based on type */}
+        <ProductsSection
+          orderData={orderData}
+          setOrderData={setOrderData}
+          orderDataID={orderDataID}
+        />
         <>
-          {/* Table of products - ACCORDION */}
-          <ProductsSection
-            orderDataID={orderDataID}
-            setOrderData={setOrderData}
-            orderData={orderData}
-          />
+          <SignerCardSection orderID={orderDataID!} />
 
           {/* Comment of order */}
           <div className="my-2">

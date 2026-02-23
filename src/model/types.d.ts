@@ -33,3 +33,9 @@ interface SavedEimzoCert {
   validFrom?: string;
   validTo?: string;
 }
+
+interface EmployeeType {
+  id: number;
+  full_name: string;
+  position_name: string;
+}

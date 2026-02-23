@@ -1,15 +1,171 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Input, Select } from "antd";
 import { axiosAPI } from "@/service/axiosAPI";
-import { CircleCheck, FileText, Paperclip, Plus, Trash2 } from "lucide-react";
+import {
+  CircleCheck,
+  Download,
+  Eye,
+  FileText,
+  Paperclip,
+  Trash2,
+} from "lucide-react";
+import {
+  FaFileAlt,
+  FaFileExcel,
+  FaFileImage,
+  FaFilePdf,
+  FaFilePowerpoint,
+  FaFileWord,
+} from "react-icons/fa";
 import TextArea from "antd/es/input/TextArea";
 import { toast } from "react-toastify";
+import MainDocument from "../components/MainDocument/MainDocument";
+import FilePreviewModal from "@/components/FilePreviewModal/FilePreviewModal";
 
-interface UploadedFile {
-  file: File;
+interface FileItem {
   id: string;
+  name: string;
   url: string;
+  size: number;
+  uploadedAt: string;
 }
+
+const getFileExtension = (name: string) =>
+  name.split(".").pop()?.toLowerCase() || "";
+
+const isImageFile = (ext: string) =>
+  ["jpg", "jpeg", "png", "webp"].includes(ext);
+
+const isPdfFile = (ext: string) => ext === "pdf";
+
+const isWordFile = (ext: string) => ["doc", "docx"].includes(ext);
+
+const isExcelFile = (ext: string) => ["xls", "xlsx"].includes(ext);
+
+const isPowerPointFile = (ext: string) => ["ppt", "pptx"].includes(ext);
+
+const getFileIcon = (name: string) => {
+  const ext = getFileExtension(name);
+
+  if (isImageFile(ext)) {
+    return <FaFileImage className="size-5 text-emerald-600" />;
+  }
+
+  if (isPdfFile(ext)) {
+    return <FaFilePdf className="size-5 text-red-600" />;
+  }
+
+  if (isWordFile(ext)) {
+    return <FaFileWord className="size-5 text-blue-600" />;
+  }
+
+  if (isExcelFile(ext)) {
+    return <FaFileExcel className="size-5 text-green-600" />;
+  }
+
+  if (isPowerPointFile(ext)) {
+    return <FaFilePowerpoint className="size-5 text-orange-500" />;
+  }
+
+  return <FaFileAlt className="size-5 text-gray-500" />;
+};
+
+const formatFileSize = (size: number) => {
+  if (size < 1024) {
+    return `${size} B`;
+  }
+
+  const units = ["KB", "MB", "GB", "TB"];
+  let value = size / 1024;
+  let index = 0;
+
+  while (value >= 1024 && index < units.length - 1) {
+    value /= 1024;
+    index += 1;
+  }
+
+  return `${value.toFixed(value >= 10 ? 0 : 1)} ${units[index]}`;
+};
+
+const formatDate = (isoDate: string) => {
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}.${month}.${year}`;
+};
+
+interface FileCardProps {
+  file: FileItem;
+  onPreview: (file: FileItem) => void;
+  onDownload: (file: FileItem) => void;
+  onRemove: (id: string) => void;
+}
+
+const FileCard: React.FC<FileCardProps> = ({
+  file,
+  onPreview,
+  onDownload,
+  onRemove,
+}) => (
+  <div className="rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
+    <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-4 py-3">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="shrink-0">{getFileIcon(file.name)}</div>
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-gray-900 truncate">
+            {file.name}
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onPreview(file)}
+          className="rounded-md p-1 text-gray-500 hover:text-blue-600 hover:bg-blue-50"
+          aria-label="Preview"
+        >
+          <Eye className="size-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => onDownload(file)}
+          className="rounded-md p-1 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50"
+          aria-label="Download"
+        >
+          <Download className="size-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => onRemove(file.id)}
+          className="rounded-md p-1 text-gray-500 hover:text-red-600 hover:bg-red-50"
+          aria-label="Remove"
+        >
+          <Trash2 className="size-4" />
+        </button>
+      </div>
+    </div>
+    <div className="px-4 py-3 text-sm text-gray-600 space-y-1">
+      <div className="flex items-center justify-between">
+        <span>Hajmi</span>
+        <span className="font-medium text-gray-800">
+          {formatFileSize(file.size)}
+        </span>
+      </div>
+      <div className="flex items-center justify-between">
+        <span>Yuklangan sana</span>
+        <span className="font-medium text-gray-800">
+          {formatDate(file.uploadedAt)}
+        </span>
+      </div>
+    </div>
+  </div>
+);
 
 export interface InternalCreateFormData {
   document_type: IDName;
@@ -39,8 +195,9 @@ const InternalCreate: React.FC = () => {
   const [permissionJournals, setPermissionJournals] = useState<IDName[]>([]);
 
   // File states
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [mainDocument, setMainDocument] = useState<UploadedFile | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<FileItem[]>([]);
+  const [mainDocument, setMainDocument] = useState<FileItem | null>(null);
+  const [previewFile, setPreviewFile] = useState<FileItem | null>(null);
 
   // extra options states
   const [isXDBVDSP, setIsXDBVDSP] = useState(false);
@@ -59,10 +216,12 @@ const InternalCreate: React.FC = () => {
   ) => {
     const files = event.target.files;
     if (files) {
-      const newFiles: UploadedFile[] = Array.from(files).map((file) => ({
-        file,
+      const newFiles: FileItem[] = Array.from(files).map((file) => ({
         id: `${Date.now()}-${Math.random()}`,
+        name: file.name,
         url: URL.createObjectURL(file),
+        size: file.size,
+        uploadedAt: new Date().toISOString(),
       }));
 
       if (docType === "main") {
@@ -80,6 +239,20 @@ const InternalCreate: React.FC = () => {
       URL.revokeObjectURL(fileToRemove.url);
     }
     setUploadedFiles(uploadedFiles.filter((f) => f.id !== id));
+  };
+
+  const handlePreviewFile = (file: FileItem) => {
+    setPreviewFile(file);
+  };
+
+  const handleDownloadFile = (file: FileItem) => {
+    const link = document.createElement("a");
+    link.href = file.url;
+    link.download = file.name;
+    link.target = "_blank";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // fetch document types
@@ -119,19 +292,57 @@ const InternalCreate: React.FC = () => {
     }
   };
 
-  const handleSave = () => {
-    if (!orderData.comment.trim()) {
-      setShowBriefError(true);
-      toast.error("Hujjatning qisqacha mazmunini kiriting!");
-      return;
-    }
-    setShowBriefError(false);
+  // handle file attaching
+  // const handleAttachFile = async () => {
+  //   try {
+  //     const response = await axiosAPI.post(
+  //       `/document/orders/${orderID}/add-attachment/`,
+  //       {
+  //         file:
+  //       }
+  //     );
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
-    toast.success("Hujjat muvaffaqiyatli saqlandi!");
+  const handleSave = async () => {
+    try {
+      const response = await axiosAPI.patch(`/document/orders/${orderID}/`, {
+        document_type: orderData.document_type.id,
+        inner_document_type: orderData.inner_document_type.id,
+        registration_journal: orderData.registration_journal.id,
+        document_number: orderData.document_number,
+        basic_document_number: orderData.basic_document_number,
+        comment: orderData.comment,
+        letter_number: orderData.letter_number,
+        is_xdbvdsp: isXDBVDSP,
+        form_agreements: formAgreements,
+        create_without_qr: createWithoutQR,
+      });
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
     fetchDocumentTypes();
+
+    // create order document on component mount
+    const createOrderDocument = async () => {
+      try {
+        const response = await axiosAPI.post("document/orders/", {
+          order_type: "internal",
+        });
+
+        if (response.status === 201) setOrderID(response.data.id);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    createOrderDocument();
   }, []);
 
   return (
@@ -301,74 +512,21 @@ const InternalCreate: React.FC = () => {
 
         {/* Hujjat yorliqlari (Document Attachments) */}
         <div>
-          {mainDocument ? (
-            <div className="flex flex-col gap-2">
-              <h2>Asosiy hujjat</h2>
-              <div className="flex justify-between items-center gap-2 mb-2 rounded-md shadow-md border border-gray-200 p-4">
-                <p className="flex items-center gap-2">
-                  <span>{mainDocument.file.name.split(".").pop()}</span>
-                  <span className="text-sm text-gray-700">
-                    {mainDocument.file.name}
-                  </span>
-                </p>
-
-                <button
-                  onClick={() => setMainDocument(null)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <span className="text-sm">
-                    <Trash2 className="w-4 h-4" />
-                  </span>
-                </button>
-              </div>
-            </div>
-          ) : (
-            // className="flex items-center gap-2 mb-2 w-full border-2 border-dashed border-gray-400 rounded-md p-4 h-24 justify-center"
-            <button
-              type="button"
-              onClick={() => mainFileInputRef.current?.click()}
-              className="w-full h-24 size-8 flex items-center justify-center rounded-md border-2 border-dashed border-gray-400 hover:border-blue-500 hover:bg-blue-50 transition-colors"
-              title="Fayl yuklash"
-            >
-              <label className="text-sm font-medium text-gray-700">
-                Asosiy hujjat
-              </label>
-              <Plus className="size-4 text-gray-600" />
-            </button>
-          )}
-          <input
-            type="file"
-            ref={mainFileInputRef}
-            className="hidden"
-            multiple
-            onChange={(event) => handleFileChange(event, "main")}
-          />
+          <MainDocument orderDataID={orderID} />
 
           {/* Uploaded Files List */}
           <div className="my-4 flex flex-col gap-2">
             <h2>Biriktirilgan hujjatlar</h2>
             {uploadedFiles.length > 0 ? (
-              <div className="space-y-2 mt-2">
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {uploadedFiles.map((file) => (
-                  <div
+                  <FileCard
                     key={file.id}
-                    className="flex items-center justify-between p-2 bg-gray-50 rounded-md border border-gray-200"
-                  >
-                    <div className="flex items-center gap-2">
-                      <FileText className="size-4 text-gray-600" />
-                      <span className="text-sm text-gray-700">
-                        {file.file.name}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => handleRemoveFile(file.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <span className="text-sm">
-                        <Trash2 className="w-4 h-4" />
-                      </span>
-                    </button>
-                  </div>
+                    file={file}
+                    onPreview={handlePreviewFile}
+                    onDownload={handleDownloadFile}
+                    onRemove={handleRemoveFile}
+                  />
                 ))}
               </div>
             ) : (
@@ -380,6 +538,12 @@ const InternalCreate: React.FC = () => {
             )}
           </div>
         </div>
+
+        <FilePreviewModal
+          open={Boolean(previewFile)}
+          file={previewFile}
+          onClose={() => setPreviewFile(null)}
+        />
 
         {/* Bottom Section - Checkboxes and Buttons */}
         <div className="border-t pt-4 mt-6">
@@ -431,6 +595,14 @@ const InternalCreate: React.FC = () => {
                 <Paperclip className="size-4" />
                 Fayl biriktirish
               </button>
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={(e) => handleFileChange(e, "additional")}
+                className="hidden"
+                multiple
+              />
 
               {/* <button
                 type="button"

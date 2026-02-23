@@ -106,6 +106,7 @@ const MainDocument: React.FC<IProps> = ({ orderDataID }) => {
             onClick={() => {
               setShowTemplatesList(true);
             }}
+            className="ml-[50%] translate-x-[-50%]"
           >
             Asosiy fayl
             <Plus className="w-4 h-4" />
