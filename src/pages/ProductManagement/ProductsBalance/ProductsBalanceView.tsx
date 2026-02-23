@@ -33,6 +33,8 @@ import {
   XCircle,
 } from "lucide-react";
 import { Badge, Button, Card, Input } from "antd";
+import { useNavigate } from 'react-router';
+
 
 interface ProductBalance {
   id: string;
@@ -869,17 +871,17 @@ const getResponsiblesByWarehouses = (
 };
 
 interface ProductsBalanceViewProps {
-  onNavigate?: (view: string, id?: string, data?: any) => void;
   title?: string;
   reportTitle?: string;
 }
 
-const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ onNavigate, title, reportTitle }) => {
+const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ title, reportTitle }) => {
   // Title ga qarab kerakli ma'lumotlarni tanlash
   const isOutcome = title?.includes("chiqimi");
   const isReturn = title?.includes("qaytarish");
   const isTransfer = title?.includes("o'tkazish");
   const isCorrection = title?.includes("to'g'irlash");
+  const navigate = useNavigate();
 
   const getInitialData = () => {
     if (isOutcome) return mockOutcomes;
@@ -965,6 +967,28 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ onNavigate, t
   const availableResponsibles = getResponsiblesByWarehouses(
     selectedWarehouses,
   );
+
+  const handleEdit = (balance: ProductBalance) => {
+    let detailPath = '';
+    if (isOutcome) detailPath = 'products-outcome-detail';
+    else if (isReturn) detailPath = 'products-return-detail';
+    else if (isTransfer) detailPath = 'products-warehouse-transfer-detail';
+    else if (isCorrection) detailPath = 'products-balance-correction-detail';
+    else detailPath = 'products-balance-detail';
+
+    navigate(`/management/${detailPath}/${balance.id}`, { state: balance });
+  };
+
+  const handleNewDocument = () => {
+    let detailPath = '';
+    if (isOutcome) detailPath = 'products-outcome-detail';
+    else if (isReturn) detailPath = 'products-return-detail';
+    else if (isTransfer) detailPath = 'products-warehouse-transfer-detail';
+    else if (isCorrection) detailPath = 'products-balance-correction-detail';
+    else detailPath = 'products-balance-detail';
+
+    navigate(`/management/${detailPath}/new`);
+  };
 
   // Highlight text function
   const highlightText = (text: string, query: string) => {
@@ -1310,26 +1334,26 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ onNavigate, t
     }
   };
 
-  const handleEdit = (balance: ProductBalance) => {
-    setSelectedBalance(balance);
-    // Navigate to detail view with document data
-    let detailView = 'products-balance-detail';
-    if (isOutcome) detailView = 'products-outcome-detail';
-    else if (isReturn) detailView = 'products-return-detail';
-    else if (isTransfer) detailView = 'products-warehouse-transfer-detail';
-    else if (isCorrection) detailView = 'products-balance-correction-detail';
+  // const handleEdit = (balance: ProductBalance) => {
+  //   setSelectedBalance(balance);
+  //   // Navigate to detail view with document data
+  //   let detailView = 'products-balance-detail';
+  //   if (isOutcome) detailView = 'products-outcome-detail';
+  //   else if (isReturn) detailView = 'products-return-detail';
+  //   else if (isTransfer) detailView = 'products-warehouse-transfer-detail';
+  //   else if (isCorrection) detailView = 'products-balance-correction-detail';
 
-    onNavigate?.(detailView, balance.id.toString(), {
-      number: balance.number,
-      date: balance.date,
-      region: balance.region,
-      district: balance.district,
-      warehouse: balance.warehouse,
-      responsiblePerson: balance.responsiblePerson,
-      confirmStatus: balance.confirmStatus,
-      returnType: balance.returnType
-    });
-  };
+  //   onNavigate?.(detailView, balance.id.toString(), {
+  //     number: balance.number,
+  //     date: balance.date,
+  //     region: balance.region,
+  //     district: balance.district,
+  //     warehouse: balance.warehouse,
+  //     responsiblePerson: balance.responsiblePerson,
+  //     confirmStatus: balance.confirmStatus,
+  //     returnType: balance.returnType
+  //   });
+  // };
 
   // Formatlar
   const formatNumber = (num: number) => {
@@ -1435,13 +1459,7 @@ const ProductsBalanceView: React.FC<ProductsBalanceViewProps> = ({ onNavigate, t
                 <Button
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                   size="small"
-                  onClick={() => {
-                    let detailView = 'products-balance-detail';
-                    if (isOutcome) detailView = 'products-outcome-detail';
-                    else if (isTransfer) detailView = 'products-warehouse-transfer-detail';
-                    else if (isCorrection) detailView = 'products-balance-correction-detail';
-                    onNavigate?.(detailView, 'new');
-                  }}
+                  onClick={handleNewDocument}
                 >
                   <Plus className="size-4 mr-2" />
                   {isOutcome ? 'Yangi chiqim' : isTransfer ? 'Yangi o\'tkazish' : isCorrection ? 'Yangi to\'g\'irlash' : 'Yangi qoldiq'}

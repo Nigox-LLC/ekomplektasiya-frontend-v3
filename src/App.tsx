@@ -25,16 +25,26 @@ import {
   PriceAnalysisForm,
   PriceAnalysisDetail,
   CreateDocument,
+  NewDocumentProduct,
+  ProductsBalanceView,
+  ProductsIncome,
+  ProductBalanceDetailView,
+  ProductOutcomeDetailView,
+  ProductIncomeDetailView,
 } from "@/pages";
-import NewDocumentProduct from "./pages/NewDocument/NewDocumentProduct/NewDocumentProduct";
 import { ToastContainer } from "react-toastify";
-import ProductsBalanceView from "./pages/ProductManagement/ProductsBalance/ProductsBalanceView";
-import ProductsIncome from "./pages/ProductManagement/ProductsIncome/ProductsIncome";
 
 const App: React.FC = () => {
   const hasAccess = () => {
     return true;
   };
+
+
+  // const navigate = useNavigate();
+
+  // const handleNavigate = (view: string, id?: string, data?: any) => {
+  //   navigate(`/management/${view}/${id || ''}`, { state: data });
+  // };
 
   const [currentUser, setCurrentUser] = useState({
     username: "",
@@ -166,16 +176,20 @@ const App: React.FC = () => {
                 <ProductsBalanceView
                   title="Maxsulotlar qoldig'i"
                   reportTitle="Jami maxsulotlar qoldig'i"
-                  onNavigate={(view, id, data) => {
-                    // Bu yerda detail sahifaga o‘tishni amalga oshiring
-                    // Masalan, navigate(`${view}/${id}`, { state: data })
-                  }}
                 />
               ),
             },
             {
+              path: "products-balance-detail/:id",
+              element: <ProductBalanceDetailView />,
+            },
+            {
               path: "products-income",
-              element: <ProductsIncome onNavigate={(view, id, data) => {}} />,
+              element: <ProductsIncome  />,
+            },
+            {
+              path: "products-income-detail/:id",
+              element: <ProductIncomeDetailView />,
             },
             {
               path: "products-outcome",
@@ -183,9 +197,12 @@ const App: React.FC = () => {
                 <ProductsBalanceView
                   title="Maxsulotlar chiqimi"
                   reportTitle="Jami chiqim hujjatlari ichidagi maxsulotlar"
-                  onNavigate={(view, id, data) => {}}
                 />
               ),
+            },
+            {
+              path: "products-outcome-detail/:id",
+              element: <ProductOutcomeDetailView />,
             },
             {
               path: "products-return",
@@ -193,9 +210,12 @@ const App: React.FC = () => {
                 <ProductsBalanceView
                   title="Maxsulotlarni qaytarish"
                   reportTitle="Jami qaytarish hujjatlari ichidagi maxsulotlar"
-                  onNavigate={(view, id, data) => {}}
                 />
               ),
+            },
+            {
+              path: "products-return-detail/:id",
+              element: <ProductBalanceDetailView />, // yoki maxsus ReturnDetailView
             },
             {
               path: "products-warehouse-transfer",
@@ -203,9 +223,12 @@ const App: React.FC = () => {
                 <ProductsBalanceView
                   title="Ombordan omborga o'tkazish"
                   reportTitle="Jami o'tkazish hujjatlari ichidagi maxsulotlar"
-                  onNavigate={(view, id, data) => {}}
                 />
               ),
+            },
+            {
+              path: "products-warehouse-transfer-detail/:id",
+              element: <ProductBalanceDetailView />, // yoki maxsus TransferDetailView
             },
             {
               path: "products-balance-correction",
@@ -213,9 +236,12 @@ const App: React.FC = () => {
                 <ProductsBalanceView
                   title="Qoldiqni to'g'irlash"
                   reportTitle="Jami to'g'irlash hujjatlari ichidagi maxsulotlar"
-                  onNavigate={(view, id, data) => {}}
                 />
               ),
+            },
+            {
+              path: "products-balance-correction-detail/:id",
+              element: <ProductBalanceDetailView />, // yoki maxsus CorrectionDetailView
             },
           ],
         },

@@ -21,3 +21,9 @@ export { default as PriceAnalysisDetail } from "./PriceAnaliysis/PriceAnalysisDe
 export { default as AppealLetter } from "./AppealLetter/AppealLetter";
 export { default as Statistics } from "./EmployeeStatistics/Statistics";
 export {default as CreateDocument} from "./CreateDocument/CreateDocument";
+export { default as NewDocumentProduct } from "./NewDocument/NewDocumentProduct/NewDocumentProduct";
+export { default as ProductsBalanceView } from "./ProductManagement/ProductsBalance/ProductsBalanceView";
+export { default as ProductsIncome } from "./ProductManagement/ProductsIncome/ProductsIncome";
+export { default as ProductIncomeDetailView } from "./ProductManagement/ProductIncomeDetail/ProductIncomeDetailView";
+export { default as ProductOutcomeDetailView } from "./ProductManagement/ProductOutcomeDetail/ProductOutcomeDetailView";  
+export { default as ProductBalanceDetailView } from "./ProductManagement/ProductBalanceDetail/ProductBalanceDetailView";

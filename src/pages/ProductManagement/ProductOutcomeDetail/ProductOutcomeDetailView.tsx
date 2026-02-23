@@ -20,8 +20,8 @@ import {
   XCircle,
   Link as LinkIcon,
 } from "lucide-react";
-import  SearchableSelect  from "./SearchableSelect";
-import  BarcodePrintModal  from "./BarcodePrintModal";
+import  SearchableSelect  from "../components/SearchableSelect";
+import  BarcodePrintModal  from "../components/BarcodePrintModal";
 import { toast } from "react-toastify";
 import { Button } from "antd";
 
