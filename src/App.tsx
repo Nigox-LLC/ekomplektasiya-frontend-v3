@@ -28,6 +28,8 @@ import {
 } from "@/pages";
 import NewDocumentProduct from "./pages/NewDocument/NewDocumentProduct/NewDocumentProduct";
 import { ToastContainer } from "react-toastify";
+import ProductsBalanceView from "./pages/ProductManagement/ProductsBalance/ProductsBalanceView";
+import ProductsIncome from "./pages/ProductManagement/ProductsIncome/ProductsIncome";
 
 const App: React.FC = () => {
   const hasAccess = () => {
@@ -147,6 +149,73 @@ const App: React.FC = () => {
             {
               path: "reports-table3",
               element: <ReportTableOne />,
+            },
+          ],
+        },
+        {
+          path: "management",
+          element: <Outlet />,
+          children: [
+            // {
+            //   path: "managemen-products",
+            //   element: <ProductsBalanceView />,
+            // },
+            {
+              path: "products-balance",
+              element: (
+                <ProductsBalanceView
+                  title="Maxsulotlar qoldig'i"
+                  reportTitle="Jami maxsulotlar qoldig'i"
+                  onNavigate={(view, id, data) => {
+                    // Bu yerda detail sahifaga o‘tishni amalga oshiring
+                    // Masalan, navigate(`${view}/${id}`, { state: data })
+                  }}
+                />
+              ),
+            },
+            {
+              path: "products-income",
+              element: <ProductsIncome onNavigate={(view, id, data) => {}} />,
+            },
+            {
+              path: "products-outcome",
+              element: (
+                <ProductsBalanceView
+                  title="Maxsulotlar chiqimi"
+                  reportTitle="Jami chiqim hujjatlari ichidagi maxsulotlar"
+                  onNavigate={(view, id, data) => {}}
+                />
+              ),
+            },
+            {
+              path: "products-return",
+              element: (
+                <ProductsBalanceView
+                  title="Maxsulotlarni qaytarish"
+                  reportTitle="Jami qaytarish hujjatlari ichidagi maxsulotlar"
+                  onNavigate={(view, id, data) => {}}
+                />
+              ),
+            },
+            {
+              path: "products-warehouse-transfer",
+              element: (
+                <ProductsBalanceView
+                  title="Ombordan omborga o'tkazish"
+                  reportTitle="Jami o'tkazish hujjatlari ichidagi maxsulotlar"
+                  onNavigate={(view, id, data) => {}}
+                />
+              ),
+            },
+            {
+              path: "products-balance-correction",
+              element: (
+                <ProductsBalanceView
+                  title="Qoldiqni to'g'irlash"
+                  reportTitle="Jami to'g'irlash hujjatlari ichidagi maxsulotlar"
+                  onNavigate={(view, id, data) => {}}
+                />
+              ),
             },
           ],
         },

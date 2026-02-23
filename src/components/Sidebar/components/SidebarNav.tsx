@@ -153,6 +153,43 @@ const SidebarNav: React.FC = React.memo(() => {
       icon: <DollarSign className="size-5" />,
     },
     {
+      id: "management",
+      label: "Maxsulotlar boshqaruvi",
+      icon: <Package className="size-5" />,
+      subItems: [
+        {
+          id: "products-balance",
+          label: "Maxsulotlar qoldig'i",
+          icon: null,
+        },
+        {
+          id: "products-income",
+          label: "Maxsulotlar kirimi",
+          icon: null,
+        },
+        {
+          id: "products-outcome",
+          label: "Maxsulotlar chiqimi",
+          icon: null,
+        },
+        {
+          id: "products-return",
+          label: "Maxsulotlarni qaytarish",
+          icon: null,
+        },
+        {
+          id: "products-warehouse-transfer",
+          label: "Ombordan omborga o'tkazish",
+          icon: null,
+        },
+        {
+          id: "products-balance-correction",
+          label: "Qoldiqni to'g'irlash",
+          icon: null,
+        },
+      ],
+    },
+    {
       id: "reference",
       label: "Ma'lumotnoma",
       icon: <BookOpen className="size-5" />,
