@@ -44,7 +44,7 @@ const MainDocument: React.FC<IProps> = ({ orderDataID }) => {
   });
 
   function openEditor() {
-    const url = "https://ekomplektasiya.uz/editor/";
+    const url = "https://editor.ekomplektasiya.uz/";
     const features =
       "width=1200,height=800,menubar=no,toolbar=no,location=no,status=no";
     newWindow = window.open(url, "SuperDocWindow", features);

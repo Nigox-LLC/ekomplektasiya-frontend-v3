@@ -12,6 +12,8 @@ interface IInfoState {
     role: string;
     user_permissions: string[];
     username: string;
+    department_category: string;
+    department_id: number;
   };
   eimzoRememberedCert: SavedEimzoCert | null;
   eimzoSigningData: any;
@@ -29,6 +31,8 @@ const initialState: IInfoState = {
     role: "",
     user_permissions: [],
     username: "",
+    department_category: "",
+    department_id: 0,
   },
   eimzoRememberedCert: null,
   eimzoSigningData: null,

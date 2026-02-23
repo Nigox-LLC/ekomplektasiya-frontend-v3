@@ -32,12 +32,7 @@ const SidebarFooter: React.FC<SidebarFooterProps> = React.memo(
               {currentUserInfo?.role === "employee" && "Xodim"}
             </p>
           </div>
-          <Button
-            variant="text"
-            size="small"
-            className="hover:bg-gray-700 text-gray-400 hover:text-white"
-            onClick={handleLogout}
-          >
+          <Button variant="text" size="small" onClick={handleLogout}>
             <LogOut className="size-4" />
           </Button>
         </div>

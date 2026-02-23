@@ -36,7 +36,7 @@ const SidebarNav: React.FC = React.memo(() => {
 
   const navItems: SidebarMenuItem[] = [
     {
-      id: "dashboard",
+      id: "/",
       label: "Bosh sahifa",
       icon: <Home className="size-5" />,
     },

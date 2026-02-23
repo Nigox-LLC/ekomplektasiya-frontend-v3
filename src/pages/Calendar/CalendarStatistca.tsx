@@ -1,88 +1,42 @@
-import { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, X, Calendar, FileText, MapPin } from 'lucide-react';
-import DocumentDetailView from './components/DocumentDetailView';
-import SettingsMenu from './components/SettingsMenu';
-import SuccessModal from './components/SuccessModal';
-import { Badge, Button, Card, Checkbox, Select } from 'antd';
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Calendar,
+  FileText,
+  MapPin,
+} from "lucide-react";
+import DocumentDetailView from "./components/DocumentDetailView";
+import SettingsMenu from "./components/SettingsMenu";
+import SuccessModal from "./components/SuccessModal";
+import { Badge, Button, Card, Checkbox, Select } from "antd";
+import { axiosAPI } from "@/service/axiosAPI";
 
 interface Letter {
   id: string;
   number: string;
   region: string;
   title: string;
-  status: 'overdue' | 'active' | 'cancelled';
-  type: 'incoming' | 'outgoing';
+  status: "overdue" | "active" | "cancelled";
+  type: "incoming" | "outgoing";
   day: number;
   month: number; // 0 = Yanvar, 1 = Fevral, etc.
   year: number;
 }
 
-interface CalendarViewProps {
-  onLetterClick: (letter: Letter) => void;
+interface Movement {
+  id: number;
+  is_done: boolean;
+  direction: "IN" | "OUT";
+  created_at: string;
+  movement_type: string;
+  sender_name: string | null;
+  receiver_name: string | null;
+  date: string; // YYYY-MM-DD
 }
 
-const mockLetters: Letter[] = [
-  // Day 1
-  { id: '1', number: 'KIR-001', region: 'Toshkent sh.', title: 'Moliyaviy hisobot tayyorlash', status: 'cancelled', type: 'incoming', day: 1, month: 0, year: 2026 },
-  { id: '2', number: 'KIR-002', region: 'Samarqand v.', title: 'Kadrlar bo\'yicha ma\'lumot', status: 'cancelled', type: 'incoming', day: 1, month: 0, year: 2026 },
-  { id: '3', number: 'CHQ-001', region: 'Buxoro v.', title: 'Rejalashtirish bo\'yicha', status: 'cancelled', type: 'outgoing', day: 1, month: 0, year: 2026 },
-  { id: '4', number: 'KIR-003', region: 'Andijon v.', title: 'Statistik ma\'lumotlar', status: 'cancelled', type: 'incoming', day: 1, month: 0, year: 2026 },
-
-  // Day 5
-  { id: '5', number: 'KIR-004', region: 'Fargona v.', title: 'Choraklik natijalar tahlili', status: 'cancelled', type: 'incoming', day: 5, month: 0, year: 2026 },
-  { id: '6', number: 'CHQ-002', region: 'Namangan v.', title: 'Topshiriq berish', status: 'cancelled', type: 'outgoing', day: 5, month: 0, year: 2026 },
-  { id: '7', number: 'KIR-005', region: 'Qashqadaryo v.', title: 'Yillik reja to\'g\'risida', status: 'cancelled', type: 'incoming', day: 5, month: 0, year: 2026 },
-  { id: '8', number: 'KIR-006', region: 'Surxondaryo v.', title: 'Monitoring natijalari', status: 'cancelled', type: 'incoming', day: 5, month: 0, year: 2026 },
-
-  // Day 10
-  { id: '9', number: 'KIR-007', region: 'Toshkent v.', title: 'Byudjet mablag\'lari', status: 'cancelled', type: 'incoming', day: 10, month: 0, year: 2026 },
-  { id: '10', number: 'CHQ-003', region: 'Sirdaryo v.', title: 'Eslatma xat', status: 'cancelled', type: 'outgoing', day: 10, month: 0, year: 2026 },
-  { id: '11', number: 'KIR-008', region: 'Jizzax v.', title: 'Texnik ta\'minot', status: 'cancelled', type: 'incoming', day: 10, month: 0, year: 2026 },
-  { id: '12', number: 'KIR-009', region: 'Navoiy v.', title: 'Ishchi rejalar', status: 'cancelled', type: 'incoming', day: 10, month: 0, year: 2026 },
-
-  // Day 15
-  { id: '13', number: 'KIR-010', region: 'Xorazm v.', title: 'Majlis bayonnomalari', status: 'overdue', type: 'incoming', day: 15, month: 0, year: 2026 },
-  { id: '14', number: 'KIR-011', region: 'Toshkent sh.', title: 'Davlat xaridlari', status: 'overdue', type: 'incoming', day: 15, month: 0, year: 2026 },
-  { id: '15', number: 'CHQ-004', region: 'Samarqand v.', title: 'Tavsiya xatlari', status: 'overdue', type: 'outgoing', day: 15, month: 0, year: 2026 },
-  { id: '16', number: 'KIR-012', region: 'Buxoro v.', title: 'Qo\'shimcha ma\'lumotlar', status: 'overdue', type: 'incoming', day: 15, month: 0, year: 2026 },
-
-  // Day 18
-  { id: '17', number: 'KIR-013', region: 'Andijon v.', title: 'Audit hisoboti', status: 'cancelled', type: 'incoming', day: 18, month: 0, year: 2026 },
-  { id: '18', number: 'CHQ-005', region: 'Fargona v.', title: 'Kelishuv loyihasi', status: 'cancelled', type: 'outgoing', day: 18, month: 0, year: 2026 },
-  { id: '19', number: 'KIR-014', region: 'Namangan v.', title: 'Ishchi guruh hisoboti', status: 'cancelled', type: 'incoming', day: 18, month: 0, year: 2026 },
-  { id: '20', number: 'KIR-015', region: 'Qashqadaryo v.', title: 'Davlat dasturi', status: 'cancelled', type: 'incoming', day: 18, month: 0, year: 2026 },
-
-  // Day 20
-  { id: '21', number: 'KIR-016', region: 'Surxondaryo v.', title: 'Yillik hisobot', status: 'cancelled', type: 'incoming', day: 20, month: 0, year: 2026 },
-  { id: '22', number: 'CHQ-006', region: 'Toshkent v.', title: 'Buyruq loyihasi', status: 'cancelled', type: 'outgoing', day: 20, month: 0, year: 2026 },
-  { id: '23', number: 'KIR-017', region: 'Sirdaryo v.', title: 'Tashkiliy masalalar', status: 'cancelled', type: 'incoming', day: 20, month: 0, year: 2026 },
-  { id: '24', number: 'KIR-018', region: 'Jizzax v.', title: 'Ma\'lumot so\'rovi', status: 'cancelled', type: 'incoming', day: 20, month: 0, year: 2026 },
-
-  // Day 22
-  { id: '25', number: 'KIR-019', region: 'Navoiy v.', title: 'Investitsiya loyihalari', status: 'cancelled', type: 'incoming', day: 22, month: 0, year: 2026 },
-  { id: '26', number: 'CHQ-007', region: 'Xorazm v.', title: 'Eslatma xat', status: 'cancelled', type: 'outgoing', day: 22, month: 0, year: 2026 },
-  { id: '27', number: 'KIR-020', region: 'Toshkent sh.', title: 'Axborot xavfsizligi', status: 'cancelled', type: 'incoming', day: 22, month: 0, year: 2026 },
-  { id: '28', number: 'KIR-021', region: 'Samarqand v.', title: 'Kadrlar malakasini oshirish', status: 'cancelled', type: 'incoming', day: 22, month: 0, year: 2026 },
-
-  // Day 25
-  { id: '29', number: 'KIR-022', region: 'Buxoro v.', title: 'Choraklik natijalar', status: 'cancelled', type: 'incoming', day: 25, month: 0, year: 2026 },
-  { id: '30', number: 'CHQ-008', region: 'Andijon v.', title: 'Farmoyish loyihasi', status: 'cancelled', type: 'outgoing', day: 25, month: 0, year: 2026 },
-  { id: '31', number: 'KIR-023', region: 'Fargona v.', title: 'Moliyaviy tahlil', status: 'cancelled', type: 'incoming', day: 25, month: 0, year: 2026 },
-  { id: '32', number: 'KIR-024', region: 'Namangan v.', title: 'Statistik hisobot', status: 'cancelled', type: 'incoming', day: 25, month: 0, year: 2026 },
-
-  // Day 28 (Today)
-  { id: '33', number: 'KIR-025', region: 'Qashqadaryo v.', title: 'Moliyaviy hisobot', status: 'active', type: 'incoming', day: 28, month: 0, year: 2026 },
-  { id: '34', number: 'KIR-026', region: 'Surxondaryo v.', title: 'Kadrlar bo\'yicha', status: 'active', type: 'incoming', day: 28, month: 0, year: 2026 },
-  { id: '35', number: 'CHQ-009', region: 'Toshkent v.', title: 'Rejalashtirish', status: 'active', type: 'outgoing', day: 28, month: 0, year: 2026 },
-  { id: '36', number: 'KIR-027', region: 'Sirdaryo v.', title: 'Topshiriq berish', status: 'active', type: 'incoming', day: 28, month: 0, year: 2026 },
-  { id: '37', number: 'CHQ-010', region: 'Jizzax v.', title: 'Kelishuv xati', status: 'active', type: 'outgoing', day: 28, month: 0, year: 2026 },
-
-  // Day 30
-  { id: '38', number: 'KIR-028', region: 'Navoiy v.', title: 'Oylik hisobot', status: 'active', type: 'incoming', day: 30, month: 0, year: 2026 },
-  { id: '39', number: 'CHQ-011', region: 'Xorazm v.', title: 'Davlat dasturi', status: 'active', type: 'outgoing', day: 30, month: 0, year: 2026 },
-  { id: '40', number: 'KIR-029', region: 'Toshkent sh.', title: 'Monitoring', status: 'active', type: 'incoming', day: 30, month: 0, year: 2026 },
-  { id: '41', number: 'KIR-030', region: 'Samarqand v.', title: 'Tekshiruv natijalari', status: 'active', type: 'incoming', day: 30, month: 0, year: 2026 },
-];
+type CalendarResponse = Record<string, Movement[]>;
 
 const CalendarView: React.FC = () => {
   // Bugungi kunni avtomatik aniqlash
@@ -93,9 +47,9 @@ const CalendarView: React.FC = () => {
 
   const [selectedDay, setSelectedDay] = useState<number | null>(todayDay); // Avtomatik bugungi kun
   const [showOnlyMyTasks, setShowOnlyMyTasks] = useState(false);
-  const [selectedRegion, setSelectedRegion] = useState('all');
-  const [selectedStatus, setSelectedStatus] = useState('all');
-  const [selectedType, setSelectedType] = useState('all');
+  const [selectedRegion, setSelectedRegion] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedType, setSelectedType] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showLanguage, setShowLanguage] = useState(false);
@@ -103,7 +57,10 @@ const CalendarView: React.FC = () => {
   const [currentYear, setCurrentYear] = useState(todayYear); // Avtomatik joriy yil
   const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null); // Tanlangan xat
   const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState("");
+  const [calendarData, setCalendarData] = useState<CalendarResponse>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Ref for scrolling to selected letter details
   const letterDetailsRef = useRef<HTMLDivElement>(null);
@@ -113,8 +70,8 @@ const CalendarView: React.FC = () => {
     if (selectedLetter && letterDetailsRef.current) {
       setTimeout(() => {
         letterDetailsRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
+          behavior: "smooth",
+          block: "start",
         });
       }, 100);
     }
@@ -130,8 +87,8 @@ const CalendarView: React.FC = () => {
     if (selectedDay !== null && letterDetailsRef.current) {
       setTimeout(() => {
         letterDetailsRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
+          behavior: "smooth",
+          block: "start",
         });
       }, 150);
     }
@@ -139,8 +96,18 @@ const CalendarView: React.FC = () => {
 
   // Oylar nomlari
   const monthNames = [
-    'Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun',
-    'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr'
+    "Yanvar",
+    "Fevral",
+    "Mart",
+    "Aprel",
+    "May",
+    "Iyun",
+    "Iyul",
+    "Avgust",
+    "Sentabr",
+    "Oktabr",
+    "Noyabr",
+    "Dekabr",
   ];
 
   // Har oy uchun kunlar soni
@@ -150,8 +117,41 @@ const CalendarView: React.FC = () => {
 
   const daysInMonth = getDaysInMonth(currentMonth, currentYear);
 
+  // fetch calendar statistics from API
+  const fetchCalendarStatistics = useCallback(async () => {
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    const pad = (value: number) => String(value).padStart(2, "0");
+    const startDate = `${currentYear}-${pad(currentMonth + 1)}-01`;
+    const endDate = `${currentYear}-${pad(currentMonth + 1)}-${pad(
+      daysInMonth,
+    )}`;
+
+    try {
+      const response = await axiosAPI.get("document/orders/calendar/", {
+        params: {
+          start_date: startDate,
+          end_date: endDate,
+        },
+      });
+
+      setCalendarData((response.data || {}) as CalendarResponse);
+    } catch (error) {
+      console.log(error);
+      setCalendarData({});
+      setErrorMessage("Ma'lumotlarni yuklashda xatolik yuz berdi.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentMonth, currentYear, daysInMonth]);
+
+  useEffect(() => {
+    fetchCalendarStatistics();
+  }, [fetchCalendarStatistics]);
+
   // Hafta kunlari
-  const weekDays = ['Du', 'Se', 'Ch', 'Pa', 'Ju', 'Sh', 'Ya'];
+  const weekDays = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"];
 
   // Oy boshlanish kuni (0 = Yakshanba, 1 = Dushanba, ..., 6 = Shanba)
   const getFirstDayOfMonth = (month: number, year: number) => {
@@ -202,60 +202,122 @@ const CalendarView: React.FC = () => {
     setSelectedDay(null);
   };
 
+  const allLetters = useMemo<Letter[]>(() => {
+    const letters: Letter[] = [];
+
+    Object.entries(calendarData).forEach(([dateKey, movements]) => {
+      const [year, month, day] = dateKey.split("-").map(Number);
+      if (!year || !month || !day) return;
+
+      movements.forEach((movement) => {
+        const counterparty =
+          movement.direction === "IN"
+            ? movement.sender_name
+            : movement.receiver_name;
+        const status = movement.is_done ? "cancelled" : "active";
+
+        letters.push({
+          id: String(movement.id),
+          number: movement.movement_type || `#${movement.id}`,
+          title: movement.movement_type,
+          region: counterparty || "-",
+          status,
+          type: movement.direction === "IN" ? "incoming" : "outgoing",
+          day,
+          month: month - 1,
+          year,
+        });
+      });
+    });
+
+    return letters;
+  }, [calendarData]);
+
   // Filter letters by current month and year
-  const filteredLetters = mockLetters.filter(letter => {
-    // Faqat joriy oy va yilga tegishli xatlar
-    if (letter.month !== currentMonth || letter.year !== currentYear) return false;
-    // Simulate filtering only responsible letters
-    if (showOnlyMyTasks && letter.id !== '2' && letter.id !== '5') return false;
-    return true;
-  });
+  const filteredLetters = useMemo(() => {
+    return allLetters.filter((letter) => {
+      if (letter.month !== currentMonth || letter.year !== currentYear)
+        return false;
+      if (showOnlyMyTasks && letter.status !== "active") return false;
+      return true;
+    });
+  }, [allLetters, currentMonth, currentYear, showOnlyMyTasks]);
 
   // Total letters count in current month
   const totalMonthLetters = filteredLetters.length;
 
-  const getLettersForDay = (day: number) => {
-    const letters = filteredLetters.filter(letter => letter.day === day);
+  const lettersByDay = useMemo(() => {
+    const map: Record<number, Letter[]> = {};
+    filteredLetters.forEach((letter) => {
+      if (!map[letter.day]) {
+        map[letter.day] = [];
+      }
+      map[letter.day].push(letter);
+    });
+    return map;
+  }, [filteredLetters]);
 
-    // Agar bugungi oyda bo'lsak va kun bugundan oldin bo'lsa
-    if (currentMonth === todayMonth && currentYear === todayYear && day < todayDay) {
-      // Ko'k nuqtalarni (active) qizil (overdue) ga o'zgartirish
-      return letters.map(letter => {
-        if (letter.status === 'active') {
-          return { ...letter, status: 'overdue' as const };
-        }
-        return letter;
-      });
-    }
+  const getLettersForDay = useCallback(
+    (day: number) => {
+      const letters = lettersByDay[day] || [];
 
-    // Agar kelajak oy bo'lsa yoki kelajak yil bo'lsa - hammasi active qoladi
-    if (currentYear > todayYear || (currentYear === todayYear && currentMonth > todayMonth)) {
+      // Agar bugungi oyda bo'lsak va kun bugundan oldin bo'lsa
+      if (
+        currentMonth === todayMonth &&
+        currentYear === todayYear &&
+        day < todayDay
+      ) {
+        // Ko'k nuqtalarni (active) qizil (overdue) ga o'zgartirish
+        return letters.map((letter) => {
+          if (letter.status === "active") {
+            return { ...letter, status: "overdue" as const };
+          }
+          return letter;
+        });
+      }
+
+      // Agar kelajak oy bo'lsa yoki kelajak yil bo'lsa - hammasi active qoladi
+      if (
+        currentYear > todayYear ||
+        (currentYear === todayYear && currentMonth > todayMonth)
+      ) {
+        return letters;
+      }
+
+      // Agar o'tgan oy yoki o'tgan yil bo'lsa - hammasi overdue
+      if (
+        currentYear < todayYear ||
+        (currentYear === todayYear && currentMonth < todayMonth)
+      ) {
+        return letters.map((letter) => {
+          if (letter.status === "active") {
+            return { ...letter, status: "overdue" as const };
+          }
+          return letter;
+        });
+      }
+
       return letters;
-    }
-
-    // Agar o'tgan oy yoki o'tgan yil bo'lsa - hammasi overdue
-    if (currentYear < todayYear || (currentYear === todayYear && currentMonth < todayMonth)) {
-      return letters.map(letter => {
-        if (letter.status === 'active') {
-          return { ...letter, status: 'overdue' as const };
-        }
-        return letter;
-      });
-    }
-
-    return letters;
-  };
+    },
+    [lettersByDay, currentMonth, currentYear, todayMonth, todayYear, todayDay],
+  );
 
   // Calculate today's statistics
-  const todayLetters = filteredLetters.filter(l => l.day === todayDay);
-  const overdueCount = filteredLetters.filter(l => l.status === 'overdue').length;
-  const activeCount = filteredLetters.filter(l => l.status === 'active').length;
-  const completedCount = filteredLetters.filter(l => l.status === 'cancelled').length;
+  const overdueCount = filteredLetters.filter(
+    (l) => l.status === "overdue",
+  ).length;
+  const activeCount = filteredLetters.filter(
+    (l) => l.status === "active",
+  ).length;
+  const completedCount = filteredLetters.filter(
+    (l) => l.status === "cancelled",
+  ).length;
 
   const getBadgeColor = () => {
-    if (overdueCount > 0) return 'bg-red-100 text-red-800 border-red-300';
-    if (activeCount > 0) return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-    return 'bg-green-100 text-green-800 border-green-300';
+    if (overdueCount > 0) return "bg-red-100 text-red-800 border-red-300";
+    if (activeCount > 0)
+      return "bg-yellow-100 text-yellow-800 border-yellow-300";
+    return "bg-green-100 text-green-800 border-green-300";
   };
 
   return (
@@ -264,7 +326,9 @@ const CalendarView: React.FC = () => {
       <Card className="p-6">
         <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-200">
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-gray-900">{monthNames[currentMonth]} {currentYear}</span>
+            <span className="text-2xl font-bold text-gray-900">
+              {monthNames[currentMonth]} {currentYear}
+            </span>
             <Badge className="bg-blue-100 text-blue-700 text-base px-3 py-1">
               {totalMonthLetters} ta
             </Badge>
@@ -284,7 +348,11 @@ const CalendarView: React.FC = () => {
               </label>
             </div>
             <div className="flex gap-2">
-              <Button variant="outlined" size="small" onClick={goToPreviousMonth}>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={goToPreviousMonth}
+              >
                 <ChevronLeft className="size-4" />
               </Button>
               <Button variant="outlined" size="small" onClick={goToToday}>
@@ -296,14 +364,27 @@ const CalendarView: React.FC = () => {
             </div>
           </div>
         </div>
+        {isLoading && (
+          <div className="text-sm text-gray-500 mb-4">
+            Ma'lumotlar yuklanmoqda...
+          </div>
+        )}
+        {errorMessage && (
+          <div className="text-sm text-red-600 mb-4">{errorMessage}</div>
+        )}
 
         {/* Filter Panel */}
         {showFilters && (
           <div className="mb-6 pb-6 border-b border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Viloyat</label>
-                <Select value={selectedRegion} onChange={(value) => setSelectedRegion(value)}>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Viloyat
+                </label>
+                <Select
+                  value={selectedRegion}
+                  onChange={(value) => setSelectedRegion(value)}
+                >
                   {/* <SelectTrigger>
                     <SelectValue placeholder="Barcha viloyatlar" />
                   </SelectTrigger>
@@ -325,8 +406,13 @@ const CalendarView: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Holati</label>
-                <Select value={selectedStatus} onChange={(value) => setSelectedStatus(value)}>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Holati
+                </label>
+                <Select
+                  value={selectedStatus}
+                  onChange={(value) => setSelectedStatus(value)}
+                >
                   <Select.Option>Barcha holatlar</Select.Option>
                   <Select.Option>Muddati o'tgan</Select.Option>
                   <Select.Option>Faol</Select.Option>
@@ -345,8 +431,13 @@ const CalendarView: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Turi</label>
-                <Select value={selectedType} onChange={(value) => setSelectedType(value)}>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Turi
+                </label>
+                <Select
+                  value={selectedType}
+                  onChange={(value) => setSelectedType(value)}
+                >
                   {/* <SelectTrigger>
                     <SelectValue placeholder="Barcha turlar" />
                   </SelectTrigger>
@@ -366,9 +457,9 @@ const CalendarView: React.FC = () => {
                   variant="outlined"
                   size="small"
                   onClick={() => {
-                    setSelectedRegion('all');
-                    setSelectedStatus('all');
-                    setSelectedType('all');
+                    setSelectedRegion("all");
+                    setSelectedStatus("all");
+                    setSelectedType("all");
                   }}
                   className="w-full"
                 >
@@ -384,8 +475,11 @@ const CalendarView: React.FC = () => {
         <div>
           {/* Week Header */}
           <div className="grid grid-cols-7 mb-2">
-            {weekDays.map(day => (
-              <div key={day} className="text-center text-sm font-medium text-gray-600 py-2">
+            {weekDays.map((day) => (
+              <div
+                key={day}
+                className="text-center text-sm font-medium text-gray-600 py-2"
+              >
                 {day}
               </div>
             ))}
@@ -399,23 +493,40 @@ const CalendarView: React.FC = () => {
             ))}
 
             {/* Days */}
-            {calendarDays.map(day => {
+            {calendarDays.map((day) => {
               const dayLetters = getLettersForDay(day);
-              const isToday = day === todayDay && currentMonth === todayMonth && currentYear === todayYear;
+              const isToday =
+                day === todayDay &&
+                currentMonth === todayMonth &&
+                currentYear === todayYear;
               const dayOfWeek = getDayOfWeek(day);
               const isWeekend = dayOfWeek === 5 || dayOfWeek === 6; // Shanba (5) VA Yakshanba (6)
-              const overdueLetters = dayLetters.filter(l => l.status === 'overdue');
-              const activeLetters = dayLetters.filter(l => l.status === 'active');
-              const cancelledLetters = dayLetters.filter(l => l.status === 'cancelled');
+              const overdueLetters = dayLetters.filter(
+                (l) => l.status === "overdue",
+              );
+              const activeLetters = dayLetters.filter(
+                (l) => l.status === "active",
+              );
+              const cancelledLetters = dayLetters.filter(
+                (l) => l.status === "cancelled",
+              );
 
               return (
                 <div
                   key={day}
-                  className={`aspect-square border rounded-lg p-2 relative transition-all hover:shadow-md cursor-pointer ${isToday ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'
-                    } ${selectedDay === day ? 'ring-4 ring-blue-400 ring-offset-2 shadow-lg' : ''
-                    }`}
+                  className={`aspect-square border rounded-lg p-2 relative transition-all hover:shadow-md cursor-pointer ${
+                    isToday
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 bg-white"
+                  } ${
+                    selectedDay === day
+                      ? "ring-4 ring-blue-400 ring-offset-2 shadow-lg"
+                      : ""
+                  }`}
                   title={`${day} ${monthNames[currentMonth]} - ${dayLetters.length} ta xat`}
-                  onClick={() => setSelectedDay(selectedDay === day ? null : day)}
+                  onClick={() =>
+                    setSelectedDay(selectedDay === day ? null : day)
+                  }
                 >
                   {/* Chap tomon - Jami xatlar soni */}
                   {dayLetters.length > 0 && (
@@ -427,10 +538,15 @@ const CalendarView: React.FC = () => {
                   )}
 
                   {/* O'ng tomon - Kun raqami */}
-                  <div className={`absolute top-1 right-1 ${isToday ? 'text-blue-600 font-extrabold text-lg' :
-                      isWeekend ? 'text-red-600 font-medium text-sm' :
-                        'text-gray-900 font-medium text-sm'
-                    }`}>
+                  <div
+                    className={`absolute top-1 right-1 ${
+                      isToday
+                        ? "text-blue-600 font-extrabold text-lg"
+                        : isWeekend
+                          ? "text-red-600 font-medium text-sm"
+                          : "text-gray-900 font-medium text-sm"
+                    }`}
+                  >
                     {day}
                   </div>
 
@@ -451,9 +567,15 @@ const CalendarView: React.FC = () => {
                           {/* Tooltip */}
                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 pointer-events-none">
                             <div className="bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
-                              <div className="font-semibold">{letter.number}</div>
-                              <div className="text-gray-300">{letter.title}</div>
-                              <div className="text-gray-400 text-[10px] mt-1">{letter.region}</div>
+                              <div className="font-semibold">
+                                {letter.number}
+                              </div>
+                              <div className="text-gray-300">
+                                {letter.title}
+                              </div>
+                              <div className="text-gray-400 text-[10px] mt-1">
+                                {letter.region}
+                              </div>
                               <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
                             </div>
                           </div>
@@ -473,9 +595,15 @@ const CalendarView: React.FC = () => {
                           {/* Tooltip */}
                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 pointer-events-none">
                             <div className="bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
-                              <div className="font-semibold">{letter.number}</div>
-                              <div className="text-gray-300">{letter.title}</div>
-                              <div className="text-gray-400 text-[10px] mt-1">{letter.region}</div>
+                              <div className="font-semibold">
+                                {letter.number}
+                              </div>
+                              <div className="text-gray-300">
+                                {letter.title}
+                              </div>
+                              <div className="text-gray-400 text-[10px] mt-1">
+                                {letter.region}
+                              </div>
                               <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
                             </div>
                           </div>
@@ -495,9 +623,15 @@ const CalendarView: React.FC = () => {
                           {/* Tooltip */}
                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 pointer-events-none">
                             <div className="bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
-                              <div className="font-semibold">{letter.number}</div>
-                              <div className="text-gray-300">{letter.title}</div>
-                              <div className="text-gray-400 text-[10px] mt-1">{letter.region}</div>
+                              <div className="font-semibold">
+                                {letter.number}
+                              </div>
+                              <div className="text-gray-300">
+                                {letter.title}
+                              </div>
+                              <div className="text-gray-400 text-[10px] mt-1">
+                                {letter.region}
+                              </div>
                               <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
                             </div>
                           </div>
@@ -519,9 +653,17 @@ const CalendarView: React.FC = () => {
           <div className="w-[25%] bg-white rounded-lg shadow border border-gray-200 flex flex-col h-[800px]">
             <div className="flex items-center justify-between p-4 border-b border-gray-200 shrink-0">
               <h3 className="text-base font-semibold text-gray-900">
-                {selectedDay} {monthNames[currentMonth]} ({getLettersForDay(selectedDay).length})
+                {selectedDay} {monthNames[currentMonth]} (
+                {getLettersForDay(selectedDay).length})
               </h3>
-              <Button variant="outlined" size="small" onClick={() => { setSelectedDay(null); setSelectedLetter(null); }}>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => {
+                  setSelectedDay(null);
+                  setSelectedLetter(null);
+                }}
+              >
                 <X className="size-4" />
               </Button>
             </div>
@@ -530,24 +672,33 @@ const CalendarView: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
               {getLettersForDay(selectedDay).map((letter) => {
                 const borderColor =
-                  letter.status === 'overdue' ? 'border-l-red-500' :
-                    letter.status === 'active' ? 'border-l-blue-500' :
-                      'border-l-gray-400';
+                  letter.status === "overdue"
+                    ? "border-l-red-500"
+                    : letter.status === "active"
+                      ? "border-l-blue-500"
+                      : "border-l-gray-400";
 
                 const isSelected = selectedLetter?.id === letter.id;
 
                 return (
                   <div
                     key={letter.id}
-                    className={`relative bg-white border rounded-lg p-3 cursor-pointer transition-all border-l-4 ${borderColor} ${isSelected ? 'ring-2 ring-blue-500 shadow-md bg-blue-50' : 'hover:shadow-md hover:bg-gray-50'
-                      }`}
+                    className={`relative bg-white border rounded-lg p-3 cursor-pointer transition-all border-l-4 ${borderColor} ${
+                      isSelected
+                        ? "ring-2 ring-blue-500 shadow-md bg-blue-50"
+                        : "hover:shadow-md hover:bg-gray-50"
+                    }`}
                     onClick={() => setSelectedLetter(letter)}
                   >
                     <div className="flex items-start gap-2">
                       <FileText className="size-4 text-gray-400 mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-sm text-gray-900 mb-1">{letter.number}</div>
-                        <h4 className="text-xs text-gray-700 mb-2 line-clamp-2 leading-relaxed">{letter.title}</h4>
+                        <div className="font-semibold text-sm text-gray-900 mb-1">
+                          {letter.number}
+                        </div>
+                        <h4 className="text-xs text-gray-700 mb-2 line-clamp-2 leading-relaxed">
+                          {letter.title}
+                        </h4>
                         <div className="flex items-center gap-1 text-xs text-gray-500">
                           <MapPin className="size-3 shrink-0" />
                           <span className="truncate">{letter.region}</span>
@@ -568,11 +719,12 @@ const CalendarView: React.FC = () => {
                   id: selectedLetter.id,
                   number: selectedLetter.number,
                   title: selectedLetter.title,
-                  category: selectedLetter.type === 'incoming' ? 'reply' : 'outgoing',
+                  category:
+                    selectedLetter.type === "incoming" ? "reply" : "outgoing",
                   date: `${selectedDay} ${monthNames[currentMonth]} ${currentYear}`,
-                  isRead: selectedLetter.status !== 'active',
-                  isReceived: selectedLetter.type === 'incoming',
-                  hasAttachment: true
+                  isRead: selectedLetter.status !== "active",
+                  isReceived: selectedLetter.type === "incoming",
+                  hasAttachment: true,
                 }}
                 onClose={() => setSelectedLetter(null)}
                 onSuccess={(message) => {
@@ -584,8 +736,12 @@ const CalendarView: React.FC = () => {
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
                   <FileText className="size-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Xatni tanlang</h3>
-                  <p className="text-gray-500">Tafsilotlarini ko'rish uchun chap tarafdan xatni tanlang</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Xatni tanlang
+                  </h3>
+                  <p className="text-gray-500">
+                    Tafsilotlarini ko'rish uchun chap tarafdan xatni tanlang
+                  </p>
                 </div>
               </div>
             )}
@@ -593,12 +749,18 @@ const CalendarView: React.FC = () => {
         </div>
       )}
 
-      <SettingsMenu isOpen={showSettings} onClose={() => setShowSettings(false)} />
+      <SettingsMenu
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
       {/* <LanguageMenu isOpen={showLanguage} onClose={() => setShowLanguage(false)} /> */}
-      <SuccessModal isOpen={showSuccess} onClose={() => setShowSuccess(false)} message={successMessage} />
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        message={successMessage}
+      />
     </div>
   );
-}
-
+};
 
 export default CalendarView;

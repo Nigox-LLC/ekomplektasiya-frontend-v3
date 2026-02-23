@@ -35,7 +35,7 @@ const App: React.FC = () => {
       element: <Layout />,
       children: [
         {
-          path: "dashboard",
+          path: "",
           element: <Dashboard />,
         },
         {

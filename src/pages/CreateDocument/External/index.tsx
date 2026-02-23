@@ -1,8 +1,8 @@
 import { Button, Collapse } from "antd";
 import { ArrowLeft, CircleCheck, FileText, Send } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
 import ProductsSection from "../components/ProductsSection";
-import { useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 import { axiosAPI } from "@/service/axiosAPI";
 import { toast } from "react-toastify";
 import TextArea from "antd/es/input/TextArea";
@@ -63,12 +63,8 @@ const CreateDocument: React.FC = () => {
       },
     ],
   });
-  const [orderDataID, setOrderDataID] = React.useState<number | null>(null);
+  const [orderDataID, setOrderDataID] = React.useState<number>(0);
   const [isSendModalOpen, setIsSendModalOpen] = React.useState(false);
-  const [activeAccordion, setActiveAccordion] = React.useState<string[]>([
-    "products",
-    "signers",
-  ]);
 
   const navigate = useNavigate();
 
@@ -91,22 +87,24 @@ const CreateDocument: React.FC = () => {
     }
   };
 
-  // useParams
-  const { type } = useParams<{ type: "internal" | "outgoing" }>();
+  const location = useLocation();
 
-  // useEffect(() => {
-  //   const createOrderDocument = async () => {
-  //     try {
-  //       const response = await axiosAPI.post("document/orders/", {
-  //         order_type: type,
-  //       });
-  //       if (response.status === 201) setOrderDataID(response.data.id);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
-  //   createOrderDocument();
-  // }, []);
+  useEffect(() => {
+    const createOrderDocument = async () => {
+      try {
+        const response = await axiosAPI.post("document/orders/", {
+          order_type: location.pathname.split("/").pop(),
+        });
+        if (response.status === 201) {
+          setOrderDataID(response.data.id);
+          console.log(location.pathname.split("/").pop());
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    createOrderDocument();
+  }, []);
 
   const handleUpdateOrderData = async () => {
     try {
@@ -155,18 +153,18 @@ const CreateDocument: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold">
-                  {type === "internal"
+                  {location.pathname.split("/").pop() === "internal"
                     ? "Ichki hujjat yaratish"
                     : "Yangi hujjat yaratish"}
                 </h1>
                 <p className="text-sm text-blue-100">
-                  {type === "internal"
+                  {location.pathname.split("/").pop() === "internal"
                     ? "Ichki hujjat shakllantirish"
                     : "Buyurtma uchun tovarlar ro'yxati"}
                 </p>
               </div>
             </div>
-            {type === "outgoing" && (
+            {location.pathname.split("/").pop() === "outgoing" && (
               <Button
                 onClick={handleOpenSendModal}
                 className="gap-2 bg-white text-blue-600 hover:bg-blue-50 font-semibold"
@@ -191,7 +189,7 @@ const CreateDocument: React.FC = () => {
           orderDataID={orderDataID}
         />
         <>
-          <SignerCardSection orderID={orderDataID!} />
+          <SignerCardSection orderID={orderDataID} />
 
           {/* Comment of order */}
           <div className="my-2">
@@ -223,31 +221,30 @@ const CreateDocument: React.FC = () => {
             type="primary"
             className="gap-2"
             onClick={() => {
-              console.log(orderData);
-              // if (orderData.content.trim() === "") {
-              //   toast.error("Qisqacha izoh bo'sh bo'lishi mumkin emas!");
-              //   return;
-              // } else if (orderData.products.length === 0) {
-              //   toast.error("Mahsulotlar ro'yxati bo'sh bo'lishi mumkin emas!");
-              //   return;
-              // } else if (
-              //   orderData.products.some(
-              //     (item) =>
-              //       !item.product_name ||
-              //       !item.quantity ||
-              //       !item.product_type.id ||
-              //       !item.product_model.id ||
-              //       !item.size.id ||
-              //       !item.unit.id,
-              //   )
-              // ) {
-              //   toast.error(
-              //     "Mahsulotlar ro'yxatidagi barcha maydonlar to'ldirilishi kerak!",
-              //   );
-              //   return;
-              // } else {
-              //   handleUpdateOrderData();
-              // }
+              if (orderData.content.trim() === "") {
+                toast.error("Qisqacha izoh bo'sh bo'lishi mumkin emas!");
+                return;
+              } else if (orderData.products.length === 0) {
+                toast.error("Mahsulotlar ro'yxati bo'sh bo'lishi mumkin emas!");
+                return;
+              } else if (
+                orderData.products.some(
+                  (item) =>
+                    !item.product_name ||
+                    !item.quantity ||
+                    !item.product_type.id ||
+                    !item.product_model.id ||
+                    !item.size.id ||
+                    !item.unit.id,
+                )
+              ) {
+                toast.error(
+                  "Mahsulotlar ro'yxatidagi barcha maydonlar to'ldirilishi kerak!",
+                );
+                return;
+              } else {
+                handleUpdateOrderData();
+              }
             }}
           >
             <CircleCheck className="size-5" />
