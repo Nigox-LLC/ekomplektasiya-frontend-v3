@@ -28,6 +28,11 @@ import NewDocumentProduct from "./pages/NewDocument/NewDocumentProduct/NewDocume
 import { ToastContainer } from "react-toastify";
 
 const App: React.FC = () => {
+  const appLoading = true; // keep overlay until removed manually
+
+  // NOTE: per request, keep the global loading overlay visible until
+  // the code is manually removed. Do not auto-hide the overlay.
+
   const router = createBrowserRouter([
     {
       path: "/",
@@ -162,7 +167,31 @@ const App: React.FC = () => {
 
   return (
     <>
-      <RouterProvider router={router} />
+      <div className="relative">
+        <RouterProvider router={router} />
+
+        {/* Global loading overlay shown on app entry (blocks all interaction) */}
+        {appLoading && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+            <div className="relative z-10 w-full max-w-md rounded-lg bg-white/95 border border-gray-200 p-6 shadow-2xl">
+              <div className="flex flex-col items-center gap-4">
+                <div className="text-lg font-semibold text-gray-800">Ma'lumotlar yuklanmoqda</div>
+                {/* animation: pulsing rings + scaling percent */}
+                <style>{`@keyframes scalePulse{0%{transform:scale(0.95);}50%{transform:scale(1.08);}100%{transform:scale(0.95);}} .scale-pulse{animation:scalePulse 1.6s ease-in-out infinite;}`}</style>
+                <div className="relative flex items-center justify-center">
+                  <span className="absolute block w-44 h-44 rounded-full bg-blue-200/40 animate-ping" />
+                  <span className="absolute block w-52 h-52 rounded-full bg-blue-100/30" />
+                  <div className="relative w-36 h-36 rounded-full bg-gradient-to-br from-blue-200 to-blue-400 flex items-center justify-center">
+                    <div className="text-5xl font-semibold text-blue-700 scale-pulse">72%</div>
+                  </div>
+                </div>
+                <div className="text-sm text-gray-600 text-center">Iltimos kuting — dasturga ma'lumotlar to'liq yuklanmaguncha boshqa sahifalarga o'ta olmaysiz.</div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
       <ToastContainer />
     </>
   );
