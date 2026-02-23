@@ -5,7 +5,6 @@ export { default as Calendar } from "./Calendar/CalendarStatistca";
 export { default as GenStatistics } from "./Dashboard/DashboardStats/GenStatistics";
 export { default as Dashboard } from "./Dashboard/DashboardPage/Dashboard";
 export { default as UsersManagement } from "./UsersManagement/UsersManagement";
-export { default as ProductManagement } from "./ProductManagement/ProductManagement";
 export { default as TurnoverReport } from "./Reports/TurnoverReport/TurnoverReport";
 export { default as GoodsBalanceReport } from "./Reports/GoodsMaterialsBalance/GoodsMaterialsBalance";
 export { default as ReportTableOne } from "./Reports/ReportTable/ReportTableOne";
@@ -17,10 +16,17 @@ export { default as GoodsOut } from "./Reference/GoodsOut/GoodsOut";
 export { default as WareHouseTransfer } from "./Reference/WareHouseTransfer/WareHouseTransfer";
 export { default as YearPlan } from "./Reference/YearPlan/YearPlan";
 export { default as PriceAnalysis } from "./PriceAnaliysis/PriceAnalysis";
-export { default as CreatePriceAnalysis } from "./PriceAnaliysis/CreatePriceAnalysis";
+export { default as PriceAnalysisForm } from "./PriceAnaliysis/PriceAnalysisForm/PriceAnalysisForm";
+export { default as PriceAnalysisDetail } from "./PriceAnaliysis/PriceAnalysisDetail";
 export { default as AppealLetter } from "./AppealLetter/AppealLetter";
 export { default as Statistics } from "./EmployeeStatistics/Statistics";
 
 // create order document pages
 export { default as ExternalCreate } from "./CreateDocument/External";
 export { default as InternalCreate } from "./CreateDocument/Internal";
+export { default as NewDocumentProduct } from "./NewDocument/NewDocumentProduct/NewDocumentProduct";
+export { default as ProductsBalanceView } from "./ProductManagement/ProductsBalance/ProductsBalanceView";
+export { default as ProductsIncome } from "./ProductManagement/ProductsIncome/ProductsIncome";
+export { default as ProductIncomeDetailView } from "./ProductManagement/ProductIncomeDetail/ProductIncomeDetailView";
+export { default as ProductOutcomeDetailView } from "./ProductManagement/ProductOutcomeDetail/ProductOutcomeDetailView";  
+export { default as ProductBalanceDetailView } from "./ProductManagement/ProductBalanceDetail/ProductBalanceDetailView";

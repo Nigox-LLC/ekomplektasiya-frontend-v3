@@ -7,7 +7,6 @@ import {
   LettersPage,
   Dashboard,
   UsersManagement,
-  ProductManagement,
   TurnoverReport,
   GoodsBalanceReport,
   ReportTableOne,
@@ -21,11 +20,17 @@ import {
   AppealLetter,
   Statistics,
   PriceAnalysis,
-  CreatePriceAnalysis,
+  PriceAnalysisForm,
+  PriceAnalysisDetail,
+  NewDocumentProduct,
+  ProductsBalanceView,
+  ProductsIncome,
+  ProductBalanceDetailView,
+  ProductOutcomeDetailView,
+  ProductIncomeDetailView,
   InternalCreate,
   ExternalCreate,
 } from "@/pages";
-import NewDocumentProduct from "./pages/NewDocument/NewDocumentProduct/NewDocumentProduct";
 import { ToastContainer } from "react-toastify";
 
 const App: React.FC = () => {
@@ -47,7 +52,8 @@ const App: React.FC = () => {
           element: <Outlet />,
           children: [
             { index: true, element: <PriceAnalysis /> },
-            { path: "create", element: <CreatePriceAnalysis /> },
+            { path: "create", element: <PriceAnalysisForm /> },
+            { path: ":id", element: <PriceAnalysisDetail /> },
           ],
         },
         {
@@ -83,10 +89,6 @@ const App: React.FC = () => {
           element: <UsersManagement />,
         },
         {
-          path: "product-management",
-          element: <ProductManagement />,
-        },
-        {
           path: "reports",
           element: <Outlet />,
           children: [
@@ -109,6 +111,89 @@ const App: React.FC = () => {
             {
               path: "reports-table3",
               element: <ReportTableOne />,
+            },
+          ],
+        },
+        {
+          path: "management",
+          element: <Outlet />,
+          children: [
+            // {
+            //   path: "managemen-products",
+            //   element: <ProductsBalanceView />,
+            // },
+            {
+              path: "products-balance",
+              element: (
+                <ProductsBalanceView
+                  title="Maxsulotlar qoldig'i"
+                  reportTitle="Jami maxsulotlar qoldig'i"
+                />
+              ),
+            },
+            {
+              path: "products-balance-detail/:id",
+              element: <ProductBalanceDetailView />,
+            },
+            {
+              path: "products-income",
+              element: <ProductsIncome  />,
+            },
+            {
+              path: "products-income-detail/:id",
+              element: <ProductIncomeDetailView />,
+            },
+            {
+              path: "products-outcome",
+              element: (
+                <ProductsBalanceView
+                  title="Maxsulotlar chiqimi"
+                  reportTitle="Jami chiqim hujjatlari ichidagi maxsulotlar"
+                />
+              ),
+            },
+            {
+              path: "products-outcome-detail/:id",
+              element: <ProductOutcomeDetailView />,
+            },
+            {
+              path: "products-return",
+              element: (
+                <ProductsBalanceView
+                  title="Maxsulotlarni qaytarish"
+                  reportTitle="Jami qaytarish hujjatlari ichidagi maxsulotlar"
+                />
+              ),
+            },
+            {
+              path: "products-return-detail/:id",
+              element: <ProductBalanceDetailView />, // yoki maxsus ReturnDetailView
+            },
+            {
+              path: "products-warehouse-transfer",
+              element: (
+                <ProductsBalanceView
+                  title="Ombordan omborga o'tkazish"
+                  reportTitle="Jami o'tkazish hujjatlari ichidagi maxsulotlar"
+                />
+              ),
+            },
+            {
+              path: "products-warehouse-transfer-detail/:id",
+              element: <ProductBalanceDetailView />, // yoki maxsus TransferDetailView
+            },
+            {
+              path: "products-balance-correction",
+              element: (
+                <ProductsBalanceView
+                  title="Qoldiqni to'g'irlash"
+                  reportTitle="Jami to'g'irlash hujjatlari ichidagi maxsulotlar"
+                />
+              ),
+            },
+            {
+              path: "products-balance-correction-detail/:id",
+              element: <ProductBalanceDetailView />, // yoki maxsus CorrectionDetailView
             },
           ],
         },
