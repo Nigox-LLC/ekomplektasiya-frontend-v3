@@ -16,6 +16,7 @@ import {
   GitBranch,
   Globe,
   X,
+  Warehouse,
 } from "lucide-react";
 import RelatedDocumentModal from "./RelatedDocumentModal";
 import { ExecutiveAction, type IjroStep } from "./ExecutiveAction";
@@ -26,12 +27,15 @@ import { SearchFilterPanel } from "./SearchFilterPanel";
 import SigningModal from "./SigningModal";
 import { SendDocumentModal } from "./SendDocumentModal";
 
-import { Badge, Button, Card, Input } from "antd";
+import { Badge, Button, Card, Input, InputNumber, Modal } from "antd";
 import { axiosAPI } from "@/service/axiosAPI";
 import SendModal from "@/pages/CreateDocument/components/SendModal";
 import PostedProductModal from "./PostedProductModal/PostedProductModal";
+import ProductFieldModal from "@/pages/CreateDocument/components/ProductsSection/ProductFieldModal";
 import { toast } from "react-toastify";
 import { useAppSelector } from "@/store/hooks/hooks";
+import FilePreviewModal from "@/components/FilePreviewModal/FilePreviewModal";
+import { FilePreviewer } from "@/components";
 
 interface Document {
   id: number;
@@ -65,8 +69,10 @@ interface Product {
   yearPlan: any;
   name: string;
   model: string;
-  size: string;
-  unit: string;
+  product_type?: IDName | null;
+  product_model?: IDName | null;
+  size: IDName | string;
+  unit: IDName | string;
   quantity: number;
   note: string;
   posted_website?: PostedWebsiteData | null;
@@ -85,6 +91,8 @@ interface Participant {
   name: string;
   position: string;
   department: string;
+  purpose: string;
+  employee_name: string;
 }
 
 interface OrderData {
@@ -146,6 +154,20 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
   const [showSearchFilter, setShowSearchFilter] = useState(false);
   const [showSigningModal, setShowSigningModal] = useState(false);
   const [showSendModal, setShowSendModal] = useState(false);
+  const [showCheckedWarehouseModal, setShowCheckedWarehouseModal] =
+    useState(false);
+  const typeDropdownRef = useRef<{ [key: number]: HTMLDivElement | null }>({});
+
+  const [productFieldModalOpen, setProductFieldModalOpen] = useState<{
+    type:
+      | "product/type"
+      | "measurement/size"
+      | "measurement/unit"
+      | "product/model"
+      | null;
+    index: number;
+  }>({ type: null, index: -1 });
+  const [selectedFileUrl, setSelectedFileUrl] = useState<string | null>(null);
 
   // Har bir xat uchun alohida ijro qadamlari - xat ID bo'yicha
   const [ijroSteps, setIjroSteps] = useState<Record<number, IjroStep[]>>({});
@@ -161,6 +183,13 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
   // Order data from API
   const [orderData, setOrderData] = useState<OrderData | null>(null);
+  const [cancelDesc, setCancelDesc] = useState("");
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+
+  // Cancel products state - tracks which products to cancel and quantities
+  const [cancelProducts, setCancelProducts] = useState<
+    Array<{ id: number; is_cancel: boolean; cancel_quantity: number }>
+  >([]);
 
   const { currentUserInfo } = useAppSelector((state) => state.info);
 
@@ -176,11 +205,29 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
     fileInputRef.current?.click();
   };
 
+  const handleAttachFile = async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await axiosAPI.post(
+        `document/orders/${orderData?.id}/add-attachment/`,
+        formData,
+      );
+
+      if (response.status === 200) {
+        toast.success("Fayl muvaffaqiyatli yuklandi");
+        fetchOrderData(); // Yangi fayl qo'shilgandan so'ng order data ni yangilash
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      console.log("Selected files:", files);
-      // Bu yerda fayllarni yuklash logikasi
+      handleAttachFile(files[0]);
     }
   };
 
@@ -210,7 +257,6 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       );
 
       if (response.status === 200) {
-        console.log("ORDER DATA:", response.data);
         setOrderData(response.data); // 🔥 faqat shuni qoldiring
       }
     } catch (error) {
@@ -223,6 +269,13 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       fetchOrderData();
     }
   }, [documentProp?.id]);
+
+  const getParticipantPurpose = (participant: Participant) => {
+    if (participant.purpose === "application_letter") return "Murajaat uchun";
+    else if (participant.purpose === "executing") return "Ijro uchun";
+    else if (participant.purpose === "in_approval") return "Kelishish uchun";
+    else if (participant.purpose === "in_signing") return "Imzolash uchun";
+  };
 
   // Format file size
   const formatFileSize = (bytes: number) => {
@@ -251,6 +304,22 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
     return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
   };
 
+  const isIdName = (value: unknown): value is IDName => {
+    return !!value && typeof value === "object" && "id" in value;
+  };
+
+  const getFieldLabel = (value: IDName | string | null | undefined) => {
+    if (!value) return "";
+    return typeof value === "string" ? value : value.name;
+  };
+
+  const getModelLabel = (product: Product) => {
+    if (isIdName(product.product_model) && product.product_model.id) {
+      return product.product_model.name;
+    }
+    return product.model || "";
+  };
+
   // handle update orderdata products input onchange
   const handleInputOnchange = (index: number, field: string, value: any) => {
     const updatedGoods = [...orderData!.products];
@@ -260,6 +329,93 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       ...prev!,
       products: updatedGoods,
     }));
+  };
+
+  const handleTypeDropdownToggle = (itemId: number) => {
+    const newState = showTypeDropdown === itemId ? null : itemId;
+    setShowTypeDropdown(newState);
+
+    if (newState !== null) {
+      setTimeout(() => {
+        const dropdownElement = typeDropdownRef.current[itemId];
+        if (dropdownElement) {
+          dropdownElement.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "nearest",
+          });
+        }
+      }, 50);
+    }
+  };
+
+  const handleQuantityFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value === "0") {
+      e.target.select();
+    }
+  };
+
+  // cancel order document
+  const handleCancelOrder = async () => {
+    try {
+      const payload = {
+        description: cancelDesc,
+        products: cancelProducts.filter((p) => p.is_cancel),
+      };
+
+      const response = await axiosAPI.post(
+        `document/orders/${orderData?.id}/cancel/`,
+        payload,
+      );
+
+      if (response.status === 200) {
+        toast.success("Buyurtma muvaffaqiyatli bekor qilindi");
+        fetchOrderData(); // Refresh order data
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Buyurtmani bekor qilishda xatolik yuz berdi");
+    }
+  };
+
+  // Initialize cancel products when modal opens
+  const initializeCancelProducts = () => {
+    if (orderData?.products) {
+      const initialProducts = orderData.products.map((p) => ({
+        id: p.id,
+        is_cancel: false,
+        cancel_quantity: p.quantity,
+      }));
+      setCancelProducts(initialProducts);
+    }
+  };
+
+  // Toggle product cancellation
+  const toggleCancelProduct = (productId: number) => {
+    setCancelProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId ? { ...p, is_cancel: !p.is_cancel } : p,
+      ),
+    );
+  };
+
+  // Update cancel quantity
+  const updateCancelQuantity = (productId: number, quantity: number) => {
+    setCancelProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId ? { ...p, cancel_quantity: quantity } : p,
+      ),
+    );
+  };
+
+  // Select all products for cancellation
+  const selectAllProducts = () => {
+    setCancelProducts((prev) => prev.map((p) => ({ ...p, is_cancel: true })));
+  };
+
+  // Deselect all products
+  const deselectAllProducts = () => {
+    setCancelProducts((prev) => prev.map((p) => ({ ...p, is_cancel: false })));
   };
 
   return (
@@ -343,6 +499,10 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               type="primary"
               size="medium"
               color="red"
+              onClick={() => {
+                setShowCancelConfirm(true);
+                initializeCancelProducts();
+              }}
             >
               <X className="size-4" />
               Bekor qilish
@@ -351,8 +511,16 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         </div>
       </div>
 
+      {/* Warnig section: Checking warehouse */}
+      <div>
+        <h2 className="text-lg italic text-red-400">
+          Tovarlar sotuvga chiqarishdan avval uni omborlar qoldiqlaridan
+          tekshirish talab etiladi
+        </h2>
+      </div>
+
       {/* Buyurtma uchun kelgan tovarlar ro'yxati - Collapse Card */}
-      <Card className="overflow-hidden">
+      <div className="shadow-md rounded-md border border-gray-200">
         <button
           onClick={() => setShowGoodsTable(!showGoodsTable)}
           className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
@@ -376,8 +544,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         </button>
 
         {showGoodsTable && (
-          <div className="border-t border-gray-200 p-6 animate-in slide-in-from-top-2 du  ration-200">
-            <div className="overflow-x-auto">
+          <div className="border-t border-gray-200 animate-in slide-in-from-top-2 duration-200">
+            <div className="max-h-[600px] overflow-auto p-4">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-gray-100">
@@ -392,6 +560,9 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                     </th>
                     <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
                       Tovar nomi
+                    </th>
+                    <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                      Tovar turi
                     </th>
                     <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
                       Modeli
@@ -430,11 +601,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                       <td className="border border-gray-300 px-4 py-3 relative">
                         <div className="relative inline-block">
                           <button
-                            onClick={() =>
-                              setShowTypeDropdown(
-                                showTypeDropdown === index ? null : index,
-                              )
-                            }
+                            type="button"
+                            onClick={() => handleTypeDropdownToggle(index)}
                             className="inline-flex items-center gap-2"
                           >
                             <Badge
@@ -450,9 +618,15 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                           </button>
 
                           {showTypeDropdown === index && (
-                            <div className="absolute left-0 top-full mt-1 w-40 bg-white border border-gray-300 rounded-lg shadow-lg z-20">
+                            <div
+                              ref={(el) => {
+                                typeDropdownRef.current[index] = el;
+                              }}
+                              className="absolute left-0 top-full mt-1 w-40 bg-white border border-gray-300 rounded-lg shadow-lg z-50"
+                            >
                               <button
-                                onMouseDown={() => {
+                                type="button"
+                                onClick={() => {
                                   handleInputOnchange(index, "type", "Tovar");
                                   setShowTypeDropdown(null);
                                 }}
@@ -462,7 +636,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                                 Tovar
                               </button>
                               <button
-                                onMouseDown={() => {
+                                type="button"
+                                onClick={() => {
                                   handleInputOnchange(index, "type", "Xizmat");
                                   setShowTypeDropdown(null);
                                 }}
@@ -503,62 +678,97 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                         <Input
                           type="text"
                           value={item.name}
-                          onChange={(e) => {
-                            handleInputOnchange(index, "name", e.target.value);
-                          }}
+                          onChange={(e) =>
+                            handleInputOnchange(index, "name", e.target.value)
+                          }
                           className="text-sm font-medium border-0 focus:ring-1 focus:ring-blue-500"
+                          placeholder="Nomi"
                         />
                       </td>
 
-                      {/* Modeli - editable */}
+                      {/* Tovar turi - selectable */}
                       <td className="border border-gray-300 px-2 py-2">
-                        <Input
-                          type="text"
-                          value={item.model}
-                          onChange={(e) => {
-                            handleInputOnchange(index, "model", e.target.value);
+                        <Button
+                          className="w-full"
+                          onClick={() => {
+                            setProductFieldModalOpen({
+                              type: "product/type",
+                              index,
+                            });
                           }}
-                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500"
-                        />
+                        >
+                          {isIdName(item.product_type) && item.product_type.id
+                            ? item.product_type.name
+                            : "Turi tanlang"}
+                        </Button>
                       </td>
 
-                      {/* O'lchami - editable */}
+                      {/* Modeli - selectable */}
                       <td className="border border-gray-300 px-2 py-2">
-                        <Input
-                          type="text"
-                          value={item.size}
-                          onChange={(e) => {
-                            handleInputOnchange(index, "size", e.target.value);
+                        <Button
+                          className="w-full"
+                          onClick={() => {
+                            setProductFieldModalOpen({
+                              type: "product/model",
+                              index,
+                            });
                           }}
-                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500"
-                        />
+                          disabled={
+                            !isIdName(item.product_type) ||
+                            !item.product_type?.id
+                          }
+                        >
+                          {getModelLabel(item) || "Tanlang"}
+                        </Button>
                       </td>
 
-                      {/* O'lchov birligi - editable */}
+                      {/* O'lchami - selectable */}
                       <td className="border border-gray-300 px-2 py-2">
-                        <Input
-                          type="text"
-                          value={item.unit}
-                          onChange={(e) => {
-                            handleInputOnchange(index, "unit", e.target.value);
+                        <Button
+                          className="w-full"
+                          onClick={() => {
+                            setProductFieldModalOpen({
+                              type: "measurement/size",
+                              index,
+                            });
                           }}
-                          className="text-sm text-center border-0 focus:ring-1 focus:ring-blue-500"
-                        />
+                          disabled={
+                            !isIdName(item.product_model) ||
+                            !item.product_model?.id
+                          }
+                        >
+                          {getFieldLabel(item.size) || "O'lcham tanlang"}
+                        </Button>
+                      </td>
+
+                      {/* O'lchov birligi - selectable */}
+                      <td className="border border-gray-300 px-2 py-2">
+                        <Button
+                          className="w-full"
+                          onClick={() => {
+                            setProductFieldModalOpen({
+                              type: "measurement/unit",
+                              index,
+                            });
+                          }}
+                        >
+                          {getFieldLabel(item.unit) ||
+                            "O'lchov birligini tanlang"}
+                        </Button>
                       </td>
 
                       {/* Soni - editable */}
                       <td className="border border-gray-300 px-2 py-2">
-                        <Input
-                          type="number"
+                        <InputNumber
                           value={item.quantity}
-                          onChange={(e) => {
-                            handleInputOnchange(
-                              index,
-                              "quantity",
-                              e.target.value,
-                            );
+                          onChange={(value) => {
+                            if (typeof value === "number") {
+                              handleInputOnchange(index, "quantity", value);
+                            }
                           }}
-                          className="text-sm text-center font-semibold border-0 focus:ring-1 focus:ring-blue-500"
+                          className="text-sm text-center max-w-12 font-semibold border-0 focus:ring-1 focus:ring-blue-500"
+                          min={0}
+                          onFocus={handleQuantityFocus}
                         />
                       </td>
 
@@ -567,10 +777,11 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                         <Input
                           type="text"
                           value={item.note}
-                          onChange={(e) => {
-                            handleInputOnchange(index, "note", e.target.value);
-                          }}
+                          onChange={(e) =>
+                            handleInputOnchange(index, "note", e.target.value)
+                          }
                           className="text-sm italic border-0 focus:ring-1 focus:ring-blue-500"
+                          placeholder="Izoh"
                         />
                       </td>
 
@@ -611,7 +822,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             </div>
 
             {/* Yangi qator qo'shish tugmasi */}
-            <div className="mt-4">
+            <div className="mt-4 flex items-center gap-6 justify-between">
               <Button
                 variant="outlined"
                 className="gap-2"
@@ -623,8 +834,10 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                     yearPlan: null,
                     name: "",
                     model: "",
-                    size: "",
-                    unit: "",
+                    product_type: { id: 0, name: "" },
+                    product_model: { id: 0, name: "" },
+                    size: { id: 0, name: "" },
+                    unit: { id: 0, name: "" },
                     quantity: 0,
                     note: "",
                   };
@@ -638,10 +851,20 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 <Plus className="size-4" />
                 Tovar qo'shish
               </Button>
+
+              <Button
+                variant="filled"
+                className="border! border-blue-500!"
+                type="primary"
+                color="blue"
+                onClick={() => setShowCheckedWarehouseModal(true)}
+              >
+                Qoldiqlarni tekshirish
+              </Button>
             </div>
           </div>
         )}
-      </Card>
+      </div>
 
       {/* Hujjat ma'lumotlari */}
       <div className="bg-white border border-gray-200 rounded-lg">
@@ -699,9 +922,9 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               <label className="text-sm text-gray-500 w-48">Hujjat turi</label>
               <div className="flex-1">
                 <span className="text-base text-gray-900">
-                  {categoryNames[
-                    (orderData?.order_type || documentProp?.category) ?? ""
-                  ] || documentProp?.category}
+                  {orderData?.order_type === "external"
+                    ? "Chiquvchi hujjat"
+                    : "Ichki hujjat"}
                 </span>
               </div>
             </div>
@@ -785,15 +1008,32 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             </div>
 
             {/* Qabul qiluvchilar */}
-            <div className="flex items-center justify-between py-2">
+            <div className="flex items-start justify-between py-2">
               <label className="text-sm text-gray-500 w-48">
                 Qabul qiluvchilar
               </label>
               <div className="flex-1">
-                <Button className="gap-2 bg-green-600 hover:bg-green-700">
-                  <Plus className="size-4" />
-                  Qo'shish
-                </Button>
+                {orderData?.participants.length ? (
+                  <div>
+                    {orderData.participants.map((participant) => (
+                      <div
+                        key={participant.id}
+                        className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-2"
+                      >
+                        <p className="text-sm font-medium text-gray-900">
+                          {participant.employee_name}
+                        </p>
+                        <p className="text-sm text-emerald-500">
+                          {getParticipantPurpose(participant)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center text-gray-500">
+                    Qabul qiluvchi yo'q
+                  </div>
+                )}
               </div>
             </div>
 
@@ -804,7 +1044,9 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
       {/* Ilovalar bo'limi */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-base font-semibold text-gray-900 mb-4">Ilovalar</h3>
+        <h3 className="text-base font-semibold text-gray-900 mb-4">
+          Biriktirilgan hujjatlar
+        </h3>
 
         {/* Fayllar grid */}
         {orderData &&
@@ -849,7 +1091,27 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                   <div className="flex items-center justify-end gap-3">
                     <button
                       className="text-gray-400 hover:text-gray-600"
-                      onClick={() => window.open(file.file, "_blank")}
+                      onClick={() => {
+                        async function fetchAndOpenFile() {
+                          try {
+                            const response = await axiosAPI.get(
+                              `document/orders/attachment/${file.id}/`,
+                            );
+                            if (response.status === 200)
+                              return response.data.file_url;
+                          } catch (error) {
+                            console.log(error);
+                          }
+                        }
+
+                        fetchAndOpenFile().then((url) => {
+                          if (url) setSelectedFileUrl(url);
+                          else
+                            alert(
+                              "Faylni ochib bo'lmadi. Iltimos, qayta urinib ko'ring.",
+                            );
+                        });
+                      }}
                     >
                       <Eye className="size-5" />
                     </button>
@@ -888,21 +1150,12 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             <Plus className="size-4" />
             Ilova qo'shish
           </Button>
-          <Button
-            variant="outlined"
-            className="gap-2"
-            onClick={() => setShowRelatedDocModal(true)}
-          >
-            <Plus className="size-4" />
-            Aloqador hujjat qo'shish
-          </Button>
         </div>
         <input
           type="file"
           ref={fileInputRef}
           className="hidden"
           onChange={handleFileChange}
-          multiple
         />
       </div>
 
@@ -940,6 +1193,30 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         }}
       />
 
+      {productFieldModalOpen.type && (
+        <ProductFieldModal
+          productFieldModal={productFieldModalOpen}
+          onCancel={() => setProductFieldModalOpen({ type: null, index: -1 })}
+          onSelect={(value: IDName) => {
+            if (
+              productFieldModalOpen.type &&
+              productFieldModalOpen.index !== -1
+            ) {
+              const fieldMap = {
+                "product/type": "product_type",
+                "product/model": "product_model",
+                "measurement/size": "size",
+                "measurement/unit": "unit",
+              } as const;
+              const field = fieldMap[productFieldModalOpen.type];
+              handleInputOnchange(productFieldModalOpen.index, field, value);
+              setProductFieldModalOpen({ type: null, index: -1 });
+            }
+          }}
+          products={orderData?.products || []}
+        />
+      )}
+
       {/* Executive Action Modal */}
       <ExecutiveAction
         isOpen={showExecutiveActionModal}
@@ -968,7 +1245,6 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         onSave={(newGoods) => {
           console.log("Added new goods:", newGoods);
           // Bu yerda yangi tovarlarni jadvalga qo'shish logikasi
-          setMockGoods([...mockGoods, newGoods]);
           setShowAddGoodsModal(false);
         }}
       />
@@ -1002,10 +1278,6 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         isOpen={showSigningModal && !!orderData}
         onClose={() => setShowSigningModal(false)}
         documentId={orderData?.id.toString() || ""}
-        onSuccess={() => {
-          toast.success("Hujjat muvaffaqiyatli imzolandi!");
-          setShowSigningModal(false);
-        }}
         onCancel={() => {
           toast.info("Hujjat imzolash bekor qilindi");
           setShowSigningModal(false);
@@ -1019,6 +1291,530 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
           setIsSendModalOpen={setShowSendModal}
         />
       )}
+
+      {showCheckedWarehouseModal && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-auto max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Warehouse size={24} color="#3b82f6" strokeWidth={2} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Ombor qoldiqlarini tekshirish
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    Buyurtmadagi tovarlar mavjudligi
+                  </p>
+                </div>
+              </div>
+              <button
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                onClick={() => setShowCheckedWarehouseModal(false)}
+              >
+                <X size={24} className="text-gray-500" />
+              </button>
+            </div>
+
+            {/* Body - Products List */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+              {/* Summary Cards */}
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-blue-500 rounded-lg">
+                      <ShoppingCart size={16} className="text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-blue-600 font-medium">
+                        Jami tovarlar
+                      </p>
+                      <p className="text-2xl font-bold text-blue-700">
+                        {orderData?.products.length || 0}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-red-500 rounded-lg">
+                      <X size={16} className="text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-red-600 font-medium">
+                        Mavjud emas
+                      </p>
+                      <p className="text-2xl font-bold text-red-700">
+                        {orderData?.products.filter((p) => p.quantity > 0)
+                          .length || 0}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-green-500 rounded-lg">
+                      <Warehouse size={16} className="text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-green-600 font-medium">
+                        Mavjud
+                      </p>
+                      <p className="text-2xl font-bold text-green-700">0</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Warning Message */}
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded">
+                <div className="flex items-start gap-3">
+                  <div className="shrink-0 mt-0.5">
+                    <svg
+                      className="h-5 w-5 text-yellow-400"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-yellow-800">
+                      Diqqat!
+                    </h4>
+                    <p className="text-sm text-yellow-700 mt-1">
+                      Omborlarda buyurtmada ko'rsatilgan tovarlardan qoldiqlar
+                      yetarli emas yoki mavjud emas. Iltimos, quyidagi ro'yxatni
+                      ko'rib chiqing.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Products Table */}
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-200">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        №
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Tovar nomi
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Model
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Kerak
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Mavjud
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {orderData?.products.map((product, index) => {
+                      // Simulate warehouse stock (in real app, this would come from API)
+                      const availableStock = 0; // Mock data
+                      const isAvailable = availableStock >= product.quantity;
+
+                      return (
+                        <tr
+                          key={product.id}
+                          className={`hover:bg-gray-50 transition-colors ${
+                            !isAvailable ? "bg-red-50/30" : ""
+                          }`}
+                        >
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {index + 1}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="text-sm font-medium text-gray-900">
+                              {product.name || "-"}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {getFieldLabel(product.size) || "-"}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-700">
+                            {getModelLabel(product) || "-"}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
+                              {product.quantity} {getFieldLabel(product.unit)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-semibold ${
+                                isAvailable
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {availableStock} {getFieldLabel(product.unit)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            {isAvailable ? (
+                              <Badge className="bg-green-100 text-green-700 border-green-300">
+                                <span className="flex items-center gap-1">
+                                  <span className="size-1.5 bg-green-500 rounded-full"></span>
+                                  Mavjud
+                                </span>
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-red-100 text-red-700 border-red-300">
+                                <span className="flex items-center gap-1">
+                                  <span className="size-1.5 bg-red-500 rounded-full"></span>
+                                  Mavjud emas
+                                </span>
+                              </Badge>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Additional Info */}
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="text-sm font-semibold text-blue-900 mb-2">
+                  📋 Tavsiyalar:
+                </h4>
+                <ul className="text-sm text-blue-800 space-y-1.5">
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-600 mt-0.5">•</span>
+                    <span>Boshqa omborlardan mavjud tovarlarni tekshiring</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-600 mt-0.5">•</span>
+                    <span>
+                      Yetkazib beruvchilar bilan bog'laning va yangi buyurtma
+                      bering
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-600 mt-0.5">•</span>
+                    <span>
+                      Buyurtmadagi tovarlar sonini mavjud qoldiqlarga qarab
+                      o'zgartiring
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between gap-3 p-6 border-t border-gray-200 bg-gray-50">
+              <Button
+                variant="outlined"
+                size="middle"
+                onClick={() => setShowCheckedWarehouseModal(false)}
+                className="gap-2"
+              >
+                <ArrowLeft className="size-4" />
+                Yopish
+              </Button>
+              <div className="flex gap-3">
+                <Button
+                  variant="outlined"
+                  size="middle"
+                  color="blue"
+                  className="gap-2"
+                >
+                  <Download className="size-4" />
+                  Hisobotni yuklash
+                </Button>
+                <Button
+                  variant="filled"
+                  type="primary"
+                  size="middle"
+                  onClick={() => {
+                    toast.info("Boshqa omborlarni tekshirilmoqda...");
+                    // Add logic to check other warehouses
+                  }}
+                  className="gap-2"
+                >
+                  <Warehouse className="size-4" />
+                  Boshqa omborlarni tekshirish
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCancelConfirm && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl mx-auto max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-orange-50">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-100 rounded-lg">
+                  <X size={24} color="#ef4444" strokeWidth={2} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Buyurtmani bekor qilish
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    Bekor qilish sababini kiriting
+                  </p>
+                </div>
+              </div>
+              <button
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                onClick={() => {
+                  setShowCancelConfirm(false);
+                  setCancelDesc("");
+                  setCancelProducts([]);
+                }}
+              >
+                <X size={20} className="text-gray-500" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Bekor qilish sababi <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={cancelDesc}
+                  onChange={(e) => setCancelDesc(e.target.value)}
+                  placeholder="Buyurtmani bekor qilish sababini batafsil yozing..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors resize-none"
+                  rows={4}
+                />
+                {cancelDesc.trim().length === 0 && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Sabab ko'rsatish majburiy
+                  </p>
+                )}
+              </div>
+
+              {/* Products Selection Table */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Bekor qilinadigan tovarlar (ixtiyoriy)
+                  </label>
+                  <div className="flex gap-2">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={selectAllProducts}
+                    >
+                      Barchasini tanlash
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={deselectAllProducts}
+                    >
+                      Tozalash
+                    </Button>
+                  </div>
+                </div>
+                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-16">
+                          <input
+                            type="checkbox"
+                            checked={cancelProducts.every((p) => p.is_cancel)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                selectAllProducts();
+                              } else {
+                                deselectAllProducts();
+                              }
+                            }}
+                            className="size-4 rounded border-gray-300"
+                          />
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          №
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          Tovar nomi
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          Model
+                        </th>
+                        <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          Jami soni
+                        </th>
+                        <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          Bekor qilinadigan soni
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {orderData?.products.map((product, index) => {
+                        const cancelProduct = cancelProducts.find(
+                          (p) => p.id === product.id,
+                        );
+                        return (
+                          <tr
+                            key={product.id}
+                            className={`hover:bg-gray-50 transition-colors {
+                              cancelProduct?.is_cancel ? "bg-red-50/30" : ""
+                            }`}
+                          >
+                            <td className="px-4 py-3 text-center">
+                              <input
+                                type="checkbox"
+                                checked={cancelProduct?.is_cancel || false}
+                                onChange={() => toggleCancelProduct(product.id)}
+                                className="size-4 rounded border-gray-300"
+                              />
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-600">
+                              {index + 1}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="text-sm font-medium text-gray-900">
+                                {product.name || "-"}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {getFieldLabel(product.size) || "-"}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-700">
+                              {getModelLabel(product) || "-"}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <span className="text-sm font-semibold text-gray-900">
+                                {product.quantity} {getFieldLabel(product.unit)}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <Input
+                                type="number"
+                                min={1}
+                                max={product.quantity}
+                                value={
+                                  cancelProduct?.cancel_quantity ||
+                                  product.quantity
+                                }
+                                onChange={(e) => {
+                                  const value = Math.min(
+                                    Math.max(1, parseInt(e.target.value) || 1),
+                                    product.quantity,
+                                  );
+                                  updateCancelQuantity(product.id, value);
+                                }}
+                                disabled={!cancelProduct?.is_cancel}
+                                className="w-24 text-center"
+                                suffix={getFieldLabel(product.unit)}
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  {cancelProducts.filter((p) => p.is_cancel).length > 0
+                    ? `${cancelProducts.filter((p) => p.is_cancel).length} ta tovar tanlandi`
+                    : "Agar hech qanday tovar tanlamasangiz, butun buyurtma bekor qilinadi"}
+                </p>
+              </div>
+
+              {/* Warning */}
+              <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded">
+                <div className="flex items-start gap-3">
+                  <div className="shrink-0 mt-0.5">
+                    <svg
+                      className="h-5 w-5 text-red-400"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-red-800">
+                      Diqqat!
+                    </h4>
+                    <p className="text-sm text-red-700 mt-1">
+                      Buyurtmani bekor qilganingizdan so'ng, uni qayta tiklash
+                      mumkin emas. Ushbu amal qaytarib bo'lmaydi.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+              <Button
+                variant="outlined"
+                size="middle"
+                onClick={() => {
+                  setShowCancelConfirm(false);
+                  setCancelDesc("");
+                  setCancelProducts([]);
+                }}
+                className="gap-2"
+              >
+                <ArrowLeft className="size-4" />
+                Bekor qilish
+              </Button>
+              <Button
+                variant="filled"
+                type="primary"
+                size="middle"
+                danger
+                disabled={cancelDesc.trim().length === 0}
+                onClick={() => {
+                  if (cancelDesc.trim().length > 0) {
+                    handleCancelOrder();
+                    setShowCancelConfirm(false);
+                    setCancelDesc("");
+                    setCancelProducts([]);
+                  }
+                }}
+                className="gap-2 bg-red-500 hover:bg-red-600 border-red-500"
+              >
+                <X className="size-4" />
+                Ok
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      <Modal
+        open={!!selectedFileUrl}
+        onCancel={() => setSelectedFileUrl(null)}
+        footer={null}
+        width={900}
+        centered
+        bodyStyle={{ padding: 0, height: "65vh" }}
+      >
+        <FilePreviewer file_url={selectedFileUrl!} />
+      </Modal>
     </div>
   );
 };

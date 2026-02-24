@@ -1,5 +1,5 @@
 import { axiosAPI } from "@/service/axiosAPI";
-import { Button, Table } from "antd";
+import { Button, Input, Table } from "antd";
 import React, { useEffect } from "react";
 import type { Product } from "../../External";
 
@@ -33,26 +33,29 @@ const ProductFieldModal: React.FC<IProps> = ({
   const [productFieldTypes, setProductFieldTypes] = React.useState<
     { id: number; name: string }[]
   >([]);
-  const [selectedValue, setSelectedValue] = React.useState<IDName | null>(() => {
-    const fieldKey: ProductFieldKey | undefined =
-      productFieldModal.type === "product/type"
-        ? "product_type"
-        : productFieldModal.type === "measurement/size"
-          ? "measurement_size"
-          : productFieldModal.type === "measurement/unit"
-            ? "measurement_unit"
-            : productFieldModal.type === "product/model"
-              ? "product_model"
-              : undefined;
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [selectedValue, setSelectedValue] = React.useState<IDName | null>(
+    () => {
+      const fieldKey: ProductFieldKey | undefined =
+        productFieldModal.type === "product/type"
+          ? "product_type"
+          : productFieldModal.type === "measurement/size"
+            ? "measurement_size"
+            : productFieldModal.type === "measurement/unit"
+              ? "measurement_unit"
+              : productFieldModal.type === "product/model"
+                ? "product_model"
+                : undefined;
 
-    if (!fieldKey) return null;
+      if (!fieldKey) return null;
 
-    const currentProduct = products[productFieldModal.index] as
-      | Partial<Record<ProductFieldKey, IDName | null>>
-      | undefined;
+      const currentProduct = products[productFieldModal.index] as
+        | Partial<Record<ProductFieldKey, IDName | null>>
+        | undefined;
 
-    return currentProduct?.[fieldKey] ?? null;
-  });
+      return currentProduct?.[fieldKey] ?? null;
+    },
+  );
 
   const columns = [
     {
@@ -101,15 +104,49 @@ const ProductFieldModal: React.FC<IProps> = ({
     }
   }, [productFieldModal.type]);
 
+  const filteredItems = React.useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return productFieldTypes;
+    return productFieldTypes.filter(
+      (item) =>
+        item.name.toLowerCase().includes(query) ||
+        String(item.id).includes(query),
+    );
+  }, [productFieldTypes, searchQuery]);
+
   return (
     <>
       <div className="fixed inset-0 bg-black/20 bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 w-full max-w-md">
-          <h2 className="text-xl font-semibold mb-4">Maydonni tanlang</h2>
-          {/* Modal content goes here */}
-          <Table dataSource={productFieldTypes} columns={columns} rowKey="id" />
+          <h2 className="text-xl font-semibold mb-4">
+            Kerakli{" "}
+            {productFieldModal.type === "product/type"
+              ? "tovar turi"
+              : productFieldModal.type === "measurement/size"
+                ? "o'lcham"
+                : productFieldModal.type === "measurement/unit"
+                  ? "o'lchov birligi"
+                  : productFieldModal.type === "product/model"
+                    ? "model"
+                    : ""}ni tanlang
+          </h2>
+          <div className="mb-3">
+            <Input
+              placeholder="Qidirish..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              allowClear
+            />
+          </div>
+          <Table
+            dataSource={filteredItems}
+            columns={columns}
+            rowKey="id"
+            pagination={false}
+            scroll={{ y: 320 }}
+          />
 
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end mt-4">
             <Button type="primary" onClick={() => onSelect(selectedValue)}>
               Tanlash
             </Button>
