@@ -3,28 +3,39 @@ import { renderAsync } from "docx-preview";
 import * as XLSX from "xlsx";
 import { inferMimeFromExt } from "@/utils/file_preview";
 
-type Props = { file: File; className?: string; style?: React.CSSProperties };
+type Props = {
+  file?: File;
+  file_url?: string;
+  className?: string;
+  style?: React.CSSProperties;
+};
 
-export default function FilePreviewer({ file, className, style }: Props) {
+export default function FilePreviewer({ file, file_url, className, style }: Props) {
   const [url, setUrl] = useState<string>();
   const [htmlContent, setHtmlContent] = useState<string>("");
 
-  const ext = useMemo(
-    () => (file?.name.split(".").pop() || "").toLowerCase(),
-    [file?.name]
-  );
+  const ext = useMemo(() => {
+    const name = file?.name || file_url || "";
+    return (name.split(".").pop() || "").toLowerCase();
+  }, [file?.name, file_url]);
 
   /* ===== Blob URL lifecycle ===== */
   useEffect(() => {
-    const u = URL.createObjectURL(file);
-    setUrl(u);
-    return () => URL.revokeObjectURL(u);
-  }, [file]);
+    if (file) {
+      const u = URL.createObjectURL(file);
+      setUrl(u);
+      return () => URL.revokeObjectURL(u);
+    }
+    if (file_url) {
+      setUrl(file_url);
+    }
+    return undefined;
+  }, [file, file_url]);
 
   /* ===== DOCX / DOCM ===== */
   const wordRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!["docx", "docm"].includes(ext) || !wordRef.current) return;
+    if (!file || !["docx", "docm"].includes(ext) || !wordRef.current) return;
 
     wordRef.current.innerHTML = "";
     renderAsync(file, wordRef.current, undefined, {
@@ -46,7 +57,7 @@ export default function FilePreviewer({ file, className, style }: Props) {
   /* ===== XLS / XLSX ===== */
   const xlsRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!xlsRef.current || !["xlsx", "xls"].includes(ext)) return;
+    if (!file || !xlsRef.current || !["xlsx", "xls"].includes(ext)) return;
 
     xlsRef.current.innerHTML = "";
     const reader = new FileReader();
@@ -78,7 +89,7 @@ export default function FilePreviewer({ file, className, style }: Props) {
   /* ===== TEXT (txt, csv, json, md, log) ===== */
   const textRef = useRef<HTMLPreElement>(null);
   useEffect(() => {
-    if (!textRef.current) return;
+    if (!file || !textRef.current) return;
     if (!["txt", "csv", "json", "md", "log"].includes(ext)) return;
 
     const reader = new FileReader();
@@ -90,7 +101,7 @@ export default function FilePreviewer({ file, className, style }: Props) {
 
   /* ===== HTML ===== */
   useEffect(() => {
-    if (!["html", "htm"].includes(ext)) return;
+    if (!file || !["html", "htm"].includes(ext)) return;
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -105,7 +116,7 @@ export default function FilePreviewer({ file, className, style }: Props) {
   if (ext === "pdf" && url) {
     return (
       <iframe
-        title={file.name}
+        title={file?.name || file_url || "PDF"}
         src={url}
         className={className}
         style={{ width: "100%", height: "100%", border: 0, ...style }}
@@ -119,7 +130,7 @@ export default function FilePreviewer({ file, className, style }: Props) {
       <div className={className} style={{ overflow: "auto", ...style }}>
         <img
           src={url}
-          alt={file.name}
+          alt={file?.name || file_url || "image"}
           style={{ maxWidth: "100%", margin: "0 auto", display: "block" }}
         />
       </div>
@@ -130,8 +141,9 @@ export default function FilePreviewer({ file, className, style }: Props) {
   if (["html", "htm"].includes(ext)) {
     return (
       <iframe
-        title={file.name}
-        srcDoc={htmlContent}
+        title={file?.name || file_url || "HTML"}
+        srcDoc={file ? htmlContent : undefined}
+        src={!file ? url : undefined}
         sandbox="allow-same-origin allow-forms allow-popups allow-modals"
         className={className}
         style={{
@@ -211,9 +223,17 @@ export default function FilePreviewer({ file, className, style }: Props) {
     );
   }
 
+  if (!file && !url) {
+    return (
+      <div className={className} style={{ padding: 16, ...style }}>
+        <p>Fayl topilmadi.</p>
+      </div>
+    );
+  }
+
   /* Fallback */
   const mime =
-    file?.type || inferMimeFromExt(file?.name) || "application/octet-stream";
+    file?.type || inferMimeFromExt(file?.name || file_url) || "application/octet-stream";
 
   return (
     <div className={className} style={{ padding: 16, ...style }}>
