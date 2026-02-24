@@ -20,18 +20,18 @@ interface DashboardViewProps {
 
 // Ma'lumotlar
 const monthlyData = [
-  { name: "Yan", bajarilgan: 240, bajarilmagan: 45, kechiktirilgan: 15 },
-  { name: "Fev", bajarilgan: 310, bajarilmagan: 38, kechiktirilgan: 12 },
-  { name: "Mar", bajarilgan: 420, bajarilmagan: 53, kechiktirilgan: 18 },
-  { name: "Apr", bajarilgan: 380, bajarilmagan: 42, kechiktirilgan: 14 },
-  { name: "May", bajarilgan: 450, bajarilmagan: 35, kechiktirilgan: 10 },
-  { name: "Iyun", bajarilgan: 520, bajarilmagan: 28, kechiktirilgan: 8 },
+  { name: "Yan", bajarilgan: 0, bajarilmagan: 0, kechiktirilgan: 0 },
+  { name: "Fev", bajarilgan: 0, bajarilmagan: 0, kechiktirilgan: 0 },
+  { name: "Mar", bajarilgan: 0, bajarilmagan: 0, kechiktirilgan: 0 },
+  { name: "Apr", bajarilgan: 0, bajarilmagan: 0, kechiktirilgan: 0 },
+  { name: "May", bajarilgan: 0, bajarilmagan: 0, kechiktirilgan: 0 },
+  { name: "Iyun", bajarilgan: 0, bajarilmagan: 0, kechiktirilgan: 0 },
 ];
 
 const pieData = [
-  { name: "Bajarilgan", value: 537, color: "#10B981", percentage: "87.2%" },
-  { name: "Bajarilmagan", value: 53, color: "#F97316", percentage: "8.6%" },
-  { name: "Kechiktirilgan", value: 26, color: "#EF4444", percentage: "4.2%" },
+  { name: "Bajarilgan", value: 0, color: "#10B981", percentage: "87.2%" },
+  { name: "Bajarilmagan", value: 0, color: "#F97316", percentage: "8.6%" },
+  { name: "Kechiktirilgan", value: 0, color: "#EF4444", percentage: "4.2%" },
 ];
 
 const StatCard = ({
@@ -77,7 +77,7 @@ const GenStatistics: React.FC<DashboardViewProps> = ({ hasAccess }) => {
           <StatCard
             icon={Mail}
             title="Jami xatlar"
-            value="616"
+            value="0"
             colorClass="text-[#1e3a8a]"
             bgColorClass="bg-[#eff6ff]"
             borderColorClass="border-[#dbeafe]"
@@ -86,7 +86,7 @@ const GenStatistics: React.FC<DashboardViewProps> = ({ hasAccess }) => {
           <StatCard
             icon={CheckCircle}
             title="Bajarilgan"
-            value="537"
+            value="0"
             colorClass="text-[#064e3b]"
             bgColorClass="bg-[#ecfdf5]"
             borderColorClass="border-[#d1fae5]"
@@ -95,7 +95,7 @@ const GenStatistics: React.FC<DashboardViewProps> = ({ hasAccess }) => {
           <StatCard
             icon={Clock}
             title="Bajarilmagan"
-            value="53"
+            value="0"
             colorClass="text-[#7c2d12]"
             bgColorClass="bg-[#fff7ed]"
             borderColorClass="border-[#ffedd5]"
@@ -104,7 +104,7 @@ const GenStatistics: React.FC<DashboardViewProps> = ({ hasAccess }) => {
           <StatCard
             icon={XCircle}
             title="Kechiktirilgan"
-            value="26"
+            value="0"
             colorClass="text-[#7f1d1d]"
             bgColorClass="bg-[#fef2f2]"
             borderColorClass="border-[#fee2e2]"
