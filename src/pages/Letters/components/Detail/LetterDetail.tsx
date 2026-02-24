@@ -15,6 +15,7 @@ import {
   Pencil,
   GitBranch,
   Globe,
+  X,
 } from "lucide-react";
 import RelatedDocumentModal from "./RelatedDocumentModal";
 import { ExecutiveAction, type IjroStep } from "./ExecutiveAction";
@@ -30,6 +31,7 @@ import { axiosAPI } from "@/service/axiosAPI";
 import SendModal from "@/pages/CreateDocument/components/SendModal";
 import PostedProductModal from "./PostedProductModal/PostedProductModal";
 import { toast } from "react-toastify";
+import { useAppSelector } from "@/store/hooks/hooks";
 
 interface Document {
   id: number;
@@ -54,8 +56,7 @@ type PostedWebsiteData = {
   posted_file_url?: string | null;
   file_pdf?: string | null;
   created_at: string;
-} ;
-
+};
 
 interface Product {
   id: number;
@@ -114,20 +115,19 @@ interface DocumentDetailViewProps {
   onBack?: () => void;
   onClose?: () => void;
   category?:
-  | "execution"
-  | "signing"
-  | "resolution"
-  | "info"
-  | "approval"
-  | "for-signing"
-  | "backup";
+    | "execution"
+    | "signing"
+    | "resolution"
+    | "info"
+    | "approval"
+    | "for-signing"
+    | "backup";
   onSuccess?: (message: string) => void;
 }
 
 const LetterDetail: React.FC<DocumentDetailViewProps> = ({
   document: documentProp,
   onBack,
-  category,
   onSuccess,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -161,6 +161,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
   // Order data from API
   const [orderData, setOrderData] = useState<OrderData | null>(null);
+
+  const { currentUserInfo } = useAppSelector((state) => state.info);
 
   const categoryNames: Record<string, string> = {
     reply: "Javob xati",
@@ -200,12 +202,11 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
     setShowPostedProductModal(true);
   };
 
-
   // fetch orderData detail
   const fetchOrderData = async () => {
     try {
       const response = await axiosAPI.get(
-        `document/orders/${documentProp?.id}/`
+        `document/orders/${documentProp?.id}/`,
       );
 
       if (response.status === 200) {
@@ -216,8 +217,6 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       console.log(error);
     }
   };
-
-
 
   useEffect(() => {
     if (documentProp?.id) {
@@ -257,11 +256,11 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
     const updatedGoods = [...orderData!.products];
     // @ts-ignore
     updatedGoods[index][field] = value;
-    setOrderData(prev => ({
+    setOrderData((prev) => ({
       ...prev!,
       products: updatedGoods,
-    }))
-  }
+    }));
+  };
 
   return (
     <div className="space-y-6">
@@ -285,14 +284,15 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               variant="outlined"
               size="medium"
               onClick={() => setShowAgreementModal(true)}
-              className={`gap-2 border-2 h-12 px-6 ${agreementStatus === "roziman"
-                ? "border-green-600 text-green-700 bg-green-50 hover:bg-green-100 hover:border-green-700"
-                : agreementStatus === "rozi-emasman"
-                  ? "border-red-500 text-red-700 bg-red-50 hover:bg-red-100"
-                  : agreementStatus === "qisman"
-                    ? "border-yellow-500 text-yellow-700 bg-yellow-50 hover:bg-yellow-100"
-                    : "border-purple-300 text-purple-600 hover:border-purple-500 hover:bg-purple-50"
-                }`}
+              className={`gap-2 border-2 h-12 px-6 ${
+                agreementStatus === "roziman"
+                  ? "border-green-600 text-green-700 bg-green-50 hover:bg-green-100 hover:border-green-700"
+                  : agreementStatus === "rozi-emasman"
+                    ? "border-red-500 text-red-700 bg-red-50 hover:bg-red-100"
+                    : agreementStatus === "qisman"
+                      ? "border-yellow-500 text-yellow-700 bg-yellow-50 hover:bg-yellow-100"
+                      : "border-purple-300 text-purple-600 hover:border-purple-500 hover:bg-purple-50"
+              }`}
             >
               {(!agreementStatus || agreementStatus === "roziman") && (
                 <HandshakeIcon className="w-4 h-4 mix-blend-multiply" />
@@ -315,24 +315,39 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             <span className="font-medium text-base">Ijro qadamlari</span>
           </Button>
           {/* Imzolash tugmasi - approval bo'limida yashirilgan */}
-          {orderData?.movement_type !== "in_signing" && (
-            <Button
-              variant="outlined"
-              size="medium"
-              onClick={() => setShowSigningModal(true)}
-              className="gap-2 border-2 border-red-600 text-red-600 hover:border-red-700 hover:bg-red-50 h-12 px-6"
-            >
-              <Pencil className="w-4 h-4 mix-blend-multiply" />
-              <span className="font-medium text-base">Imzolash</span>
+          {orderData?.movement_type === "in_signing" &&
+            orderData.receiver_name === currentUserInfo.username && (
+              <Button
+                variant="filled"
+                className="border! border-blue-500!"
+                type="primary"
+                size="medium"
+                color="blue"
+                onClick={() => {
+                  setShowSigningModal(true);
+                  console.log(orderData);
+                }}
+              >
+                <Pencil className="w-4 h-4 mix-blend-multiply" />
+                <span className="font-medium text-base">Imzolash</span>
+              </Button>
+            )}
+          <div className="ml-auto flex items-center gap-4">
+            <Button type="primary" onClick={() => setShowSendModal(true)}>
+              <Send className="w-4 h-4" />
+              <span className="text-base">Yuborish</span>
             </Button>
-          )}
-          <Button
-            className="gap-2 bg-blue-600 hover:bg-blue-700 ml-auto h-12 px-6"
-            onClick={() => setShowSendModal(true)}
-          >
-            <Send className="w-4 h-4" />
-            <span className="text-base">Yuborish</span>
-          </Button>
+            <Button
+              variant="filled"
+              className="border! border-red-500!"
+              type="primary"
+              size="medium"
+              color="red"
+            >
+              <X className="size-4" />
+              Bekor qilish
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -423,10 +438,11 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                             className="inline-flex items-center gap-2"
                           >
                             <Badge
-                              className={`cursor-pointer transition-colors ${item.type === "Tovar"
-                                ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
-                                : "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
-                                }`}
+                              className={`cursor-pointer transition-colors ${
+                                item.type === "Tovar"
+                                  ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
+                                  : "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
+                              }`}
                             >
                               {item.type}
                             </Badge>
@@ -536,7 +552,11 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                           type="number"
                           value={item.quantity}
                           onChange={(e) => {
-                            handleInputOnchange(index, "quantity", e.target.value);
+                            handleInputOnchange(
+                              index,
+                              "quantity",
+                              e.target.value,
+                            );
                           }}
                           className="text-sm text-center font-semibold border-0 focus:ring-1 focus:ring-blue-500"
                         />
@@ -574,10 +594,10 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                               (_, i) => i !== index,
                             );
                             //@ts-ignore
-                            setOrderData(prev => ({
+                            setOrderData((prev) => ({
                               ...prev,
-                              products: updatedGoods
-                            }))
+                              products: updatedGoods,
+                            }));
                           }}
                           className="text-red-500 hover:text-red-700 transition-colors"
                         >
@@ -609,10 +629,10 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                     note: "",
                   };
                   // @ts-ignore
-                  setOrderData(prev => ({
+                  setOrderData((prev) => ({
                     ...prev,
-                    products: [...(prev?.products || []), newRow]
-                  }))
+                    products: [...(prev?.products || []), newRow],
+                  }));
                 }}
               >
                 <Plus className="size-4" />
@@ -741,8 +761,9 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               <label className="text-sm text-gray-500 w-48">Holat</label>
               <div className="flex-1">
                 <span
-                  className={`text-base font-medium ${orderData?.is_accepted ? "text-green-600" : "text-red-600"
-                    }`}
+                  className={`text-base font-medium ${
+                    orderData?.is_accepted ? "text-green-600" : "text-red-600"
+                  }`}
                 >
                   {orderData?.is_accepted
                     ? "Qabul qilingan"
@@ -787,8 +808,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
         {/* Fayllar grid */}
         {orderData &&
-          orderData.attachment_files &&
-          orderData.attachment_files.length > 0 ? (
+        orderData.attachment_files &&
+        orderData.attachment_files.length > 0 ? (
           <div className="grid grid-cols-2 gap-4 mb-6">
             {orderData.attachment_files.map((file) => {
               const fileExtension =
@@ -901,7 +922,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         productName={selectedProduct?.name || ""}
         productModel={selectedProduct?.model}
         orderProductId={selectedProduct?.id ?? 0}
-        existingPost={selectedProduct?.posted_website}   // <-- muhim qism
+        existingPost={selectedProduct?.posted_website} // <-- muhim qism
         onSuccess={() => {
           onSuccess?.("Mahsulot muvaffaqiyatli saytga joylandi!");
         }}
@@ -913,7 +934,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         productName={selectedProduct?.name || ""}
         productModel={selectedProduct?.model}
         orderProductId={selectedProduct?.id ?? 0}
-        existingPost={selectedProduct?.posted_website} 
+        existingPost={selectedProduct?.posted_website}
         onSuccess={() => {
           onSuccess?.("Mahsulot muvaffaqiyatli saytga joylandi!");
         }}
@@ -978,10 +999,17 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
       {/* Imzolash Modal */}
       <SigningModal
-        isOpen={showSigningModal}
+        isOpen={showSigningModal && !!orderData}
         onClose={() => setShowSigningModal(false)}
-        documentNumber={documentProp?.number}
-        onAddStep={handleAddStep}
+        documentId={orderData?.id.toString() || ""}
+        onSuccess={() => {
+          toast.success("Hujjat muvaffaqiyatli imzolandi!");
+          setShowSigningModal(false);
+        }}
+        onCancel={() => {
+          toast.info("Hujjat imzolash bekor qilindi");
+          setShowSigningModal(false);
+        }}
       />
 
       {/* Send Document Modal */}

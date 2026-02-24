@@ -4,6 +4,7 @@ import { Plus, User, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import EmployeeSelectModal from "@/components/EmployeeSelectModal/EmployeeSelectModal";
 import { axiosAPI } from "@/service/axiosAPI";
 import { toast } from "react-toastify";
+import { useAppSelector } from "@/store/hooks/hooks";
 
 interface Signer {
   id: string;
@@ -20,12 +21,15 @@ const SignerCardSection: React.FC<IProps> = ({ orderID }) => {
   const [signerAccordionOpen, setSignerAccordionOpen] = useState(true);
   const [signerSelectModalOpen, setSignerSelectModalOpen] = useState(false);
 
+  const { currentUserInfo } = useAppSelector((state) => state.info);
+
   // handle send for signer
   const handleSendToSigner = async (employeeID: number) => {
     try {
       const response = await axiosAPI.post(`document/orders/${orderID}/send/`, {
         receiver: employeeID,
         movement_type: "in_signing",
+        department: Number(currentUserInfo?.department_id),
       });
       if (response.status === 201) {
         toast.success("Hujjat imzolovchiga yuborildi!");

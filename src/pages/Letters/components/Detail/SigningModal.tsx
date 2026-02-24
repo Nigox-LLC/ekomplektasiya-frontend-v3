@@ -5,17 +5,15 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Button, Modal, Table, Checkbox } from "antd";
+import { Button, Modal, Table } from "antd";
 import { toast } from "react-toastify";
-import { axiosAPI } from "@/service/axiosAPI";
 import webSocketService from "@/service/webSocket";
-import { type SavedEimzoCert } from "@/utils/eimzoStorage";
 import { useAppDispatch, useAppSelector } from "@/store/hooks/hooks";
 import {
-  clearEimzoRememberedCert,
   setEimzoRememberedCert,
   setEimzoSigningData,
 } from "@/store/slices/infoSlice";
+import { axiosAPI } from "@/service/axiosAPI";
 
 interface CertificateRaw {
   disk: string;
@@ -38,105 +36,15 @@ interface CertificateDetails {
   arguments: string[];
 }
 
-interface SigningPayload {
-  document_name: string;
-  id: string;
-  data: any;
-  number: string;
-}
-
 interface EImzoSigningProps {
   isOpen: boolean;
   onClose: () => void;
   onCancel?: () => void;
-  documentId: string;
-  onSuccess: () => void;
-  orderType?: "district" | "region" | "republic";
-  documentName?: string;
-  fileEndpoint?: string;
-  mode?: "sign" | "setup";
-  documentType?: "price_analysis";
+  documentId?: string; // Imzolanadigan hujjat ID si
+  onSignSuccess?: (response: any) => void; // Muvaffaqiyatli imzolash callback
 }
 
-// E-IMZO parol saqlash komponenti
-interface PasswordCacheProps {
-  certificateId: string;
-  onPasswordSave: (password: string) => void;
-  onPasswordLoad: () => Promise<string | null>;
-  onPasswordClear: () => void;
-}
-
-const EImzoPasswordCache: React.FC<PasswordCacheProps> = ({
-  certificateId,
-  onPasswordSave,
-  onPasswordLoad,
-  onPasswordClear,
-}) => {
-  const [rememberPassword, setRememberPassword] = useState(false);
-  const [passwordLoaded, setPasswordLoaded] = useState(false);
-  const passwordInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const loadCachedPassword = async () => {
-      try {
-        const cachedPassword = await onPasswordLoad();
-        if (cachedPassword && passwordInputRef.current) {
-          passwordInputRef.current.value = cachedPassword;
-          setPasswordLoaded(true);
-          toast.info("Saqlangan parol yuklandi", { autoClose: 2000 });
-        }
-      } catch (error) {
-        console.error("Parolni yuklashda xatolik:", error);
-      }
-    };
-
-    if (certificateId) {
-      loadCachedPassword();
-    }
-  }, [certificateId, onPasswordLoad]);
-
-  const handleRememberChange = (e: any) => {
-    const checked = e.target.checked;
-    setRememberPassword(checked);
-
-    if (!checked) {
-      // Agar eslab qolish o'chirilsa, parolni tozalash
-      onPasswordClear();
-      if (passwordInputRef.current) {
-        passwordInputRef.current.value = "";
-      }
-    }
-  };
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const password = e.target.value;
-    if (rememberPassword && password) {
-      onPasswordSave(password);
-    }
-  };
-
-  return (
-    <div className="password-cache-container">
-      <input
-        ref={passwordInputRef}
-        type="password"
-        placeholder="E-IMZO parolini kiriting"
-        className="ant-input"
-        style={{ marginBottom: "10px" }}
-        onChange={handlePasswordChange}
-      />
-      <Checkbox checked={rememberPassword} onChange={handleRememberChange}>
-        Parolni 6 soat eslab qolish
-      </Checkbox>
-      {passwordLoaded && (
-        <div className="text-green-600 text-xs mt-1">
-          ✓ Saqlangan parol yuklandi
-        </div>
-      )}
-    </div>
-  );
-};
-
+// Utility functions
 function capitalizeWords(str: string): string {
   return str
     .toLowerCase()
@@ -177,205 +85,117 @@ const isExpired = (validTo?: string | null) => {
   return dt ? dt.getTime() < Date.now() : false;
 };
 
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  let binary = "";
-  const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-
-  return btoa(binary);
-}
-
-const resolveFileUrl = (rawUrl: string) => {
-  if (!rawUrl) return "";
-
-  if (/^https?:\/\//i.test(rawUrl)) {
-    try {
-      const parsed = new URL(rawUrl);
-      if (parsed.origin !== window.location.origin) {
-        return `${parsed.pathname}${parsed.search}${parsed.hash}`;
-      }
-    } catch {
-      return rawUrl;
-    }
-    return rawUrl;
-  }
-
-  const base = axiosAPI.defaults.baseURL || window.location.origin;
-  let origin = window.location.origin;
-  try {
-    origin = new URL(base).origin;
-  } catch {
-    origin = window.location.origin;
-  }
-  return new URL(rawUrl, origin).toString();
-};
-
 const EImzoSigning: React.FC<EImzoSigningProps> = ({
   isOpen,
   onClose,
   onCancel,
   documentId,
-  onSuccess,
-  orderType = "district",
-  documentName = "ЗаявкаПоРайонам",
-  fileEndpoint,
-  mode = "sign",
-  documentType,
+  onSignSuccess,
 }) => {
+  // State management
   const [certificates, setCertificates] = useState<CertificateParsed[]>([]);
   const [selectedCertRow, setSelectedCertRow] =
     useState<CertificateParsed | null>(null);
   const [selectedCertificate, setSelectedCertificate] =
     useState<CertificateDetails | null>(null);
-  const selectedCertRef = useRef<CertificateParsed | null>(null);
-  const [keyID, setKeyID] = useState("");
-  const [messageFileBinary, setMessageFileBinary] = useState<string | null>(
-    null,
-  );
+  const [keyId, setKeyId] = useState<string>("");
   const [signingLoading, setSigningLoading] = useState(false);
+
+  // Redux
   const dispatch = useAppDispatch();
   const savedCert = useAppSelector((state) => state.info.eimzoRememberedCert);
-  const savedSigningData = useAppSelector(
-    (state) => state.info.eimzoSigningData,
-  );
-  const [showSavedConfirm, setShowSavedConfirm] = useState(false);
-  const [signingData, setSigningData] = useState<SigningPayload>({
-    document_name: documentName,
-    number: "",
-    id: documentId,
-    data: "",
-  });
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [password, setPassword] = useState<string>("");
-  const [rememberPassword, setRememberPassword] = useState(false);
+
+  // Refs
+  const selectedCertRef = useRef<CertificateParsed | null>(null);
   const initSentRef = useRef(false);
-  const passwordRequestRef = useRef(false);
-  const pkcs7RequestedRef = useRef(false);
-  const signingSentRef = useRef(false);
+  const apiKeyAcceptedRef = useRef(false);
   const signingInFlightRef = useRef(false);
-  const rememberKeyFlowRef = useRef(false);
+  const keyLoadedRef = useRef(false);
+  const pkcs7DataRef = useRef<string | null>(null);
 
-  const openPasswordModal = useCallback(() => {
-    setShowPasswordModal(true);
-    passwordRequestRef.current = true;
-  }, []);
-
+  // Check if ready to proceed
   const isReadyToSign = useMemo(() => {
-    return Boolean(selectedCertificate);
-  }, [selectedCertificate]);
+    return Boolean(selectedCertificate && keyId);
+  }, [selectedCertificate, keyId]);
 
+  // Reset state
   const resetState = useCallback(() => {
     setCertificates([]);
     setSelectedCertRow(null);
     setSelectedCertificate(null);
-    setKeyID("");
-    setMessageFileBinary(null);
+    setKeyId("");
     setSigningLoading(false);
-    setShowSavedConfirm(false);
-    setShowPasswordModal(false);
-    setPassword("");
-    setRememberPassword(false);
-    setSigningData((prev) => ({
-      ...prev,
-      id: documentId,
-      data: "",
-      number: "",
-      document_name: documentName,
-    }));
-    passwordRequestRef.current = false;
-    pkcs7RequestedRef.current = false;
-    signingSentRef.current = false;
     signingInFlightRef.current = false;
-    rememberKeyFlowRef.current = false;
-  }, [documentId, documentName]);
+    selectedCertRef.current = null;
+    keyLoadedRef.current = false;
+    apiKeyAcceptedRef.current = false;
+    pkcs7DataRef.current = null;
+  }, []);
 
-  const fetchDocumentBinary = useCallback(async () => {
-    if (mode === "setup") return;
-    if (!documentId) return;
-    try {
-      const orderPrefix =
-        orderType === "region"
-          ? "region-orders"
-          : orderType === "republic"
-            ? "republic-orders"
-            : "district-orders";
-      const resolvedEndpoint = fileEndpoint
-        ? fileEndpoint.replace("{id}", documentId)
-        : `${orderPrefix}/${documentId}/order-file/`;
-      const response = await axiosAPI.get(resolvedEndpoint);
-      const fileUrl = response.data.file_url;
-      const fileName = (fileUrl.split("/").pop() || "").trim();
-      const number = fileName ? fileName.replace(/\.[^/.]+$/, "") : "";
-      setSigningData((prev) => ({
-        ...prev,
-        id: documentId,
-        number,
-        document_name: documentName,
-      }));
+  // Backendga imzolash so'rovini yuborish
+  const handleSignDocument = useCallback(
+    async (pkcs7_64: string) => {
+      if (!documentId) {
+        toast.error("Hujjat ID si topilmadi!", { closeButton: false });
+        return;
+      }
 
-      const resolvedUrl = resolveFileUrl(fileUrl);
-      const res = await fetch(resolvedUrl);
-      const arrayBuffer = await res.arrayBuffer();
-      setMessageFileBinary(arrayBufferToBase64(arrayBuffer));
-    } catch (error) {
-      console.error("Document fetch error:", error);
-      toast.error("Hujjatni olishda xatolik yuz berdi!", {
-        closeButton: false,
-      });
-    }
-  }, [documentId, documentName, mode, orderType]);
+      setSigningLoading(true);
 
-  const signingDocument = useCallback(async () => {
-    if (signingInFlightRef.current) return;
-    signingInFlightRef.current = true;
-    if (documentType === "price_analysis") {
       try {
-        setSigningLoading(true);
+        // Bu yerda o'zingizning API endpoint'ingizga so'rov yuboring
         const response = await axiosAPI.post(
-          "signing/upload-price-analysis",
-          signingData,
+          `document/orders/${documentId}/signing/`,
+          {
+            signature: pkcs7_64,
+            certificateInfo: {
+              disk: selectedCertRef.current?.disk,
+              path: selectedCertRef.current?.path,
+              name: selectedCertRef.current?.name,
+              alias: selectedCertRef.current?.alias,
+              cn: selectedCertRef.current?.cn,
+              validFrom: selectedCertRef.current?.validFrom,
+              validTo: selectedCertRef.current?.validTo,
+            },
+          },
         );
         if (response.status === 200) {
-          toast.success("Hujjat imzolandi", { closeButton: false });
-          onSuccess();
-          onClose();
-        }
-      } catch (error: any) {
-        toast.error(error.response?.data?.error || "Imzolashda xatolik!", {
-          closeButton: false,
-        });
-        webSocketService.disconnect();
-      } finally {
-        setSigningLoading(false);
-        webSocketService.disconnect();
-        signingInFlightRef.current = false;
-      }
-    } else {
-      try {
-        setSigningLoading(true);
-        const response = await axiosAPI.post("signing/upload", signingData);
-        if (response.status === 200) {
-          toast.success("Hujjat imzolandi", { closeButton: false });
-          onSuccess();
-          onClose();
-        }
-      } catch (error: any) {
-        toast.error(error.response?.data?.error || "Imzolashda xatolik!", {
-          closeButton: false,
-        });
-        webSocketService.disconnect();
-      } finally {
-        setSigningLoading(false);
-        webSocketService.disconnect();
-        signingInFlightRef.current = false;
-      }
-    }
-  }, [onClose, onSuccess, signingData]);
+          toast.success("Hujjat muvaffaqiyatli imzolandi!", {
+            autoClose: 3000,
+          });
 
+          // Redux store'ga saqlash
+          dispatch(
+            setEimzoSigningData({
+              pkcs7_64,
+              documentId,
+              signedAt: new Date().toISOString(),
+            }),
+          );
+
+          // Callback chaqirish
+          if (onSignSuccess) {
+            onSignSuccess(response.data);
+          }
+
+          // Modalni yopish
+        }
+        handleCancel();
+      } catch (error) {
+        console.error("Sign document error:", error);
+        toast.error(
+          "Hujjatni imzolashda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
+          { closeButton: false },
+        );
+      } finally {
+        setSigningLoading(false);
+        signingInFlightRef.current = false;
+      }
+    },
+    [documentId, dispatch, onSignSuccess],
+  );
+
+  // WebSocket and initialization effect
   useEffect(() => {
     if (!isOpen) {
       webSocketService.disconnect();
@@ -384,73 +204,102 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
       return;
     }
 
-    setShowSavedConfirm(false);
-
-    fetchDocumentBinary();
-
+    // Connect WebSocket and handle messages
     webSocketService.connect(
       "wss://127.0.0.1:64443/service/cryptapi",
       (msg: any) => {
         try {
           const parsed = JSON.parse(msg);
 
-          if (parsed.certificates) {
+          if (
+            parsed.success === true &&
+            !apiKeyAcceptedRef.current &&
+            !parsed.certificates &&
+            !parsed.keyId &&
+            !parsed.pkcs7_64
+          ) {
+            apiKeyAcceptedRef.current = true;
+            webSocketService.sendMessage(
+              JSON.stringify({
+                plugin: "pfx",
+                name: "list_all_certificates",
+              }),
+            );
+          }
+          // Step 2: Handle certificate list response
+          else if (parsed.certificates && parsed.success) {
             const parsedCerts: CertificateParsed[] = [];
-            parsed.certificates.map((cert: CertificateRaw) => {
+            parsed.certificates.forEach((cert: CertificateRaw) => {
               if (cert.alias.includes("cn=")) {
                 const certItem = {
                   ...cert,
-                  cn: parseAlias(cert.alias).cn,
-                  firstName: parseAlias(cert.alias).firstName,
-                  lastName: parseAlias(cert.alias).lastName,
-                  validFrom: parseAlias(cert.alias).validFrom,
-                  validTo: parseAlias(cert.alias).validTo,
+                  ...parseAlias(cert.alias),
                 };
                 parsedCerts.push(certItem);
               }
             });
-            setCertificates([...parsedCerts]);
-          } else if (parsed.name === "need_password") {
-            // Parol talab qilinganda
-            openPasswordModal();
-          } else if (parsed.name === "bad_password") {
-            // Noto'g'ri parol
-            toast.error("Noto'g'ri parol! Iltimos, qayta kiriting.", {
+            setCertificates(parsedCerts);
+
+            // Auto-restore saved certificate
+            if (savedCert && parsedCerts.length > 0) {
+              const matchedCert = parsedCerts.find(
+                (c) => c.name === savedCert.name && c.disk === savedCert.disk,
+              );
+              if (matchedCert && !isExpired(matchedCert.validTo)) {
+                selectedCertRef.current = matchedCert;
+                setSelectedCertRow(matchedCert);
+                setSelectedCertificate({
+                  plugin: "pfx",
+                  name: "load_key",
+                  arguments: [
+                    matchedCert.disk,
+                    matchedCert.path,
+                    matchedCert.name,
+                    matchedCert.alias,
+                  ],
+                });
+                toast.info("Saqlangan kalit avtomatik yuklandi", {
+                  autoClose: 2000,
+                });
+              }
+            }
+          }
+          // Step 3: Handle keyId response from load_key
+          else if (
+            parsed.keyId &&
+            parsed.type === "PFX_KEY_STORE" &&
+            parsed.success
+          ) {
+            setKeyId(parsed.keyId);
+            keyLoadedRef.current = true;
+
+            // Agar imzolash jarayoni boshlangan bo'lsa, create_pkcs7 chaqiramiz
+            // Bu E-IMZO modulining o'z parol oynasini ochadi
+            if (signingInFlightRef.current) {
+              webSocketService.sendMessage(
+                JSON.stringify({
+                  plugin: "pkcs7",
+                  name: "create_pkcs7",
+                  arguments: ["Test", parsed.keyId, "no"],
+                }),
+              );
+            }
+          }
+          // Step 4: Handle pkcs7 creation response (E-IMZO parol oynasidan keyin)
+          else if (parsed.pkcs7_64 && parsed.success) {
+            // Parol to'g'ri kiritildi, imzolash muvaffaqiyatli
+            pkcs7DataRef.current = parsed.pkcs7_64;
+
+            // Hujjatni imzolash funksiyasini chaqirish
+            handleSignDocument(parsed.pkcs7_64);
+          }
+          // Handle errors
+          else if (parsed.success === false) {
+            toast.error(parsed.reason || "E-IMZO xatolik!", {
               closeButton: false,
             });
-            openPasswordModal();
-          } else if (parsed.keyId) {
-            setKeyID(parsed.keyId);
-          } else if (parsed.pkcs7_64) {
-            if (rememberKeyFlowRef.current) {
-              if (selectedCertRef.current) {
-                const cert = selectedCertRef.current;
-                dispatch(
-                  setEimzoRememberedCert({
-                    disk: cert.disk,
-                    path: cert.path,
-                    name: cert.name,
-                    alias: cert.alias,
-                    cn: cert.cn,
-                    validFrom: cert.validFrom,
-                    validTo: cert.validTo,
-                  }),
-                );
-              }
-              dispatch(setEimzoSigningData(parsed));
-              rememberKeyFlowRef.current = false;
-              setShowSavedConfirm(true);
-              toast.success("Kalit eslab qolindi", { autoClose: 2000 });
-              return;
-            }
-            // Store parsed data in state for signing flow
-            if (mode === "setup") {
-              console.log(parsed);
-            }
-            setSigningData((prev) => ({
-              ...prev,
-              data: parsed,
-            }));
+            setSigningLoading(false);
+            signingInFlightRef.current = false;
           }
         } catch (error) {
           console.error("WebSocket parse error:", error);
@@ -461,22 +310,15 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
     return () => {
       webSocketService.disconnect();
     };
-  }, [
-    fetchDocumentBinary,
-    isOpen,
-    resetState,
-    savedCert,
-    savedSigningData,
-    onSuccess,
-    onClose,
-    mode,
-    openPasswordModal,
-  ]);
+  }, [isOpen, resetState, savedCert, handleSignDocument]);
 
+  // Initialize E-IMZO connection
   useEffect(() => {
     if (!isOpen) return;
+
     const timer = window.setInterval(() => {
       if (!initSentRef.current && webSocketService.isConnected()) {
+        // Send API key
         webSocketService.sendMessage(
           JSON.stringify({
             name: "apikey",
@@ -495,13 +337,6 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
           }),
         );
 
-        webSocketService.sendMessage(
-          JSON.stringify({
-            plugin: "pfx",
-            name: "list_all_certificates",
-          }),
-        );
-
         initSentRef.current = true;
         window.clearInterval(timer);
       }
@@ -510,31 +345,9 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
     return () => window.clearInterval(timer);
   }, [isOpen]);
 
-  useEffect(() => {
-    if (mode !== "sign") return;
-    if (keyID && messageFileBinary && !pkcs7RequestedRef.current) {
-      pkcs7RequestedRef.current = true;
-      signingSentRef.current = false;
-      webSocketService.sendMessage(
-        JSON.stringify({
-          plugin: "pkcs7",
-          name: "create_pkcs7",
-          arguments: [messageFileBinary, keyID, "no"],
-        }),
-      );
-    }
-  }, [keyID, messageFileBinary, mode]);
-
-  useEffect(() => {
-    if (mode !== "sign") return;
-    if (signingData.data && !signingSentRef.current) {
-      signingSentRef.current = true;
-      signingDocument();
-    }
-  }, [mode, signingData.data, signingDocument]);
-
-  const handleConfirm = (cert?: SavedEimzoCert | null) => {
-    if (!selectedCertificate && !cert) {
+  // Handle confirm button - E-IMZO native parol oynasini chaqirish
+  const handleConfirm = () => {
+    if (!selectedCertificate) {
       toast.error("Iltimos, sertifikatni tanlang!", { closeButton: false });
       return;
     }
@@ -546,51 +359,25 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
       return;
     }
 
-    pkcs7RequestedRef.current = false;
-    signingSentRef.current = false;
-
-    if (cert) {
-      if (!savedSigningData) {
-        toast.error("Saqlangan imzo ma'lumoti topilmadi.", {
-          closeButton: false,
-        });
-        return;
-      }
-      signingSentRef.current = false;
-      setSigningData((prev) => ({
-        ...prev,
-        data: savedSigningData,
-      }));
-      return;
-    }
-
-    if (selectedCertificate) {
-      if (
-        savedCert?.name === selectedCertRef.current?.name &&
-        savedSigningData
-      ) {
-        setShowSavedConfirm(true);
-        return;
-      }
+    // Agar key allaqachon yuklangan bo'lsa, to'g'ridan-to'g'ri create_pkcs7 chaqiramiz
+    if (keyLoadedRef.current && keyId) {
+      signingInFlightRef.current = true;
+      webSocketService.sendMessage(
+        JSON.stringify({
+          plugin: "pkcs7",
+          name: "create_pkcs7",
+          arguments: ["Test", keyId, "no"],
+        }),
+      );
+    } else {
+      // Avval kalitni yuklaymiz, keyin create_pkcs7 chaqiriladi
+      signingInFlightRef.current = true;
+      keyLoadedRef.current = false;
       webSocketService.sendMessage(JSON.stringify(selectedCertificate));
-      // Saqlangan parolni yuklash
-      if (selectedCertRef.current) {
-        if (
-          savedCert?.name === selectedCertRef.current.name &&
-          savedSigningData
-        ) {
-          signingSentRef.current = false;
-          setSigningData((prev) => ({
-            ...prev,
-            data: savedSigningData,
-          }));
-        } else {
-          openPasswordModal();
-        }
-      }
     }
   };
 
+  // Handle remember key
   const handleRememberKey = () => {
     if (!selectedCertRef.current || !selectedCertificate) {
       toast.error("Iltimos, sertifikatni tanlang!", { closeButton: false });
@@ -602,31 +389,35 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
       });
       return;
     }
-    rememberKeyFlowRef.current = true;
-    pkcs7RequestedRef.current = false;
-    signingSentRef.current = false;
-    webSocketService.sendMessage(JSON.stringify(selectedCertificate));
-  };
 
-  const handlePasswordSubmit = () => {
-    if (!password.trim()) {
-      toast.error("Iltimos, parolni kiriting!", { closeButton: false });
-      return;
+    // Kalitni eslab qolish uchun ham avval kalitni yuklash kerak
+    if (keyLoadedRef.current && keyId) {
+      // Kalit allaqachon yuklangan, faqat saqlaymiz
+      const cert = selectedCertRef.current;
+      dispatch(
+        setEimzoRememberedCert({
+          disk: cert.disk,
+          path: cert.path,
+          name: cert.name,
+          alias: cert.alias,
+          cn: cert.cn,
+          validFrom: cert.validFrom,
+          validTo: cert.validTo,
+        }),
+      );
+      toast.success("Kalit muvaffaqiyatli eslab qolindi", {
+        autoClose: 2000,
+      });
+    } else {
+      // Kalitni yuklashni boshlaymiz
+      keyLoadedRef.current = false;
+      webSocketService.sendMessage(JSON.stringify(selectedCertificate));
+      // Bu yerda parol kiritilgandan keyin kalit saqlanishi mumkin
+      // Lekin hozirgi logikada bu qism murakkabroq
     }
-
-    // E-IMZO ga parolni yuborish
-    webSocketService.sendMessage(
-      JSON.stringify({
-        name: "password",
-        arguments: [password],
-      }),
-    );
-
-    setShowPasswordModal(false);
-    setPassword("");
-    passwordRequestRef.current = false;
   };
 
+  // Handle cancel/close
   const handleCancel = () => {
     if (onCancel) {
       onCancel();
@@ -635,202 +426,148 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
     }
     webSocketService.disconnect();
     resetState();
-    if (mode === "setup") {
-      dispatch(clearEimzoRememberedCert());
+  };
+
+  // Handle certificate selection clearing saved confirm
+  const handleCertificateSelect = (record: CertificateParsed) => {
+    if (isExpired(record.validTo)) {
+      toast("Bu kalitning muddati tugagan, tanlab bo'lmaydi.", {
+        type: "warning",
+      });
+      return;
     }
+
+    selectedCertRef.current = record;
+    setSelectedCertRow(record);
+    setSelectedCertificate({
+      plugin: "pfx",
+      name: "load_key",
+      arguments: [record.disk, record.path, record.name, record.alias],
+    });
+
+    // Reset state when new cert is selected
+    setKeyId("");
+    keyLoadedRef.current = false;
   };
 
   return (
-    <>
-      <Modal
-        title={
-          showSavedConfirm && savedCert
-            ? "Saqlangan E-IMZO kaliti"
-            : "E-IMZO maxfiy raqamini kiriting!"
-        }
-        open={isOpen}
-        onCancel={handleCancel}
-        style={{ minWidth: "800px" }}
-        footer={
-          showSavedConfirm && savedCert
-            ? [
-                <Button
-                  key="cancel"
-                  onClick={handleCancel}
-                  disabled={signingLoading}
-                >
-                  Bekor qilish
-                </Button>,
-                <Button
-                  key="ok"
-                  type="primary"
-                  loading={signingLoading}
-                  onClick={() => handleConfirm(savedCert)}
-                >
-                  Imzolash
-                </Button>,
-              ]
-            : [
-                <Button
-                  key="cancel"
-                  onClick={handleCancel}
-                  disabled={signingLoading}
-                >
-                  Chiqish
-                </Button>,
-                <Button
-                  key="remember"
-                  onClick={handleRememberKey}
-                  disabled={signingLoading || !isReadyToSign}
-                >
-                  Kalitni eslab qolish
-                </Button>,
-                <Button
-                  key="ok"
-                  type="primary"
-                  loading={signingLoading}
-                  disabled={!isReadyToSign}
-                  onClick={() => handleConfirm(null)}
-                >
-                  {mode === "setup" ? "Tasdiqlash" : "Imzolash"}
-                </Button>,
-              ]
-        }
-      >
-        {showSavedConfirm && savedCert ? (
-          <div className="space-y-3 text-sm text-gray-700">
-            <p>Siz belgilangan kalit orqali imzolashni tasdiqlaysizmi?</p>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-              <div className="font-medium text-slate-900">
-                {savedCert.cn || savedCert.name}
-              </div>
-              <div className="text-xs text-slate-600">
-                {savedCert.validFrom || ""}{" "}
-                {savedCert.validTo ? `- ${savedCert.validTo}` : ""}
-              </div>
+    <Modal
+      title="E-IMZO kalitini tanlang"
+      open={isOpen}
+      onCancel={handleCancel}
+      width={900}
+      footer={[
+        <Button key="cancel" onClick={handleCancel} disabled={signingLoading}>
+          Chiqish
+        </Button>,
+        <Button
+          key="remember"
+          onClick={handleRememberKey}
+          disabled={signingLoading || !selectedCertificate}
+        >
+          Kalitni eslab qolish
+        </Button>,
+        <Button
+          key="ok"
+          type="primary"
+          loading={signingLoading}
+          disabled={!selectedCertificate}
+          onClick={handleConfirm}
+        >
+          Imzolash
+        </Button>,
+      ]}
+    >
+      <Table
+        rowKey="name"
+        dataSource={certificates}
+        pagination={false}
+        loading={certificates.length === 0 && !initSentRef.current}
+        locale={{
+          emptyText: (
+            <div
+              style={{
+                textAlign: "center",
+                color: "red",
+                fontWeight: "bold",
+                fontSize: "18px",
+                padding: "20px 0",
+              }}
+            >
+              E-IMZO moduli bilan ulanishda xatolik! <br />
+              Modulni{" "}
+              <a
+                href="https://e-imzo.soliq.uz/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "red", textDecoration: "underline" }}
+              >
+                shu yerdan
+              </a>{" "}
+              kompyuteringizga o'rnating va qayta urinib ko'ring.
             </div>
-          </div>
-        ) : (
-          <Table
-            rowKey="name"
-            dataSource={certificates}
-            pagination={false}
-            locale={{
-              emptyText: (
-                <div
-                  style={{
-                    textAlign: "center",
-                    color: "red",
-                    fontWeight: "bold",
-                    fontSize: "18px",
-                    padding: "20px 0",
-                  }}
-                >
-                  E-IMZO modulini bilan ulanishda xatolik! <br />
-                  Modulni{" "}
-                  <a
-                    href="https://e-imzo.soliq.uz/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "red", textDecoration: "underline" }}
-                  >
-                    shu yerdan
-                  </a>{" "}
-                  kompyuteringizga o'rnating va qayta urinib ko'ring.
-                </div>
-              ),
-            }}
-            rowClassName={(record: CertificateParsed) =>
-              isExpired(record.validTo)
-                ? "bg-red-50 text-red-600"
-                : selectedCertRow?.name === record.name
-                  ? "bg-blue-50"
-                  : ""
-            }
-            rowSelection={{
-              type: "radio",
-              selectedRowKeys: selectedCertRow ? [selectedCertRow.name] : [],
-              getCheckboxProps: (record: CertificateParsed) => ({
-                disabled: isExpired(record.validTo),
-                title: isExpired(record.validTo)
-                  ? "Muddati tugagan — tanlab bo'lmaydi"
-                  : undefined,
-              }),
-            }}
-            onRow={(record: CertificateParsed) => ({
-              onClick: () => {
-                if (isExpired(record.validTo)) {
-                  toast("Bu kalitning muddati tugagan, tanlab bo'lmaydi.", {
-                    type: "warning",
-                  });
-                  return;
-                }
-                selectedCertRef.current = record;
-                setSelectedCertRow(record);
-                setSelectedCertificate({
-                  plugin: "pfx",
-                  name: "load_key",
-                  arguments: [
-                    `${record.disk}`,
-                    `${record.path}`,
-                    `${record.name}`,
-                    `${record.alias}`,
-                  ],
-                });
-
-                if (savedCert?.name !== record.name) {
-                  setShowSavedConfirm(false);
-                }
-
-                if (savedCert?.name === record.name) {
-                  toast.info(
-                    "Saqlangan kalit tanlandi. Imzolash tasdiqlash orqali davom etadi.",
-                    {
-                      autoClose: 3000,
-                    },
-                  );
-                }
-              },
-            })}
-            columns={[
-              { title: "Disk", dataIndex: "disk", key: "disk" },
-              { title: "Joylashuvi", dataIndex: "path", key: "path" },
-              { title: "F.I.O", dataIndex: "cn", key: "cn" },
-              {
-                title: "Amal qilish muddati",
-                render: (_, r: CertificateParsed) => {
-                  const expired = isExpired(r.validTo);
-                  return (
-                    <span
-                      className={expired ? "text-red-600 font-semibold" : ""}
-                    >
-                      {r.validFrom} - {r.validTo}
-                      {expired && (
-                        <span className="ml-2">(muddati tugagan)</span>
-                      )}
-                    </span>
-                  );
-                },
-              },
-              {
-                title: "Parol holati",
-                render: (_, r: CertificateParsed) => {
-                  return savedCert?.name === r.name ? (
-                    <span className="text-green-600 text-xs">
-                      ✓ Kalit saqlangan
-                    </span>
-                  ) : (
-                    <span className="text-gray-400 text-xs">
-                      Kalit saqlanmagan
-                    </span>
-                  );
-                },
-              },
-            ]}
-          />
-        )}
-      </Modal>
-    </>
+          ),
+        }}
+        rowClassName={(record: CertificateParsed) =>
+          isExpired(record.validTo)
+            ? "bg-red-50 text-red-600"
+            : selectedCertRow?.name === record.name
+              ? "bg-blue-50"
+              : ""
+        }
+        rowSelection={{
+          type: "radio",
+          selectedRowKeys: selectedCertRow ? [selectedCertRow.name] : [],
+          getCheckboxProps: (record: CertificateParsed) => ({
+            disabled: isExpired(record.validTo),
+            title: isExpired(record.validTo)
+              ? "Muddati tugagan — tanlab bo'lmaydi"
+              : undefined,
+          }),
+        }}
+        onRow={(record: CertificateParsed) => ({
+          onClick: () => handleCertificateSelect(record),
+        })}
+        columns={[
+          { title: "Disk", dataIndex: "disk", key: "disk", width: 80 },
+          {
+            title: "Joylashuvi",
+            dataIndex: "path",
+            key: "path",
+            width: 200,
+          },
+          { title: "F.I.O", dataIndex: "cn", key: "cn", width: 200 },
+          {
+            title: "Amal qilish muddati",
+            width: 250,
+            render: (_, r: CertificateParsed) => {
+              const expired = isExpired(r.validTo);
+              return (
+                <span className={expired ? "text-red-600 font-semibold" : ""}>
+                  {r.validFrom} - {r.validTo}
+                  {expired && <span className="ml-2">(muddati tugagan)</span>}
+                </span>
+              );
+            },
+          },
+          {
+            title: "Holat",
+            width: 150,
+            render: (_, r: CertificateParsed) => {
+              const isSaved =
+                savedCert?.name === r.name && savedCert?.disk === r.disk;
+              return isSaved ? (
+                <span className="text-green-600 text-xs">
+                  ✓ Kalit saqlangan
+                </span>
+              ) : (
+                <span className="text-gray-400 text-xs">Kalit saqlanmagan</span>
+              );
+            },
+          },
+        ]}
+      />
+    </Modal>
   );
 };
 

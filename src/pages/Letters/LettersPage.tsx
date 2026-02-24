@@ -1,14 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  FileText,
-  MapPin,
-  Calendar,
-  Search,
-  Trash2,
-  FileCheck,
-  ChevronRight,
-  Building2,
-} from "lucide-react";
+import { MapPin, Search, Trash2, ChevronRight, Building2 } from "lucide-react";
 import StatusFilter from "./components/StatusFilter";
 import { Button, Card, Input } from "antd";
 import LetterDetail from "./components/Detail/LetterDetail";
@@ -38,10 +29,10 @@ const LettersPage: React.FC = () => {
   const [totalDocuments, setTotalDocuments] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const lastTriggeredPageRef = useRef<number>(1);
-  
+
   const { showFilters } = useAppSelector((state) => state.letters);
   const { status } = useParams();
   const location = useLocation();
@@ -125,10 +116,10 @@ const LettersPage: React.FC = () => {
     const fetchLetters = async () => {
       // Prevent duplicate requests
       if (isLoading) return;
-      
+
       // Don't fetch if we know there's no more data (except for initial page)
       if (page > 1 && !hasMore) return;
-      
+
       setIsLoading(true);
       try {
         const params = {
@@ -143,9 +134,9 @@ const LettersPage: React.FC = () => {
         if (response.status === 200) {
           const newLetters = response.data.results;
           const total = response.data.count;
-          
+
           setTotalDocuments(total);
-          
+
           // Append or replace based on page number
           if (page === 1) {
             setLetters(newLetters);
@@ -155,7 +146,8 @@ const LettersPage: React.FC = () => {
             setLetters((prev) => {
               const updatedLetters = [...prev, ...newLetters];
               // Check if we've loaded all data
-              const allDataLoaded = updatedLetters.length >= total || newLetters.length === 0;
+              const allDataLoaded =
+                updatedLetters.length >= total || newLetters.length === 0;
               setHasMore(!allDataLoaded);
               return updatedLetters;
             });
@@ -167,7 +159,7 @@ const LettersPage: React.FC = () => {
         setIsLoading(false);
       }
     };
-    
+
     fetchLetters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
@@ -178,7 +170,7 @@ const LettersPage: React.FC = () => {
     if (!container || isLoading || !hasMore) return;
 
     const { scrollTop, scrollHeight, clientHeight } = container;
-    
+
     // Check if scrolled to bottom (with 50px threshold)
     if (scrollTop + clientHeight >= scrollHeight - 50) {
       // Only trigger if we haven't already triggered the next page
@@ -195,8 +187,8 @@ const LettersPage: React.FC = () => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
   return (
@@ -345,21 +337,21 @@ const LettersPage: React.FC = () => {
                 </Card>
               );
             })}
-            
+
             {/* Loading indicator */}
             {isLoading && (
               <div className="flex justify-center items-center py-4">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
               </div>
             )}
-            
+
             {/* End of list message */}
             {!hasMore && letters.length > 0 && (
               <div className="text-center py-4 text-sm text-gray-500">
                 Barcha xatlar yuklandi
               </div>
             )}
-            
+
             {/* Empty state */}
             {!isLoading && letters.length === 0 && (
               <div className="text-center py-8 text-sm text-gray-500">
