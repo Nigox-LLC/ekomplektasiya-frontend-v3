@@ -22,7 +22,7 @@ import RelatedDocumentModal from "./RelatedDocumentModal";
 import { ExecutiveAction, type IjroStep } from "./ExecutiveAction";
 import { YearPlanModal } from "./YearPlanModal";
 import { AddGoodsModal } from "./AddGoodsModal";
-import { AgreementModal } from "./AgreementModal";
+import AgreementModal from "@/components/AgreementModal";
 import { SearchFilterPanel } from "./SearchFilterPanel";
 import SigningModal from "./SigningModal";
 import { SendDocumentModal } from "./SendDocumentModal";
@@ -471,23 +471,36 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             <span className="font-medium text-base">Ijro qadamlari</span>
           </Button>
           {/* Imzolash tugmasi - approval bo'limida yashirilgan */}
-          {orderData?.movement_type === "in_signing" &&
-            orderData.receiver_name === currentUserInfo.username && (
-              <Button
-                variant="filled"
-                className="border! border-blue-500!"
-                type="primary"
-                size="medium"
-                color="blue"
-                onClick={() => {
-                  setShowSigningModal(true);
-                  console.log(orderData);
-                }}
-              >
-                <Pencil className="w-4 h-4 mix-blend-multiply" />
-                <span className="font-medium text-base">Imzolash</span>
-              </Button>
-            )}
+          {orderData?.movement_type === "in_signing" && (
+            <Button
+              variant="filled"
+              className="border! border-blue-500!"
+              type="primary"
+              size="medium"
+              color="blue"
+              onClick={() => {
+                setShowSigningModal(true);
+                console.log(orderData);
+              }}
+            >
+              <Pencil className="w-4 h-4 mix-blend-multiply" />
+              <span className="font-medium text-base">Imzolash</span>
+            </Button>
+          )}
+
+          {orderData?.movement_type === "in_signing" && (
+            <Button
+              variant="outlined"
+              size="medium"
+              onClick={() => setShowAgreementModal(true)}
+              className={`gap-2 border-2 h-12 px-6 ${agreementStatus === "roziman" ? "border-green-600 text-green-700 bg-green-50 hover:bg-green-100 hover:border-green-700" : agreementStatus === "rozi-emasman" ? "border-red-500 text-red-700 bg-red-50 hover:bg-red-100" : agreementStatus === "qisman" ? "border-yellow-500 text-yellow-700 bg-yellow-50 hover:bg-yellow-100" : "border-purple-300 text-purple-600 hover:border-purple-500 hover:bg-purple-50"}`}
+            >
+              <HandshakeIcon className="w-4 h-4 text-green-600" />
+              <span className="font-medium text-base text-green-700">
+                Kelishish
+              </span>
+            </Button>
+          )}
           <div className="ml-auto flex items-center gap-4">
             <Button type="primary" onClick={() => setShowSendModal(true)}>
               <Send className="w-4 h-4" />
@@ -1250,22 +1263,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       />
 
       {/* Kelishish Modal */}
-      <AgreementModal
-        isOpen={showAgreementModal}
-        onClose={() => setShowAgreementModal(false)}
-        documentNumber={documentProp?.number}
-        documentId={documentProp?.id?.toString()}
-        status={agreementStatus}
-        setStatus={setAgreementStatus}
-        onAddStep={(step) => {
-          if (documentProp?.id) {
-            setIjroSteps((prev) => ({
-              ...prev,
-              [documentProp.id]: [...(prev[documentProp.id] || []), step],
-            }));
-          }
-        }}
-      />
+      {showAgreementModal && <AgreementModal orderId={orderData?.id!} onSuccess={() => setShowAgreementModal(false)} setShowAgreementModal={setShowAgreementModal} />}
 
       {/* Search Filter Panel */}
       <SearchFilterPanel
