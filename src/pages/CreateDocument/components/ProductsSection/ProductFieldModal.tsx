@@ -1,6 +1,6 @@
 import { axiosAPI } from "@/service/axiosAPI";
 import { Button, Input, Table } from "antd";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import type { Product } from "../../External";
 
 interface IProps {
@@ -57,6 +57,15 @@ const ProductFieldModal: React.FC<IProps> = ({
     },
   );
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [pageSize] = React.useState(20);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [hasMore, setHasMore] = React.useState(true);
+  const tableScrollRef = useRef<HTMLDivElement>(null);
+  const isFetchingRef = useRef(false);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const columns = [
     {
       title: "",
@@ -87,37 +96,121 @@ const ProductFieldModal: React.FC<IProps> = ({
     },
   ];
 
-  const handleFetchProductFieldTypes = async () => {
+  const handleFetchProductFieldTypes = async (page: number = 1, search: string = "") => {
+    if (isLoading || isFetchingRef.current || !hasMore) return;
+
+    isFetchingRef.current = true;
+    setIsLoading(true);
+
     try {
       const response = await axiosAPI.get(
         `directory/${productFieldModal.type}/`,
+        {
+          params: {
+            page: page,
+            page_size: pageSize,
+            ...(search && { search: search }),
+          },
+        },
       );
-      if (response.status === 200) setProductFieldTypes(response.data.results);
+
+      if (response.status === 200) {
+        const { results, count } = response.data;
+
+        if (page === 1) {
+          setProductFieldTypes(results);
+        } else {
+          setProductFieldTypes((prev) => [...prev, ...results]);
+        }
+        
+        // Check if we have more data to fetch
+        const totalLoaded = page * pageSize;
+        setHasMore(totalLoaded < (count || 0));
+      }
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
+      isFetchingRef.current = false;
     }
   };
 
+  // Initial fetch when component mounts or type changes
   useEffect(() => {
     if (productFieldModal.type) {
-      handleFetchProductFieldTypes();
+      setCurrentPage(1);
+      setProductFieldTypes([]);
+      setHasMore(true);
+      isFetchingRef.current = false;
+      handleFetchProductFieldTypes(1, searchQuery);
     }
   }, [productFieldModal.type]);
 
-  const filteredItems = React.useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-    if (!query) return productFieldTypes;
-    return productFieldTypes.filter(
-      (item) =>
-        item.name.toLowerCase().includes(query) ||
-        String(item.id).includes(query),
-    );
-  }, [productFieldTypes, searchQuery]);
+  // Handle scroll event for infinite loading
+  useEffect(() => {
+    const tableElement = tableScrollRef.current?.querySelector(
+      ".ant-table-body",
+    ) as HTMLElement;
+
+    if (!tableElement) return;
+
+    const handleScroll = () => {
+      const scrollTop = tableElement.scrollTop;
+      const scrollHeight = tableElement.scrollHeight;
+      const clientHeight = tableElement.clientHeight;
+
+      // Trigger load more when user is near the bottom (within 50px)
+      if (scrollHeight - (scrollTop + clientHeight) < 50 && hasMore && !isLoading) {
+        setCurrentPage((prev) => prev + 1);
+      }
+    };
+
+    tableElement.addEventListener("scroll", handleScroll);
+
+    return () => {
+      tableElement.removeEventListener("scroll", handleScroll);
+    };
+  }, [hasMore, isLoading]);
+
+  // Handle page change for infinite scroll
+  useEffect(() => {
+    if (currentPage > 1 && productFieldModal.type) {
+      handleFetchProductFieldTypes(currentPage, searchQuery);
+    }
+  }, [currentPage]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Handle search - reset to first page with debounce
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
+
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Set new timeout - wait 300ms after user stops typing
+    searchTimeoutRef.current = setTimeout(() => {
+      setCurrentPage(1);
+      setProductFieldTypes([]);
+      setHasMore(true);
+      isFetchingRef.current = false;
+      handleFetchProductFieldTypes(1, value);
+    }, 300);
+  };
 
   return (
     <>
       <div className="fixed inset-0 bg-black/20 bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="bg-white rounded-lg p-6 w-full max-w-175">
           <h2 className="text-xl font-semibold mb-4">
             Kerakli{" "}
             {productFieldModal.type === "product/type"
@@ -128,23 +221,40 @@ const ProductFieldModal: React.FC<IProps> = ({
                   ? "o'lchov birligi"
                   : productFieldModal.type === "product/model"
                     ? "model"
-                    : ""}ni tanlang
+                    : ""}
+            ni tanlang
           </h2>
           <div className="mb-3">
             <Input
               placeholder="Qidirish..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearch(e.target.value)}
               allowClear
             />
           </div>
-          <Table
-            dataSource={filteredItems}
-            columns={columns}
-            rowKey="id"
-            pagination={false}
-            scroll={{ y: 320 }}
-          />
+          <div ref={tableScrollRef}>
+            <Table
+              dataSource={productFieldTypes}
+              columns={columns}
+              rowKey="id"
+              pagination={false}
+              scroll={{ y: 320 }}
+              loading={isLoading && currentPage === 1}
+              locale={{
+                emptyText: productFieldTypes.length === 0 && !isLoading ? "Ma'lumot topilmadi" : "",
+              }}
+            />
+          </div>
+          {isLoading && currentPage > 1 && (
+            <div className="text-center py-2 text-sm text-gray-500">
+              Yuklanmoqda...
+            </div>
+          )}
+          {!hasMore && productFieldTypes.length > 0 && (
+            <div className="text-center py-2 text-sm text-gray-400">
+              Barcha ma'lumotlar yuklandi
+            </div>
+          )}
 
           <div className="flex items-center justify-end mt-4">
             <Button type="primary" onClick={() => onSelect(selectedValue)}>

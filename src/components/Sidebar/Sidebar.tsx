@@ -25,7 +25,7 @@ const Sidebar: React.FC = () => {
     <div
       className={`flex h-screen overflow-hidden ${theme === "dark" ? "bg-gray-900" : "bg-gray-50"}`}
     >
-      <aside className="fixed left-0 top-0 h-screen w-72 bg-[#1a2332] text-white flex flex-col shadow-xl z-40">
+      <aside className="fixed left-0 top-0 h-screen bg-[#1a2332] text-white flex flex-col shadow-xl z-40">
         <SidebarHeader />
         <SidebarNav />
         <SidebarFooter setShowLogoutConfirm={setShowLogoutConfirm} />

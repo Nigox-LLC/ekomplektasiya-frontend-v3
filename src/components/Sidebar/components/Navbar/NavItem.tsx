@@ -1,6 +1,6 @@
 import React from "react";
 import type { SidebarMenuItem } from "../SidebarNav";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { ChevronDown } from "lucide-react";
 import SubNavItem from "./SubNavItem";
 
@@ -14,6 +14,15 @@ interface IProps {
 const NavItem: React.FC<IProps> = React.memo(
   ({ item, setExpandedSection, expandedSection, counts }) => {
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const isActive = () => {
+      const pathname = location.pathname.split("/").pop() || "";
+      return (
+        pathname === item.id.replace("/", "") ||
+        (location.pathname === "/" && item.id === "/")
+      );
+    };
 
     const itemCounts = () => {
       if (!counts) return null;
@@ -33,7 +42,13 @@ const NavItem: React.FC<IProps> = React.memo(
     return (
       <div key={item.id} className="mb-2">
         <div
-          className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer ${expandedSection === item.id ? "bg-gray-700" : "hover:bg-gray-800"}`}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+            isActive()
+              ? "bg-blue-600 text-white"
+              : expandedSection === item.id
+                ? "bg-gray-700"
+                : "hover:bg-gray-800"
+          }`}
           onClick={() => {
             if (item.subItems) {
               setExpandedSection(expandedSection === item.id ? null : item.id);

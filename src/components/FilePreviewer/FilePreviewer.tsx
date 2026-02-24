@@ -10,7 +10,12 @@ type Props = {
   style?: React.CSSProperties;
 };
 
-export default function FilePreviewer({ file, file_url, className, style }: Props) {
+export default function FilePreviewer({
+  file,
+  file_url,
+  className,
+  style,
+}: Props) {
   const [url, setUrl] = useState<string>();
   const [htmlContent, setHtmlContent] = useState<string>("");
 
@@ -233,7 +238,9 @@ export default function FilePreviewer({ file, file_url, className, style }: Prop
 
   /* Fallback */
   const mime =
-    file?.type || inferMimeFromExt(file?.name || file_url) || "application/octet-stream";
+    file?.type ||
+    inferMimeFromExt(file?.name || file_url) ||
+    "application/octet-stream";
 
   return (
     <div className={className} style={{ padding: 16, ...style }}>

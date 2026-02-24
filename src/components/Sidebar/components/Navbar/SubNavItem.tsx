@@ -1,6 +1,6 @@
 import React from "react";
 import type { SidebarMenuItem } from "../SidebarNav";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 
 interface IProps {
   subItem: SidebarMenuItem;
@@ -11,6 +11,12 @@ interface IProps {
 const SubNavItem: React.FC<IProps> = React.memo(
   ({ subItem, itemID, counts }) => {
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const isActive = () => {
+      const pathname = location.pathname;
+      return pathname.includes(`${itemID}/${subItem.id}`) || pathname.endsWith(`/${subItem.id}`);
+    };
 
     const subItemCounts = () => {
       if (!counts) return null;
@@ -37,7 +43,9 @@ const SubNavItem: React.FC<IProps> = React.memo(
     return (
       <div
         key={subItem.id}
-        className="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-800"
+        className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+          isActive() ? "bg-blue-600 text-white" : "hover:bg-gray-800"
+        }`}
         onClick={() => navigate(`${itemID}/${subItem.id}`)}
       >
         {subItem.icon}

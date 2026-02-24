@@ -2,6 +2,7 @@ import { axiosAPI } from "@/service/axiosAPI";
 import { Button, Card } from "antd";
 import { FileText, Pencil, Plus } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 interface IProps {
   orderDataID: number | null;
@@ -82,15 +83,20 @@ const MainDocument: React.FC<IProps> = ({ orderDataID }) => {
     <>
       {mainDocument ? (
         <>
-          <Card className="border-2!">
+          <Card className="border-2 border-blue-200 rounded-lg shadow-md hover:shadow-lg transition-shadow bg-gradient-to-r from-blue-50 to-indigo-50">
             <div className="flex items-center justify-between gap-6">
-              <div className="flex items-center gap-2">
-                <FileText />
-                <p>{mainDocument?.file_name}</p>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <FileText className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-800">{mainDocument?.file_name}</p>
+                  <p className="text-xs text-gray-500">Asosiy hujjat</p>
+                </div>
               </div>
 
               <Button
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white"
                 onClick={() => openEditor()}
               >
                 <Pencil className="w-4 h-4" />
@@ -104,7 +110,11 @@ const MainDocument: React.FC<IProps> = ({ orderDataID }) => {
           <p>Asosiy fayl qo'shish</p>
           <Button
             onClick={() => {
-              setShowTemplatesList(true);
+              if (fileTemplates.length > 0) {
+                setShowTemplatesList(true);
+              } else {
+                toast.error("Shablonlar mavjud emas!");
+              }
             }}
             className="ml-[50%] translate-x-[-50%]"
           >

@@ -162,7 +162,7 @@ const LettersPage: React.FC = () => {
 
     fetchLetters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  }, [page, status]);
 
   // Scroll handler for infinite scroll
   const handleScroll = useCallback(() => {
@@ -291,7 +291,7 @@ const LettersPage: React.FC = () => {
                   key={letter.id}
                   className={`p-2 hover:shadow-lg transition-all cursor-pointer border-l-4 ${borderColor} ${
                     selectedLetter?.id === letter.id
-                      ? "bg-blue-200 border-blue-600"
+                      ? "bg-blue-200! border-blue-600!"
                       : ""
                   }`}
                   onClick={() => setSelectedLetter(letter)}
@@ -301,7 +301,10 @@ const LettersPage: React.FC = () => {
                       {/* Raqam + Sana */}
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-semibold text-sm text-gray-900">
-                          №: {highlightText(letter.incoming_number)}
+                          №:{" "}
+                          {letter.old_number
+                            ? highlightText(letter.old_number)
+                            : highlightText(letter.incoming_number)}
                         </span>
                         <span className="text-xs text-gray-500">
                           {highlightText(letter.send_date)}
@@ -313,19 +316,14 @@ const LettersPage: React.FC = () => {
                         Xodim: {highlightText(letter.receiver_name)}
                       </h3>
 
-                      <div className="flex items-end justify-between">
-                        {/* Department */}
-                        <div className="flex items-center gap-1 text-xs text-gray-600 mb-1">
-                          <Building2 className="size-3 text-gray-400 shrink-0" />
-                          <span className="truncate text-xs">
-                            {highlightText(letter.department_name)}
-                          </span>
-                        </div>
-
+                      <div className="flex items-start justify-between">
                         {/* Manzil */}
                         <div className="flex items-center gap-1 text-xs text-gray-600">
                           <MapPin className="size-3 text-gray-400 shrink-0" />
-                          <span className="truncate text-xs">
+                          <span
+                            className="truncate text-xs max-w-62.5"
+                            title={letter.region_name}
+                          >
                             {highlightText(letter.region_name)}
                           </span>
                         </div>

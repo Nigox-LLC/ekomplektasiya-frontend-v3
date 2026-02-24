@@ -17,6 +17,7 @@ import {
   Globe,
   X,
   Warehouse,
+  FileText,
 } from "lucide-react";
 import RelatedDocumentModal from "./RelatedDocumentModal";
 import { ExecutiveAction, type IjroStep } from "./ExecutiveAction";
@@ -27,7 +28,8 @@ import { SearchFilterPanel } from "./SearchFilterPanel";
 import SigningModal from "./SigningModal";
 import { SendDocumentModal } from "./SendDocumentModal";
 
-import { Badge, Button, Card, Input, InputNumber, Modal } from "antd";
+import { Badge, Button, Card, Input, InputNumber, Modal, Table } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import { axiosAPI } from "@/service/axiosAPI";
 import SendModal from "@/pages/CreateDocument/components/SendModal";
 import PostedProductModal from "./PostedProductModal/PostedProductModal";
@@ -36,6 +38,7 @@ import { toast } from "react-toastify";
 import { useAppSelector } from "@/store/hooks/hooks";
 import FilePreviewModal from "@/components/FilePreviewModal/FilePreviewModal";
 import { FilePreviewer } from "@/components";
+import EmployeeSelectModal from "@/components/EmployeeSelectModal/EmployeeSelectModal";
 
 interface Document {
   id: number;
@@ -71,10 +74,11 @@ interface Product {
   model: string;
   product_type?: IDName | null;
   product_model?: IDName | null;
-  size: IDName | string;
-  unit: IDName | string;
+  size: IDName | null;
+  unit: IDName | null;
   quantity: number;
   note: string;
+  attached_employee?: IDName | null;
   posted_website?: PostedWebsiteData | null;
 }
 
@@ -156,6 +160,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
   const [showSendModal, setShowSendModal] = useState(false);
   const [showCheckedWarehouseModal, setShowCheckedWarehouseModal] =
     useState(false);
+  const [showSelectEmployeeModal, setShowSelectEmployeeModal] = useState(0);
   const typeDropdownRef = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
   const [productFieldModalOpen, setProductFieldModalOpen] = useState<{
@@ -167,7 +172,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       | null;
     index: number;
   }>({ type: null, index: -1 });
-  const [selectedFileUrl, setSelectedFileUrl] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Har bir xat uchun alohida ijro qadamlari - xat ID bo'yicha
   const [ijroSteps, setIjroSteps] = useState<Record<number, IjroStep[]>>({});
@@ -320,6 +325,34 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
     return product.model || "";
   };
 
+  // handleUpdate order
+  const handleOrderUpdate = async () => {
+    if (orderData) {
+      try {
+        const response = await axiosAPI.patch(
+          `document/orders/${orderData.id}/`,
+          {
+            ...orderData,
+            products: orderData.products.map((product) => ({
+              ...product,
+              order_product_id: product.order_product_id,
+              product_type: product.product_type?.id,
+              product_model: product.product_model?.id,
+              size: product.size?.id,
+              unit: product.unit?.id,
+              attached_employee: product.attached_employee?.id,
+            })),
+          },
+        );
+        if (response.status === 200) {
+          toast.success("Buyurtma muvaffaqiyatli yangilandi");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+
   // handle update orderdata products input onchange
   const handleInputOnchange = (index: number, field: string, value: any) => {
     const updatedGoods = [...orderData!.products];
@@ -354,6 +387,278 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       e.target.select();
     }
   };
+
+  const goodsColumns: ColumnsType<Product> = [
+    {
+      title: "№",
+      key: "index",
+      width: 60,
+      render: (_value, _record, index) => (
+        <span className="text-sm text-gray-600">{index + 1}</span>
+      ),
+    },
+    {
+      title: "Buyurtma turi",
+      key: "type",
+      width: 160,
+      render: (_value, item, index) => (
+        <div className="relative inline-block">
+          <button
+            type="button"
+            onClick={() => handleTypeDropdownToggle(index)}
+            className="inline-flex items-center gap-2"
+          >
+            <Badge
+              className={`cursor-pointer transition-colors ${
+                item.type === "Tovar"
+                  ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
+                  : "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
+              }`}
+            >
+              {item.type}
+            </Badge>
+            <ChevronDown className="size-3 text-gray-500" />
+          </button>
+
+          {showTypeDropdown === index && (
+            <div
+              ref={(el) => {
+                typeDropdownRef.current[index] = el;
+              }}
+              className="absolute left-0 top-full mt-1 w-40 bg-white border border-gray-300 rounded-lg shadow-lg z-50"
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  handleInputOnchange(index, "type", "Tovar");
+                  setShowTypeDropdown(null);
+                }}
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2 rounded-t-lg transition-colors"
+              >
+                <div className="size-2 rounded-full bg-blue-500"></div>
+                Tovar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleInputOnchange(index, "type", "Xizmat");
+                  setShowTypeDropdown(null);
+                }}
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center gap-2 rounded-b-lg transition-colors"
+              >
+                <div className="size-2 rounded-full bg-purple-500"></div>
+                Xizmat
+              </button>
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: "Yillik reja",
+      key: "yearPlan",
+      width: 150,
+      align: "center",
+      render: (_value, item, index) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowYearPlanModal(true);
+            setSelectedRowIndex(index);
+          }}
+          className="inline-block"
+        >
+          {item.yearPlan ? (
+            <Badge className="bg-green-100 text-green-700 border-green-300 cursor-pointer hover:bg-green-200 transition-colors">
+              {item.yearPlan.name}
+            </Badge>
+          ) : (
+            <Badge className="bg-gray-100 text-gray-600 border-gray-300 cursor-pointer hover:bg-gray-200 transition-colors">
+              Tanlash
+            </Badge>
+          )}
+        </button>
+      ),
+    },
+    {
+      title: "Tovar nomi",
+      key: "name",
+      width: 200,
+      render: (_value, item, index) => (
+        <Input
+          type="text"
+          value={item.name}
+          onChange={(e) => handleInputOnchange(index, "name", e.target.value)}
+          className="text-sm font-medium border-0 focus:ring-1 focus:ring-blue-500"
+          placeholder="Nomi"
+        />
+      ),
+    },
+    {
+      title: "Tovar turi",
+      key: "product_type",
+      width: 160,
+      render: (_value, item, index) => (
+        <Button
+          className="w-full"
+          onClick={() => {
+            setProductFieldModalOpen({
+              type: "product/type",
+              index,
+            });
+          }}
+        >
+          {isIdName(item.product_type) && item.product_type.id
+            ? item.product_type.name
+            : "Turi tanlang"}
+        </Button>
+      ),
+    },
+    {
+      title: "Modeli",
+      key: "product_model",
+      width: 140,
+      render: (_value, item, index) => (
+        <Button
+          className="w-full"
+          onClick={() => {
+            setProductFieldModalOpen({
+              type: "product/model",
+              index,
+            });
+          }}
+          disabled={!isIdName(item.product_type) || !item.product_type?.id}
+        >
+          {getModelLabel(item) || "Tanlang"}
+        </Button>
+      ),
+    },
+    {
+      title: "O'lchami",
+      key: "size",
+      width: 140,
+      render: (_value, item, index) => (
+        <Button
+          className="w-full"
+          onClick={() => {
+            setProductFieldModalOpen({
+              type: "measurement/size",
+              index,
+            });
+          }}
+          disabled={!isIdName(item.product_model) || !item.product_model?.id}
+        >
+          {getFieldLabel(item.size) || "O'lcham tanlang"}
+        </Button>
+      ),
+    },
+    {
+      title: "O'lchov birligi",
+      key: "unit",
+      width: 170,
+      render: (_value, item, index) => (
+        <Button
+          className="w-full"
+          onClick={() => {
+            setProductFieldModalOpen({
+              type: "measurement/unit",
+              index,
+            });
+          }}
+        >
+          {getFieldLabel(item.unit) || "O'lchov birligini tanlang"}
+        </Button>
+      ),
+    },
+    {
+      title: "Soni",
+      key: "quantity",
+      width: 100,
+      align: "center",
+      render: (_value, item, index) => (
+        <InputNumber
+          value={item.quantity}
+          onChange={(value) => {
+            if (typeof value === "number") {
+              handleInputOnchange(index, "quantity", value);
+            }
+          }}
+          className="text-sm text-center max-w-12 font-semibold border-0 focus:ring-1 focus:ring-blue-500"
+          min={0}
+          onFocus={handleQuantityFocus}
+        />
+      ),
+    },
+    {
+      title: "Izoh",
+      key: "note",
+      width: 200,
+      render: (_value, item, index) => (
+        <Input
+          type="text"
+          value={item.note}
+          onChange={(e) => handleInputOnchange(index, "note", e.target.value)}
+          className="text-sm italic border-0 focus:ring-1 focus:ring-blue-500"
+          placeholder="Izoh"
+        />
+      ),
+    },
+    {
+      title: "Biriktirilgan xodim",
+      key: "attached_employee",
+      width: 200,
+      render: (_value, item) => (
+        <Button
+          onClick={() => {
+            setShowSelectEmployeeModal(item.id);
+          }}
+          className="text-sm text-gray-600"
+        >
+          {item.attached_employee?.name || "Yo'q"}
+        </Button>
+      ),
+    },
+    {
+      title: "Saytga joylash",
+      key: "post",
+      width: 150,
+      align: "center",
+      render: (_value, item) => (
+        <Button
+          type="primary"
+          size="small"
+          onClick={() => handleOpenPostedModal(item)}
+          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border-0 shadow-sm hover:shadow-md transition-all flex items-center gap-1.5 px-3 py-1 h-8"
+          icon={<Globe className="w-3.5 h-3.5" />}
+        >
+          <span className="text-xs font-medium">Joylash</span>
+        </Button>
+      ),
+    },
+    {
+      title: "Amallar",
+      key: "actions",
+      width: 100,
+      align: "center",
+      render: (_value, _item, index) => (
+        <button
+          onClick={() => {
+            const updatedGoods = orderData?.products.filter(
+              (_product, i) => i !== index,
+            );
+            // @ts-ignore
+            setOrderData((prev) => ({
+              ...prev,
+              products: updatedGoods || [],
+            }));
+          }}
+          className="text-red-500 hover:text-red-700 transition-colors"
+        >
+          <Trash2 className="size-4" />
+        </button>
+      ),
+    },
+  ];
 
   // cancel order document
   const handleCancelOrder = async () => {
@@ -419,1233 +724,778 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header - Ortga va Yuborish tugmalari - STICKY */}
-      <div className="sticky top-0 z-10 bg-white pb-6 pt-4 border-b border-gray-200">
-        <div className="flex items-center gap-3">
-          {onBack && (
-            <Button
-              variant="outlined"
-              size="medium"
-              onClick={onBack}
-              className="gap-2 border-2 border-gray-300 hover:border-gray-500 h-12 px-6"
-            >
-              <ArrowLeft className="size-5" />
-              <span className="font-medium text-base">Ortga</span>
-            </Button>
-          )}
-          {/* Kelishish tugmasi - backup bo'limida yashirilgan */}
-          {orderData?.movement_type === "in_approval" && (
-            <Button
-              variant="outlined"
-              size="medium"
-              onClick={() => setShowAgreementModal(true)}
-              className={`gap-2 border-2 h-12 px-6 ${
-                agreementStatus === "roziman"
-                  ? "border-green-600 text-green-700 bg-green-50 hover:bg-green-100 hover:border-green-700"
-                  : agreementStatus === "rozi-emasman"
-                    ? "border-red-500 text-red-700 bg-red-50 hover:bg-red-100"
-                    : agreementStatus === "qisman"
-                      ? "border-yellow-500 text-yellow-700 bg-yellow-50 hover:bg-yellow-100"
-                      : "border-purple-300 text-purple-600 hover:border-purple-500 hover:bg-purple-50"
-              }`}
-            >
-              {(!agreementStatus || agreementStatus === "roziman") && (
-                <HandshakeIcon className="w-4 h-4 mix-blend-multiply" />
-              )}
-              <span className="font-medium text-base">
-                {agreementStatus === "roziman" && "Kelishilgan"}
-                {agreementStatus === "rozi-emasman" && "Kelishilmagan"}
-                {agreementStatus === "qisman" && "Qisman"}
-                {!agreementStatus && "Kelishish"}
-              </span>
-            </Button>
-          )}
-          <Button
-            variant="outlined"
-            size="medium"
-            onClick={() => setShowExecutiveActionModal(true)}
-            className="gap-2 border-2 border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-50 h-12 px-6"
-          >
-            <GitBranch className="w-4 h-4" />
-            <span className="font-medium text-base">Ijro qadamlari</span>
-          </Button>
-          {/* Imzolash tugmasi - approval bo'limida yashirilgan */}
-          {orderData?.movement_type === "in_signing" && (
-            <Button
-              variant="filled"
-              className="border! border-blue-500!"
-              type="primary"
-              size="medium"
-              color="blue"
-              onClick={() => {
-                setShowSigningModal(true);
-                console.log(orderData);
-              }}
-            >
-              <Pencil className="w-4 h-4 mix-blend-multiply" />
-              <span className="font-medium text-base">Imzolash</span>
-            </Button>
-          )}
-
-          {orderData?.movement_type === "in_signing" && (
-            <Button
-              variant="outlined"
-              size="medium"
-              onClick={() => setShowAgreementModal(true)}
-              className={`gap-2 border-2 h-12 px-6 ${agreementStatus === "roziman" ? "border-green-600 text-green-700 bg-green-50 hover:bg-green-100 hover:border-green-700" : agreementStatus === "rozi-emasman" ? "border-red-500 text-red-700 bg-red-50 hover:bg-red-100" : agreementStatus === "qisman" ? "border-yellow-500 text-yellow-700 bg-yellow-50 hover:bg-yellow-100" : "border-purple-300 text-purple-600 hover:border-purple-500 hover:bg-purple-50"}`}
-            >
-              <HandshakeIcon className="w-4 h-4 text-green-600" />
-              <span className="font-medium text-base text-green-700">
-                Kelishish
-              </span>
-            </Button>
-          )}
-          <div className="ml-auto flex items-center gap-4">
-            <Button type="primary" onClick={() => setShowSendModal(true)}>
-              <Send className="w-4 h-4" />
-              <span className="text-base">Yuborish</span>
-            </Button>
-            <Button
-              variant="filled"
-              className="border! border-red-500!"
-              type="primary"
-              size="medium"
-              color="red"
-              onClick={() => {
-                setShowCancelConfirm(true);
-                initializeCancelProducts();
-              }}
-            >
-              <X className="size-4" />
-              Bekor qilish
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Warnig section: Checking warehouse */}
-      <div>
-        <h2 className="text-lg italic text-red-400">
-          Tovarlar sotuvga chiqarishdan avval uni omborlar qoldiqlaridan
-          tekshirish talab etiladi
-        </h2>
-      </div>
-
-      {/* Buyurtma uchun kelgan tovarlar ro'yxati - Collapse Card */}
-      <div className="shadow-md rounded-md border border-gray-200">
-        <button
-          onClick={() => setShowGoodsTable(!showGoodsTable)}
-          className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-        >
+    <>
+      <div className="space-y-6">
+        {/* Header - Ortga va Yuborish tugmalari - STICKY */}
+        <div className="sticky top-0 z-10 bg-white pb-6 pt-4 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <ShoppingCart className="w-8 h-8 text-gray-700" strokeWidth={1.5} />
-            <div className="text-left">
-              <h3 className="text-base font-semibold text-gray-900">
-                Buyurtma uchun kelgan tovarlar ro'yxati
-              </h3>
-              <p className="text-sm text-gray-500">
-                Jami: {orderData?.products.length} ta tovar
-              </p>
-            </div>
-          </div>
-          {showGoodsTable ? (
-            <ChevronUp className="w-5 h-5 text-gray-500" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-gray-500" />
-          )}
-        </button>
-
-        {showGoodsTable && (
-          <div className="border-t border-gray-200 animate-in slide-in-from-top-2 duration-200">
-            <div className="max-h-[600px] overflow-auto p-4">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                      №
-                    </th>
-                    <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                      Buyurtma turi
-                    </th>
-                    <th className="border border-gray-300 px-4 py-3 text-center text-sm font-semibold text-gray-700">
-                      Yillik reja
-                    </th>
-                    <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                      Tovar nomi
-                    </th>
-                    <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                      Tovar turi
-                    </th>
-                    <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                      Modeli
-                    </th>
-                    <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                      O'lchami
-                    </th>
-                    <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                      O'lchov birligi
-                    </th>
-                    <th className="border border-gray-300 px-4 py-3 text-center text-sm font-semibold text-gray-700">
-                      Soni
-                    </th>
-                    <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                      Izoh
-                    </th>
-                    <th className="border border-gray-300 px-4 py-3 text-center text-sm font-semibold text-gray-700 bg-blue-50">
-                      Saytga joylash
-                    </th>
-                    <th className="border border-gray-300 px-4 py-3 text-center text-sm font-semibold text-gray-700">
-                      Amallar
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orderData?.products.map((item, index) => (
-                    <tr
-                      key={item.id}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="border border-gray-300 px-4 py-3 text-sm text-gray-600 text-center">
-                        {index + 1}
-                      </td>
-
-                      {/* Buyurtma turi - badge with dropdown */}
-                      <td className="border border-gray-300 px-4 py-3 relative">
-                        <div className="relative inline-block">
-                          <button
-                            type="button"
-                            onClick={() => handleTypeDropdownToggle(index)}
-                            className="inline-flex items-center gap-2"
-                          >
-                            <Badge
-                              className={`cursor-pointer transition-colors ${
-                                item.type === "Tovar"
-                                  ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
-                                  : "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
-                              }`}
-                            >
-                              {item.type}
-                            </Badge>
-                            <ChevronDown className="size-3 text-gray-500" />
-                          </button>
-
-                          {showTypeDropdown === index && (
-                            <div
-                              ref={(el) => {
-                                typeDropdownRef.current[index] = el;
-                              }}
-                              className="absolute left-0 top-full mt-1 w-40 bg-white border border-gray-300 rounded-lg shadow-lg z-50"
-                            >
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  handleInputOnchange(index, "type", "Tovar");
-                                  setShowTypeDropdown(null);
-                                }}
-                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2 rounded-t-lg transition-colors"
-                              >
-                                <div className="size-2 rounded-full bg-blue-500"></div>
-                                Tovar
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  handleInputOnchange(index, "type", "Xizmat");
-                                  setShowTypeDropdown(null);
-                                }}
-                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center gap-2 rounded-b-lg transition-colors"
-                              >
-                                <div className="size-2 rounded-full bg-purple-500"></div>
-                                Xizmat
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Yillik reja */}
-                      <td className="border border-gray-300 px-4 py-3 text-sm text-center">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowYearPlanModal(true);
-                            setSelectedRowIndex(index);
-                          }}
-                          className="inline-block"
-                        >
-                          {item.yearPlan ? (
-                            <Badge className="bg-green-100 text-green-700 border-green-300 cursor-pointer hover:bg-green-200 transition-colors">
-                              {item.yearPlan.name}
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-gray-100 text-gray-600 border-gray-300 cursor-pointer hover:bg-gray-200 transition-colors">
-                              Tanlash
-                            </Badge>
-                          )}
-                        </button>
-                      </td>
-
-                      {/* Tovar nomi - editable */}
-                      <td className="border border-gray-300 px-2 py-2">
-                        <Input
-                          type="text"
-                          value={item.name}
-                          onChange={(e) =>
-                            handleInputOnchange(index, "name", e.target.value)
-                          }
-                          className="text-sm font-medium border-0 focus:ring-1 focus:ring-blue-500"
-                          placeholder="Nomi"
-                        />
-                      </td>
-
-                      {/* Tovar turi - selectable */}
-                      <td className="border border-gray-300 px-2 py-2">
-                        <Button
-                          className="w-full"
-                          onClick={() => {
-                            setProductFieldModalOpen({
-                              type: "product/type",
-                              index,
-                            });
-                          }}
-                        >
-                          {isIdName(item.product_type) && item.product_type.id
-                            ? item.product_type.name
-                            : "Turi tanlang"}
-                        </Button>
-                      </td>
-
-                      {/* Modeli - selectable */}
-                      <td className="border border-gray-300 px-2 py-2">
-                        <Button
-                          className="w-full"
-                          onClick={() => {
-                            setProductFieldModalOpen({
-                              type: "product/model",
-                              index,
-                            });
-                          }}
-                          disabled={
-                            !isIdName(item.product_type) ||
-                            !item.product_type?.id
-                          }
-                        >
-                          {getModelLabel(item) || "Tanlang"}
-                        </Button>
-                      </td>
-
-                      {/* O'lchami - selectable */}
-                      <td className="border border-gray-300 px-2 py-2">
-                        <Button
-                          className="w-full"
-                          onClick={() => {
-                            setProductFieldModalOpen({
-                              type: "measurement/size",
-                              index,
-                            });
-                          }}
-                          disabled={
-                            !isIdName(item.product_model) ||
-                            !item.product_model?.id
-                          }
-                        >
-                          {getFieldLabel(item.size) || "O'lcham tanlang"}
-                        </Button>
-                      </td>
-
-                      {/* O'lchov birligi - selectable */}
-                      <td className="border border-gray-300 px-2 py-2">
-                        <Button
-                          className="w-full"
-                          onClick={() => {
-                            setProductFieldModalOpen({
-                              type: "measurement/unit",
-                              index,
-                            });
-                          }}
-                        >
-                          {getFieldLabel(item.unit) ||
-                            "O'lchov birligini tanlang"}
-                        </Button>
-                      </td>
-
-                      {/* Soni - editable */}
-                      <td className="border border-gray-300 px-2 py-2">
-                        <InputNumber
-                          value={item.quantity}
-                          onChange={(value) => {
-                            if (typeof value === "number") {
-                              handleInputOnchange(index, "quantity", value);
-                            }
-                          }}
-                          className="text-sm text-center max-w-12 font-semibold border-0 focus:ring-1 focus:ring-blue-500"
-                          min={0}
-                          onFocus={handleQuantityFocus}
-                        />
-                      </td>
-
-                      {/* Izoh - editable */}
-                      <td className="border border-gray-300 px-2 py-2">
-                        <Input
-                          type="text"
-                          value={item.note}
-                          onChange={(e) =>
-                            handleInputOnchange(index, "note", e.target.value)
-                          }
-                          className="text-sm italic border-0 focus:ring-1 focus:ring-blue-500"
-                          placeholder="Izoh"
-                        />
-                      </td>
-
-                      <td className="border border-gray-300 px-4 py-3 text-center bg-blue-50/50">
-                        <Button
-                          type="primary"
-                          size="small"
-                          onClick={() => handleOpenPostedModal(item)}
-                          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border-0 shadow-sm hover:shadow-md transition-all flex items-center gap-1.5 px-3 py-1 h-8"
-                          icon={<Globe className="w-3.5 h-3.5" />}
-                        >
-                          <span className="text-xs font-medium">Joylash</span>
-                        </Button>
-                      </td>
-
-                      {/* O'chirish tugmasi */}
-                      <td className="border border-gray-300 px-4 py-3 text-center">
-                        <button
-                          onClick={() => {
-                            const updatedGoods = orderData.products.filter(
-                              (_, i) => i !== index,
-                            );
-                            //@ts-ignore
-                            setOrderData((prev) => ({
-                              ...prev,
-                              products: updatedGoods,
-                            }));
-                          }}
-                          className="text-red-500 hover:text-red-700 transition-colors"
-                        >
-                          <Trash2 className="size-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Yangi qator qo'shish tugmasi */}
-            <div className="mt-4 flex items-center gap-6 justify-between">
+            {onBack && (
               <Button
                 variant="outlined"
-                className="gap-2"
-                onClick={() => {
-                  // Yangi bo'sh qator qo'shish
-                  const newRow = {
-                    id: Date.now(),
-                    type: "Tovar",
-                    yearPlan: null,
-                    name: "",
-                    model: "",
-                    product_type: { id: 0, name: "" },
-                    product_model: { id: 0, name: "" },
-                    size: { id: 0, name: "" },
-                    unit: { id: 0, name: "" },
-                    quantity: 0,
-                    note: "",
-                  };
-                  // @ts-ignore
-                  setOrderData((prev) => ({
-                    ...prev,
-                    products: [...(prev?.products || []), newRow],
-                  }));
-                }}
+                size="medium"
+                onClick={onBack}
+                className="gap-2 border-2 border-gray-300 hover:border-gray-500 h-12 px-6"
               >
-                <Plus className="size-4" />
-                Tovar qo'shish
+                <ArrowLeft className="size-5" />
+                <span className="font-medium text-base">Ortga</span>
               </Button>
-
+            )}
+            {/* Kelishish tugmasi - backup bo'limida yashirilgan */}
+            {orderData?.movement_type === "in_approval" && (
+              <Button
+                variant="outlined"
+                size="medium"
+                onClick={() => setShowAgreementModal(true)}
+                className={`gap-2 border-2 h-12 px-6 ${
+                  agreementStatus === "roziman"
+                    ? "border-green-600 text-green-700 bg-green-50 hover:bg-green-100 hover:border-green-700"
+                    : agreementStatus === "rozi-emasman"
+                      ? "border-red-500 text-red-700 bg-red-50 hover:bg-red-100"
+                      : agreementStatus === "qisman"
+                        ? "border-yellow-500 text-yellow-700 bg-yellow-50 hover:bg-yellow-100"
+                        : "border-purple-300 text-purple-600 hover:border-purple-500 hover:bg-purple-50"
+                }`}
+              >
+                {(!agreementStatus || agreementStatus === "roziman") && (
+                  <HandshakeIcon className="w-4 h-4 mix-blend-multiply" />
+                )}
+                <span className="font-medium text-base">
+                  {agreementStatus === "roziman" && "Kelishilgan"}
+                  {agreementStatus === "rozi-emasman" && "Kelishilmagan"}
+                  {agreementStatus === "qisman" && "Qisman"}
+                  {!agreementStatus && "Kelishish"}
+                </span>
+              </Button>
+            )}
+            <Button
+              variant="outlined"
+              size="medium"
+              onClick={() => setShowExecutiveActionModal(true)}
+              className="gap-2 border-2 border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-50 h-12 px-6"
+            >
+              <GitBranch className="w-4 h-4" />
+              <span className="font-medium text-base">Ijro qadamlari</span>
+            </Button>
+            {/* Imzolash tugmasi - approval bo'limida yashirilgan */}
+            {orderData?.movement_type === "in_signing" && (
               <Button
                 variant="filled"
                 className="border! border-blue-500!"
                 type="primary"
+                size="medium"
                 color="blue"
-                onClick={() => setShowCheckedWarehouseModal(true)}
+                onClick={() => {
+                  setShowSigningModal(true);
+                  console.log(orderData);
+                }}
               >
-                Qoldiqlarni tekshirish
+                <Pencil className="w-4 h-4 mix-blend-multiply" />
+                <span className="font-medium text-base">Imzolash</span>
+              </Button>
+            )}
+
+            {orderData?.movement_type === "in_signing" && (
+              <Button
+                variant="outlined"
+                size="medium"
+                onClick={() => setShowAgreementModal(true)}
+                className={`gap-2 border-2 h-12 px-6 ${agreementStatus === "roziman" ? "border-green-600 text-green-700 bg-green-50 hover:bg-green-100 hover:border-green-700" : agreementStatus === "rozi-emasman" ? "border-red-500 text-red-700 bg-red-50 hover:bg-red-100" : agreementStatus === "qisman" ? "border-yellow-500 text-yellow-700 bg-yellow-50 hover:bg-yellow-100" : "border-purple-300 text-purple-600 hover:border-purple-500 hover:bg-purple-50"}`}
+              >
+                <HandshakeIcon className="w-4 h-4 text-green-600" />
+                <span className="font-medium text-base text-green-700">
+                  Kelishish
+                </span>
+              </Button>
+            )}
+            <div className="ml-auto flex items-center gap-4">
+              <Button type="primary" onClick={() => setShowSendModal(true)}>
+                <Send className="w-4 h-4" />
+                <span className="text-base">Yuborish</span>
+              </Button>
+              <Button
+                variant="solid"
+                type="primary"
+                color="green"
+                onClick={handleOrderUpdate}
+                className="gap-2"
+              >
+                <FileText className="w-4 h-4" />
+                Saqlash
+              </Button>
+              <Button
+                variant="filled"
+                className="border! border-red-500!"
+                type="primary"
+                size="medium"
+                color="red"
+                onClick={() => {
+                  setShowCancelConfirm(true);
+                  initializeCancelProducts();
+                }}
+              >
+                <X className="size-4" />
+                Bekor qilish
               </Button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* Hujjat ma'lumotlari */}
-      <div className="bg-white border border-gray-200 rounded-lg">
-        {/* Title */}
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
-            {categoryNames[
-              (orderData?.order_type || documentProp?.category) ?? ""
-            ] || documentProp?.category}{" "}
-            -{" "}
-            <span className="text-blue-600">
-              {orderData?.incoming_number || documentProp?.number}
-            </span>{" "}
-            -{" "}
-            {orderData?.created_at
-              ? formatDate(orderData.created_at)
-              : documentProp?.date}
+        {/* Warnig section: Checking warehouse */}
+        <div>
+          <h2 className="text-lg italic text-red-400">
+            Tovarlar sotuvga chiqarishdan avval uni omborlar qoldiqlaridan
+            tekshirish talab etiladi
           </h2>
         </div>
 
-        {/* Content List - Vertical format */}
-        <div className="p-6">
-          <div className="space-y-4">
-            {/* Hujjat raqami */}
-            <div className="flex items-center justify-between py-2 border-b border-gray-100">
-              <label className="text-sm text-gray-500 w-48">
-                Hujjat raqami
-              </label>
-              <div className="flex-1 flex items-center gap-3">
-                <button className="text-gray-400 hover:text-gray-600">
-                  <Edit2 className="size-4" />
-                </button>
-                <span className="text-base text-gray-900 font-medium">
-                  {orderData?.incoming_number || documentProp?.number}
-                </span>
-              </div>
-            </div>
-
-            {/* Hujjat sanasi */}
-            <div className="flex items-center justify-between py-2 border-b border-gray-100">
-              <label className="text-sm text-gray-500 w-48">
-                Hujjat sanasi
-              </label>
-              <div className="flex-1">
-                <span className="text-base text-gray-900">
-                  {orderData?.created_at
-                    ? formatDate(orderData.created_at)
-                    : documentProp?.date}
-                </span>
-              </div>
-            </div>
-
-            {/* Hujjat turi */}
-            <div className="flex items-center justify-between py-2 border-b border-gray-100">
-              <label className="text-sm text-gray-500 w-48">Hujjat turi</label>
-              <div className="flex-1">
-                <span className="text-base text-gray-900">
-                  {orderData?.order_type === "external"
-                    ? "Chiquvchi hujjat"
-                    : "Ichki hujjat"}
-                </span>
-              </div>
-            </div>
-
-            {/* Bo'lim */}
-            <div className="flex items-center justify-between py-2 border-b border-gray-100">
-              <label className="text-sm text-gray-500 w-48">Bo'lim</label>
-              <div className="flex-1 flex items-center gap-3">
-                <button className="text-gray-400 hover:text-gray-600">
-                  <Edit2 className="size-4" />
-                </button>
-                <span className="text-base text-gray-900">
-                  {orderData?.department_name || "-"}
-                </span>
-              </div>
-            </div>
-
-            {/* Qabul qiluvchi */}
-            <div className="flex items-center justify-between py-2 border-b border-gray-100">
-              <label className="text-sm text-gray-500 w-48">
-                Qabul qiluvchi
-              </label>
-              <div className="flex-1">
-                <span className="text-base text-gray-900">
-                  {orderData?.receiver_name || "-"}
-                </span>
-              </div>
-            </div>
-
-            {/* Jo'natuvchi */}
-            <div className="flex items-center justify-between py-2 border-b border-gray-100">
-              <label className="text-sm text-gray-500 w-48">Jo'natuvchi</label>
-              <div className="flex-1">
-                <span className="text-base text-gray-900">
-                  {orderData?.sender_name || "-"}
-                </span>
-              </div>
-            </div>
-
-            {/* Qisqacha mazmuni */}
-            <div className="flex items-start justify-between py-2 border-b border-gray-100">
-              <label className="text-sm text-gray-500 w-48 pt-1">
-                Qisqacha mazmuni
-              </label>
-              <div className="flex-1 flex items-start gap-3">
-                <button className="text-gray-400 hover:text-gray-600 mt-1">
-                  <Edit2 className="size-4" />
-                </button>
-                <p className="text-base text-gray-900 flex-1">
-                  {orderData?.comment || "-"}
+        {/* Buyurtma uchun kelgan tovarlar ro'yxati - Collapse Card */}
+        <div className="shadow-md rounded-md border border-gray-200 overflow-hidden flex flex-col">
+          <button
+            onClick={() => setShowGoodsTable(!showGoodsTable)}
+            className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <ShoppingCart
+                className="w-8 h-8 text-gray-700"
+                strokeWidth={1.5}
+              />
+              <div className="text-left">
+                <h3 className="text-base font-semibold text-gray-900">
+                  Buyurtma uchun kelgan tovarlar ro'yxati
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Jami: {orderData?.products.length} ta tovar
                 </p>
               </div>
             </div>
+            {showGoodsTable ? (
+              <ChevronUp className="w-5 h-5 text-gray-500" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-gray-500" />
+            )}
+          </button>
 
-            {/* Status */}
-            <div className="flex items-center justify-between py-2 border-b border-gray-100">
-              <label className="text-sm text-gray-500 w-48">Holat</label>
-              <div className="flex-1">
-                <span
-                  className={`text-base font-medium ${
-                    orderData?.is_accepted ? "text-green-600" : "text-red-600"
-                  }`}
+          {showGoodsTable && (
+            <div className="border-t border-gray-200 animate-in slide-in-from-top-2 duration-200">
+              <div className="p-4 overflow-x-auto">
+                <Table
+                  columns={goodsColumns}
+                  dataSource={orderData?.products || []}
+                  rowKey="id"
+                  pagination={false}
+                  scroll={{ x: "max-content", y: 520 }}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Yangi qator qo'shish tugmasi */}
+              <div className="mt-4 flex items-center gap-6 justify-between">
+                <Button
+                  variant="outlined"
+                  className="gap-2"
+                  onClick={() => {
+                    // Yangi bo'sh qator qo'shish
+                    const newRow = {
+                      id: Date.now(),
+                      type: "Tovar",
+                      yearPlan: null,
+                      name: "",
+                      model: "",
+                      product_type: { id: 0, name: "" },
+                      product_model: { id: 0, name: "" },
+                      size: { id: 0, name: "" },
+                      unit: { id: 0, name: "" },
+                      quantity: 0,
+                      note: "",
+                    };
+                    // @ts-ignore
+                    setOrderData((prev) => ({
+                      ...prev,
+                      products: [...(prev?.products || []), newRow],
+                    }));
+                  }}
                 >
-                  {orderData?.is_accepted
-                    ? "Qabul qilingan"
-                    : "Qabul qilinmagan"}
-                </span>
-              </div>
-            </div>
+                  <Plus className="size-4" />
+                  Tovar qo'shish
+                </Button>
 
-            {/* Hujjat heshteglari */}
-            <div className="flex items-center justify-between py-2 border-b border-gray-100">
-              <label className="text-sm text-gray-500 w-48">
-                Hujjat heshteglari
-              </label>
-              <div className="flex-1">
-                <button className="flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 border-2 border-dashed border-blue-300 rounded-full size-8">
-                  <Plus className="size-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Qabul qiluvchilar */}
-            <div className="flex items-start justify-between py-2">
-              <label className="text-sm text-gray-500 w-48">
-                Qabul qiluvchilar
-              </label>
-              <div className="flex-1">
-                {orderData?.participants.length ? (
-                  <div>
-                    {orderData.participants.map((participant) => (
-                      <div
-                        key={participant.id}
-                        className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-2"
-                      >
-                        <p className="text-sm font-medium text-gray-900">
-                          {participant.employee_name}
-                        </p>
-                        <p className="text-sm text-emerald-500">
-                          {getParticipantPurpose(participant)}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center text-gray-500">
-                    Qabul qiluvchi yo'q
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Kelishish uchun spravichnik */}
-          </div>
-        </div>
-      </div>
-
-      {/* Ilovalar bo'limi */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-base font-semibold text-gray-900 mb-4">
-          Biriktirilgan hujjatlar
-        </h3>
-
-        {/* Fayllar grid */}
-        {orderData &&
-        orderData.attachment_files &&
-        orderData.attachment_files.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            {orderData.attachment_files.map((file) => {
-              const fileExtension =
-                file.file_name.split(".").pop()?.toUpperCase() || "FILE";
-              const bgColor =
-                fileExtension === "PDF"
-                  ? "bg-red-600"
-                  : fileExtension === "DOCX" || fileExtension === "DOC"
-                    ? "bg-blue-600"
-                    : "bg-gray-600";
-
-              return (
-                <div
-                  key={file.id}
-                  className="bg-white border border-gray-200 rounded-lg p-4"
+                <Button
+                  variant="filled"
+                  className="border! border-blue-500!"
+                  type="primary"
+                  color="blue"
+                  onClick={() => setShowCheckedWarehouseModal(true)}
                 >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div
-                      className={`shrink-0 size-12 ${bgColor} rounded flex items-center justify-center`}
-                    >
-                      <span className="text-white text-xs font-bold">
-                        {fileExtension}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-blue-600 truncate">
-                        {file.file_name}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {formatFileSize(file.file_size)}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {formatDate(file.created_at)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-end gap-3">
-                    <button
-                      className="text-gray-400 hover:text-gray-600"
-                      onClick={() => {
-                        async function fetchAndOpenFile() {
-                          try {
-                            const response = await axiosAPI.get(
-                              `document/orders/attachment/${file.id}/`,
-                            );
-                            if (response.status === 200)
-                              return response.data.file_url;
-                          } catch (error) {
-                            console.log(error);
-                          }
-                        }
-
-                        fetchAndOpenFile().then((url) => {
-                          if (url) setSelectedFileUrl(url);
-                          else
-                            alert(
-                              "Faylni ochib bo'lmadi. Iltimos, qayta urinib ko'ring.",
-                            );
-                        });
-                      }}
-                    >
-                      <Eye className="size-5" />
-                    </button>
-                    <button
-                      className="text-gray-400 hover:text-gray-600"
-                      onClick={() => {
-                        const linkElement = window.document.createElement("a");
-                        linkElement.href = file.file;
-                        linkElement.download = file.file_name;
-                        linkElement.click();
-                      }}
-                    >
-                      <Download className="size-5" />
-                    </button>
-                    <button className="text-gray-400 hover:text-gray-600">
-                      <MoreVertical className="size-5" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 text-center text-gray-500">
-            Hech qanday ilova yo'q
-          </div>
-        )}
-
-        {/* Qo'shish tugmalari */}
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outlined"
-            className="gap-2"
-            onClick={handleFileUpload}
-          >
-            <Plus className="size-4" />
-            Ilova qo'shish
-          </Button>
+                  Qoldiqlarni tekshirish
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="hidden"
-          onChange={handleFileChange}
-        />
-      </div>
 
-      {/* Related Document Modal */}
-      <RelatedDocumentModal
-        isOpen={showRelatedDocModal}
-        onClose={() => setShowRelatedDocModal(false)}
-        onSave={(documents) => {
-          console.log("Selected related documents:", documents);
-          setShowRelatedDocModal(false);
-        }}
-      />
+        {/* Hujjat ma'lumotlari */}
+        <div className="bg-white border border-gray-200 rounded-lg">
+          {/* Title */}
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">
+              {orderData?.direction === "IN" ? "KIRIM" : "CHIQIM"} -{" "}
+              <span className="text-blue-600">
+                {orderData?.incoming_number || orderData?.old_number}
+              </span>{" "}
+              - {orderData?.created_at && formatDate(orderData.created_at)}
+            </h2>
+          </div>
 
-      <PostedProductModal
-        isOpen={showPostedProductModal}
-        onClose={() => setShowPostedProductModal(false)}
-        productName={selectedProduct?.name || ""}
-        productModel={selectedProduct?.model}
-        orderProductId={selectedProduct?.id ?? 0}
-        existingPost={selectedProduct?.posted_website} // <-- muhim qism
-        onSuccess={() => {
-          onSuccess?.("Mahsulot muvaffaqiyatli saytga joylandi!");
-        }}
-      />
-
-      <PostedProductModal
-        isOpen={showPostedProductModal}
-        onClose={() => setShowPostedProductModal(false)}
-        productName={selectedProduct?.name || ""}
-        productModel={selectedProduct?.model}
-        orderProductId={selectedProduct?.id ?? 0}
-        existingPost={selectedProduct?.posted_website}
-        onSuccess={() => {
-          onSuccess?.("Mahsulot muvaffaqiyatli saytga joylandi!");
-        }}
-      />
-
-      {productFieldModalOpen.type && (
-        <ProductFieldModal
-          productFieldModal={productFieldModalOpen}
-          onCancel={() => setProductFieldModalOpen({ type: null, index: -1 })}
-          onSelect={(value: IDName) => {
-            if (
-              productFieldModalOpen.type &&
-              productFieldModalOpen.index !== -1
-            ) {
-              const fieldMap = {
-                "product/type": "product_type",
-                "product/model": "product_model",
-                "measurement/size": "size",
-                "measurement/unit": "unit",
-              } as const;
-              const field = fieldMap[productFieldModalOpen.type];
-              handleInputOnchange(productFieldModalOpen.index, field, value);
-              setProductFieldModalOpen({ type: null, index: -1 });
-            }
-          }}
-          products={orderData?.products || []}
-        />
-      )}
-
-      {/* Executive Action Modal */}
-      <ExecutiveAction
-        isOpen={showExecutiveActionModal}
-        onClose={() => setShowExecutiveActionModal(false)}
-        steps={currentDocumentSteps}
-      />
-
-      {/* Year Plan Modal */}
-      <YearPlanModal
-        isOpen={showYearPlanModal}
-        onClose={() => setShowYearPlanModal(false)}
-        onSelect={(item) => {
-          console.log("Selected year plan item:", item);
-          // Bu yerda tanlangan tovarni jadvalga qo'shish logikasi
-          if (selectedRowIndex !== null) {
-            handleInputOnchange(selectedRowIndex, "yearPlan", item);
-          }
-          setShowYearPlanModal(false);
-        }}
-      />
-
-      {/* Add Goods Modal */}
-      <AddGoodsModal
-        isOpen={showAddGoodsModal}
-        onClose={() => setShowAddGoodsModal(false)}
-        onSave={(newGoods) => {
-          console.log("Added new goods:", newGoods);
-          // Bu yerda yangi tovarlarni jadvalga qo'shish logikasi
-          setShowAddGoodsModal(false);
-        }}
-      />
-
-      {/* Kelishish Modal */}
-      {showAgreementModal && <AgreementModal orderId={orderData?.id!} onSuccess={() => setShowAgreementModal(false)} setShowAgreementModal={setShowAgreementModal} />}
-
-      {/* Search Filter Panel */}
-      <SearchFilterPanel
-        isOpen={showSearchFilter}
-        onClose={() => setShowSearchFilter(false)}
-      />
-
-      {/* Imzolash Modal */}
-      <SigningModal
-        isOpen={showSigningModal && !!orderData}
-        onClose={() => setShowSigningModal(false)}
-        documentId={orderData?.id.toString() || ""}
-        onCancel={() => {
-          toast.info("Hujjat imzolash bekor qilindi");
-          setShowSigningModal(false);
-        }}
-      />
-
-      {/* Send Document Modal */}
-      {showSendModal && (
-        <SendModal
-          orderDataID={orderData?.id!}
-          setIsSendModalOpen={setShowSendModal}
-        />
-      )}
-
-      {showCheckedWarehouseModal && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-auto max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Warehouse size={24} color="#3b82f6" strokeWidth={2} />
+          {/* Content List - Vertical format */}
+          <div className="p-6">
+            <div className="space-y-4">
+              {/* Hujjat raqami */}
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <label className="text-sm text-gray-500 w-48">
+                  Hujjat raqami
+                </label>
+                <div className="flex-1 flex items-center gap-3">
+                  <button className="text-gray-400 hover:text-gray-600">
+                    <Edit2 className="size-4" />
+                  </button>
+                  <span className="text-base text-gray-900 font-medium">
+                    {orderData?.incoming_number || orderData.old_number}
+                  </span>
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900">
-                    Ombor qoldiqlarini tekshirish
-                  </h3>
-                  <p className="text-sm text-gray-500 mt-0.5">
-                    Buyurtmadagi tovarlar mavjudligi
+              </div>
+
+              {/* Hujjat sanasi */}
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <label className="text-sm text-gray-500 w-48">
+                  Hujjat sanasi
+                </label>
+                <div className="flex-1">
+                  <span className="text-base text-gray-900">
+                    {orderData?.created_at && orderData.created_at.split("T")[0].split("-").reverse().join("-")+" "+orderData.created_at.split("T")[1].slice(0,5)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Hujjat turi */}
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <label className="text-sm text-gray-500 w-48">
+                  Hujjat turi
+                </label>
+                <div className="flex-1">
+                  <span className="text-base text-gray-900">
+                    {orderData?.order_type === "external"
+                      ? "Chiquvchi hujjat"
+                      : "Ichki hujjat"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Bo'lim */}
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <label className="text-sm text-gray-500 w-48">Bo'lim</label>
+                <div className="flex-1 flex items-center gap-3">
+                  <button className="text-gray-400 hover:text-gray-600">
+                    <Edit2 className="size-4" />
+                  </button>
+                  <span className="text-base text-gray-900">
+                    {orderData?.department_name || "-"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Qabul qiluvchi */}
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <label className="text-sm text-gray-500 w-48">
+                  Qabul qiluvchi
+                </label>
+                <div className="flex-1">
+                  <span className="text-base text-gray-900">
+                    {orderData?.receiver_name || "-"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Jo'natuvchi */}
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <label className="text-sm text-gray-500 w-48">
+                  Jo'natuvchi
+                </label>
+                <div className="flex-1">
+                  <span className="text-base text-gray-900">
+                    {orderData?.sender_name || "-"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Qisqacha mazmuni */}
+              <div className="flex items-start justify-between py-2 border-b border-gray-100">
+                <label className="text-sm text-gray-500 w-48 pt-1">
+                  Qisqacha mazmuni
+                </label>
+                <div className="flex-1 flex items-start gap-3">
+                  <button className="text-gray-400 hover:text-gray-600 mt-1">
+                    <Edit2 className="size-4" />
+                  </button>
+                  <p className="text-base text-gray-900 flex-1">
+                    {orderData?.comment || "-"}
                   </p>
                 </div>
               </div>
-              <button
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                onClick={() => setShowCheckedWarehouseModal(false)}
-              >
-                <X size={24} className="text-gray-500" />
-              </button>
-            </div>
 
-            {/* Body - Products List */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-              {/* Summary Cards */}
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-blue-500 rounded-lg">
-                      <ShoppingCart size={16} className="text-white" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-blue-600 font-medium">
-                        Jami tovarlar
-                      </p>
-                      <p className="text-2xl font-bold text-blue-700">
-                        {orderData?.products.length || 0}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-red-500 rounded-lg">
-                      <X size={16} className="text-white" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-red-600 font-medium">
-                        Mavjud emas
-                      </p>
-                      <p className="text-2xl font-bold text-red-700">
-                        {orderData?.products.filter((p) => p.quantity > 0)
-                          .length || 0}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-green-500 rounded-lg">
-                      <Warehouse size={16} className="text-white" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-green-600 font-medium">
-                        Mavjud
-                      </p>
-                      <p className="text-2xl font-bold text-green-700">0</p>
-                    </div>
-                  </div>
+              {/* Status */}
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <label className="text-sm text-gray-500 w-48">Holat</label>
+                <div className="flex-1">
+                  <span
+                    className={`text-base font-medium ${
+                      orderData?.is_accepted ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {orderData?.is_accepted
+                      ? "Qabul qilingan"
+                      : "Qabul qilinmagan"}
+                  </span>
                 </div>
               </div>
 
-              {/* Warning Message */}
-              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded">
-                <div className="flex items-start gap-3">
-                  <div className="shrink-0 mt-0.5">
-                    <svg
-                      className="h-5 w-5 text-yellow-400"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+              {/* Hujjat heshteglari */}
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <label className="text-sm text-gray-500 w-48">
+                  Hujjat heshteglari
+                </label>
+                <div className="flex-1">
+                  <button className="flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 border-2 border-dashed border-blue-300 rounded-full size-8">
+                    <Plus className="size-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Qabul qiluvchilar */}
+              <div className="flex items-start justify-between py-2">
+                <label className="text-sm text-gray-500 w-48">
+                  Qabul qiluvchilar
+                </label>
+                <div className="flex-1">
+                  {orderData?.participants.length ? (
+                    <div>
+                      {orderData.participants.map((participant) => (
+                        <div
+                          key={participant.id}
+                          className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-2"
+                        >
+                          <p className="text-sm font-medium text-gray-900">
+                            {participant.employee_name}
+                          </p>
+                          <p className="text-sm text-emerald-500">
+                            {getParticipantPurpose(participant)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center text-gray-500">
+                      Qabul qiluvchi yo'q
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Kelishish uchun spravichnik */}
+            </div>
+          </div>
+        </div>
+
+        {/* Ilovalar bo'limi */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <div className="flex items-center justify-between gap-6 mb-2">
+            <h3 className="text-base font-semibold text-gray-900 mb-4">
+              Biriktirilgan hujjatlar
+            </h3>
+
+            {/* Qo'shish tugmalari */}
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outlined"
+                className="gap-2"
+                onClick={handleFileUpload}
+              >
+                <Plus className="size-4" />
+                Fayl qo'shish
+              </Button>
+            </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
+
+          {/* Fayllar grid */}
+          {orderData &&
+          orderData.attachment_files &&
+          orderData.attachment_files.length > 0 ? (
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              {orderData.attachment_files.map((file) => {
+                const fileExtension =
+                  file.file_name.split(".").pop()?.toUpperCase() || "FILE";
+                const bgColor =
+                  fileExtension === "PDF"
+                    ? "bg-red-600"
+                    : fileExtension === "DOCX" || fileExtension === "DOC"
+                      ? "bg-blue-600"
+                      : "bg-gray-600";
+
+                return (
+                  <div
+                    key={file.id}
+                    className="bg-white border border-gray-200 rounded-lg p-4"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <div
+                        className={`shrink-0 size-12 ${bgColor} rounded flex items-center justify-center`}
+                      >
+                        <span className="text-white text-xs font-bold">
+                          {fileExtension}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-blue-600 truncate">
+                          {file.file_name}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {formatDate(file.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-end gap-3">
+                      <button
+                        className="text-gray-400 hover:text-gray-600"
+                        onClick={() => {
+                          async function fetchAndOpenFile() {
+                            try {
+                              const response = await axiosAPI.get(
+                                `document/orders/attachment/${file.id}/`,
+                              );
+                              if (response.status === 200)
+                                return response.data.file_url;
+                            } catch (error) {
+                              console.log(error);
+                              toast.error(
+                                "Faylni yuklab olishda xatolik yuz berdi",
+                              );
+                            }
+                          }
+
+                          fetchAndOpenFile().then((url) => {
+                            if (url) {
+                              fetch(url)
+                                .then((res) => {
+                                  if (!res.ok)
+                                    throw new Error(
+                                      `HTTP error! status: ${res.status}`,
+                                    );
+                                  return res.blob();
+                                })
+                                .then((blob) => {
+                                  const fileObj: File = new File(
+                                    [blob],
+                                    file.file_name,
+                                    { type: blob.type },
+                                  );
+                                  setSelectedFile(fileObj);
+                                })
+                                .catch((error) => {
+                                  console.log(error);
+                                  toast.error(
+                                    "Faylni ochib bo'lmadi. Iltimos, qayta urinib ko'ring.",
+                                  );
+                                });
+                            } else
+                              toast.error(
+                                "Faylni ochib bo'lmadi. Iltimos, qayta urinib ko'ring.",
+                              );
+                          });
+                        }}
+                      >
+                        <Eye className="size-5" />
+                      </button>
+
+                      <button
+                        className="text-gray-400 hover:text-gray-600"
+                        onClick={() => {
+                          async function deleteAttachmentFile() {
+                            try {
+                              const response = await axiosAPI.delete(
+                                `document/orders/attachment/${file.id}/`,
+                              );
+                              if (response.status === 204) {
+                                toast.success("Fayl muvaffaqiyatli o'chirildi");
+                                fetchOrderData(); // Refresh order data to update attachment files
+                              } else {
+                                toast.error(
+                                  "Faylni o'chirishda xatolik yuz berdi",
+                                );
+                              }
+                            } catch (error) {
+                              console.log(error);
+                              toast.error(
+                                "Faylni o'chirishda xatolik yuz berdi",
+                              );
+                            }
+                          }
+
+                          deleteAttachmentFile();
+                        }}
+                      >
+                        <Trash2 className="size-5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 text-center text-gray-500">
+              Hech qanday ilova yo'q
+            </div>
+          )}
+        </div>
+
+        {/* Related Document Modal */}
+        <RelatedDocumentModal
+          isOpen={showRelatedDocModal}
+          onClose={() => setShowRelatedDocModal(false)}
+          onSave={(documents) => {
+            console.log("Selected related documents:", documents);
+            setShowRelatedDocModal(false);
+          }}
+        />
+
+        <PostedProductModal
+          isOpen={showPostedProductModal}
+          onClose={() => setShowPostedProductModal(false)}
+          productName={selectedProduct?.name || ""}
+          productModel={selectedProduct?.model}
+          orderProductId={selectedProduct?.id ?? 0}
+          existingPost={selectedProduct?.posted_website} // <-- muhim qism
+          onSuccess={() => {
+            onSuccess?.("Mahsulot muvaffaqiyatli saytga joylandi!");
+          }}
+        />
+
+        <PostedProductModal
+          isOpen={showPostedProductModal}
+          onClose={() => setShowPostedProductModal(false)}
+          productName={selectedProduct?.name || ""}
+          productModel={selectedProduct?.model}
+          orderProductId={selectedProduct?.id ?? 0}
+          existingPost={selectedProduct?.posted_website}
+          onSuccess={() => {
+            onSuccess?.("Mahsulot muvaffaqiyatli saytga joylandi!");
+          }}
+        />
+
+        {productFieldModalOpen.type && (
+          <ProductFieldModal
+            productFieldModal={productFieldModalOpen}
+            onCancel={() => setProductFieldModalOpen({ type: null, index: -1 })}
+            onSelect={(value: IDName) => {
+              if (
+                productFieldModalOpen.type &&
+                productFieldModalOpen.index !== -1
+              ) {
+                const fieldMap = {
+                  "product/type": "product_type",
+                  "product/model": "product_model",
+                  "measurement/size": "size",
+                  "measurement/unit": "unit",
+                } as const;
+                const field = fieldMap[productFieldModalOpen.type];
+                handleInputOnchange(productFieldModalOpen.index, field, value);
+                setProductFieldModalOpen({ type: null, index: -1 });
+              }
+            }}
+            products={orderData?.products || []}
+          />
+        )}
+
+        {/* Executive Action Modal */}
+        <ExecutiveAction
+          isOpen={showExecutiveActionModal}
+          onClose={() => setShowExecutiveActionModal(false)}
+          steps={currentDocumentSteps}
+        />
+
+        {/* Year Plan Modal */}
+        <YearPlanModal
+          isOpen={showYearPlanModal}
+          onClose={() => setShowYearPlanModal(false)}
+          onSelect={(item) => {
+            console.log("Selected year plan item:", item);
+            // Bu yerda tanlangan tovarni jadvalga qo'shish logikasi
+            if (selectedRowIndex !== null) {
+              handleInputOnchange(selectedRowIndex, "yearPlan", item);
+            }
+            setShowYearPlanModal(false);
+          }}
+        />
+
+        {/* Add Goods Modal */}
+        <AddGoodsModal
+          isOpen={showAddGoodsModal}
+          onClose={() => setShowAddGoodsModal(false)}
+          onSave={(newGoods) => {
+            console.log("Added new goods:", newGoods);
+            // Bu yerda yangi tovarlarni jadvalga qo'shish logikasi
+            setShowAddGoodsModal(false);
+          }}
+        />
+
+        {/* Kelishish Modal */}
+        {showAgreementModal && (
+          <AgreementModal
+            orderId={orderData?.id!}
+            onSuccess={() => setShowAgreementModal(false)}
+            setShowAgreementModal={setShowAgreementModal}
+          />
+        )}
+
+        {/* Search Filter Panel */}
+        <SearchFilterPanel
+          isOpen={showSearchFilter}
+          onClose={() => setShowSearchFilter(false)}
+        />
+
+        {/* Imzolash Modal */}
+        <SigningModal
+          isOpen={showSigningModal && !!orderData}
+          onClose={() => setShowSigningModal(false)}
+          documentId={orderData?.id.toString() || ""}
+          onCancel={() => {
+            toast.info("Hujjat imzolash bekor qilindi");
+            setShowSigningModal(false);
+          }}
+        />
+
+        {/* Send Document Modal */}
+        {showSendModal && (
+          <SendModal
+            orderDataID={orderData?.id!}
+            setIsSendModalOpen={setShowSendModal}
+          />
+        )}
+
+        {showCheckedWarehouseModal && (
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-auto max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Warehouse size={24} color="#3b82f6" strokeWidth={2} />
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-yellow-800">
-                      Diqqat!
-                    </h4>
-                    <p className="text-sm text-yellow-700 mt-1">
-                      Omborlarda buyurtmada ko'rsatilgan tovarlardan qoldiqlar
-                      yetarli emas yoki mavjud emas. Iltimos, quyidagi ro'yxatni
-                      ko'rib chiqing.
+                    <h3 className="text-xl font-bold text-gray-900">
+                      Ombor qoldiqlarini tekshirish
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-0.5">
+                      Buyurtmadagi tovarlar mavjudligi
                     </p>
                   </div>
                 </div>
-              </div>
-
-              {/* Products Table */}
-              <div className="border border-gray-200 rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-gray-200">
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        №
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Tovar nomi
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Model
-                      </th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Kerak
-                      </th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Mavjud
-                      </th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {orderData?.products.map((product, index) => {
-                      // Simulate warehouse stock (in real app, this would come from API)
-                      const availableStock = 0; // Mock data
-                      const isAvailable = availableStock >= product.quantity;
-
-                      return (
-                        <tr
-                          key={product.id}
-                          className={`hover:bg-gray-50 transition-colors ${
-                            !isAvailable ? "bg-red-50/30" : ""
-                          }`}
-                        >
-                          <td className="px-4 py-3 text-sm text-gray-600">
-                            {index + 1}
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="text-sm font-medium text-gray-900">
-                              {product.name || "-"}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {getFieldLabel(product.size) || "-"}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-700">
-                            {getModelLabel(product) || "-"}
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
-                              {product.quantity} {getFieldLabel(product.unit)}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-semibold ${
-                                isAvailable
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-red-100 text-red-800"
-                              }`}
-                            >
-                              {availableStock} {getFieldLabel(product.unit)}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            {isAvailable ? (
-                              <Badge className="bg-green-100 text-green-700 border-green-300">
-                                <span className="flex items-center gap-1">
-                                  <span className="size-1.5 bg-green-500 rounded-full"></span>
-                                  Mavjud
-                                </span>
-                              </Badge>
-                            ) : (
-                              <Badge className="bg-red-100 text-red-700 border-red-300">
-                                <span className="flex items-center gap-1">
-                                  <span className="size-1.5 bg-red-500 rounded-full"></span>
-                                  Mavjud emas
-                                </span>
-                              </Badge>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Additional Info */}
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h4 className="text-sm font-semibold text-blue-900 mb-2">
-                  📋 Tavsiyalar:
-                </h4>
-                <ul className="text-sm text-blue-800 space-y-1.5">
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-600 mt-0.5">•</span>
-                    <span>Boshqa omborlardan mavjud tovarlarni tekshiring</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-600 mt-0.5">•</span>
-                    <span>
-                      Yetkazib beruvchilar bilan bog'laning va yangi buyurtma
-                      bering
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-600 mt-0.5">•</span>
-                    <span>
-                      Buyurtmadagi tovarlar sonini mavjud qoldiqlarga qarab
-                      o'zgartiring
-                    </span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="flex items-center justify-between gap-3 p-6 border-t border-gray-200 bg-gray-50">
-              <Button
-                variant="outlined"
-                size="middle"
-                onClick={() => setShowCheckedWarehouseModal(false)}
-                className="gap-2"
-              >
-                <ArrowLeft className="size-4" />
-                Yopish
-              </Button>
-              <div className="flex gap-3">
-                <Button
-                  variant="outlined"
-                  size="middle"
-                  color="blue"
-                  className="gap-2"
+                <button
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  onClick={() => setShowCheckedWarehouseModal(false)}
                 >
-                  <Download className="size-4" />
-                  Hisobotni yuklash
-                </Button>
-                <Button
-                  variant="filled"
-                  type="primary"
-                  size="middle"
-                  onClick={() => {
-                    toast.info("Boshqa omborlarni tekshirilmoqda...");
-                    // Add logic to check other warehouses
-                  }}
-                  className="gap-2"
-                >
-                  <Warehouse className="size-4" />
-                  Boshqa omborlarni tekshirish
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showCancelConfirm && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl mx-auto max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-orange-50">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <X size={24} color="#ef4444" strokeWidth={2} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900">
-                    Buyurtmani bekor qilish
-                  </h3>
-                  <p className="text-sm text-gray-500 mt-0.5">
-                    Bekor qilish sababini kiriting
-                  </p>
-                </div>
-              </div>
-              <button
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                onClick={() => {
-                  setShowCancelConfirm(false);
-                  setCancelDesc("");
-                  setCancelProducts([]);
-                }}
-              >
-                <X size={20} className="text-gray-500" />
-              </button>
-            </div>
-
-            {/* Body */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bekor qilish sababi <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={cancelDesc}
-                  onChange={(e) => setCancelDesc(e.target.value)}
-                  placeholder="Buyurtmani bekor qilish sababini batafsil yozing..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors resize-none"
-                  rows={4}
-                />
-                {cancelDesc.trim().length === 0 && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    Sabab ko'rsatish majburiy
-                  </p>
-                )}
+                  <X size={24} className="text-gray-500" />
+                </button>
               </div>
 
-              {/* Products Selection Table */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Bekor qilinadigan tovarlar (ixtiyoriy)
-                  </label>
-                  <div className="flex gap-2">
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      onClick={selectAllProducts}
-                    >
-                      Barchasini tanlash
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      onClick={deselectAllProducts}
-                    >
-                      Tozalash
-                    </Button>
+              {/* Body - Products List */}
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+                {/* Summary Cards */}
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 bg-blue-500 rounded-lg">
+                        <ShoppingCart size={16} className="text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-blue-600 font-medium">
+                          Jami tovarlar
+                        </p>
+                        <p className="text-2xl font-bold text-blue-700">
+                          {orderData?.products.length || 0}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 bg-red-500 rounded-lg">
+                        <X size={16} className="text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-red-600 font-medium">
+                          Mavjud emas
+                        </p>
+                        <p className="text-2xl font-bold text-red-700">
+                          {orderData?.products.filter((p) => p.quantity > 0)
+                            .length || 0}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 bg-green-500 rounded-lg">
+                        <Warehouse size={16} className="text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-green-600 font-medium">
+                          Mavjud
+                        </p>
+                        <p className="text-2xl font-bold text-green-700">0</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
+
+                {/* Warning Message */}
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded">
+                  <div className="flex items-start gap-3">
+                    <div className="shrink-0 mt-0.5">
+                      <svg
+                        className="h-5 w-5 text-yellow-400"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-yellow-800">
+                        Diqqat!
+                      </h4>
+                      <p className="text-sm text-yellow-700 mt-1">
+                        Omborlarda buyurtmada ko'rsatilgan tovarlardan qoldiqlar
+                        yetarli emas yoki mavjud emas. Iltimos, quyidagi
+                        ro'yxatni ko'rib chiqing.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Products Table */}
                 <div className="border border-gray-200 rounded-lg overflow-hidden">
                   <table className="w-full">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-200">
-                        <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-16">
-                          <input
-                            type="checkbox"
-                            checked={cancelProducts.every((p) => p.is_cancel)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                selectAllProducts();
-                              } else {
-                                deselectAllProducts();
-                              }
-                            }}
-                            className="size-4 rounded border-gray-300"
-                          />
-                        </th>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                           №
                         </th>
@@ -1656,33 +1506,29 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                           Model
                         </th>
                         <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                          Jami soni
+                          Kerak
                         </th>
                         <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                          Bekor qilinadigan soni
+                          Mavjud
+                        </th>
+                        <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          Status
                         </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {orderData?.products.map((product, index) => {
-                        const cancelProduct = cancelProducts.find(
-                          (p) => p.id === product.id,
-                        );
+                        // Simulate warehouse stock (in real app, this would come from API)
+                        const availableStock = 0; // Mock data
+                        const isAvailable = availableStock >= product.quantity;
+
                         return (
                           <tr
                             key={product.id}
-                            className={`hover:bg-gray-50 transition-colors {
-                              cancelProduct?.is_cancel ? "bg-red-50/30" : ""
+                            className={`hover:bg-gray-50 transition-colors ${
+                              !isAvailable ? "bg-red-50/30" : ""
                             }`}
                           >
-                            <td className="px-4 py-3 text-center">
-                              <input
-                                type="checkbox"
-                                checked={cancelProduct?.is_cancel || false}
-                                onChange={() => toggleCancelProduct(product.id)}
-                                className="size-4 rounded border-gray-300"
-                              />
-                            </td>
                             <td className="px-4 py-3 text-sm text-gray-600">
                               {index + 1}
                             </td>
@@ -1698,30 +1544,37 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                               {getModelLabel(product) || "-"}
                             </td>
                             <td className="px-4 py-3 text-center">
-                              <span className="text-sm font-semibold text-gray-900">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
                                 {product.quantity} {getFieldLabel(product.unit)}
                               </span>
                             </td>
                             <td className="px-4 py-3 text-center">
-                              <Input
-                                type="number"
-                                min={1}
-                                max={product.quantity}
-                                value={
-                                  cancelProduct?.cancel_quantity ||
-                                  product.quantity
-                                }
-                                onChange={(e) => {
-                                  const value = Math.min(
-                                    Math.max(1, parseInt(e.target.value) || 1),
-                                    product.quantity,
-                                  );
-                                  updateCancelQuantity(product.id, value);
-                                }}
-                                disabled={!cancelProduct?.is_cancel}
-                                className="w-24 text-center"
-                                suffix={getFieldLabel(product.unit)}
-                              />
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-semibold ${
+                                  isAvailable
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-red-100 text-red-800"
+                                }`}
+                              >
+                                {availableStock} {getFieldLabel(product.unit)}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              {isAvailable ? (
+                                <Badge className="bg-green-100 text-green-700 border-green-300">
+                                  <span className="flex items-center gap-1">
+                                    <span className="size-1.5 bg-green-500 rounded-full"></span>
+                                    Mavjud
+                                  </span>
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-red-100 text-red-700 border-red-300">
+                                  <span className="flex items-center gap-1">
+                                    <span className="size-1.5 bg-red-500 rounded-full"></span>
+                                    Mavjud emas
+                                  </span>
+                                </Badge>
+                              )}
                             </td>
                           </tr>
                         );
@@ -1729,91 +1582,375 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                     </tbody>
                   </table>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  {cancelProducts.filter((p) => p.is_cancel).length > 0
-                    ? `${cancelProducts.filter((p) => p.is_cancel).length} ta tovar tanlandi`
-                    : "Agar hech qanday tovar tanlamasangiz, butun buyurtma bekor qilinadi"}
-                </p>
+
+                {/* Additional Info */}
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <h4 className="text-sm font-semibold text-blue-900 mb-2">
+                    📋 Tavsiyalar:
+                  </h4>
+                  <ul className="text-sm text-blue-800 space-y-1.5">
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-600 mt-0.5">•</span>
+                      <span>
+                        Boshqa omborlardan mavjud tovarlarni tekshiring
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-600 mt-0.5">•</span>
+                      <span>
+                        Yetkazib beruvchilar bilan bog'laning va yangi buyurtma
+                        bering
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-600 mt-0.5">•</span>
+                      <span>
+                        Buyurtmadagi tovarlar sonini mavjud qoldiqlarga qarab
+                        o'zgartiring
+                      </span>
+                    </li>
+                  </ul>
+                </div>
               </div>
 
-              {/* Warning */}
-              <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded">
-                <div className="flex items-start gap-3">
-                  <div className="shrink-0 mt-0.5">
-                    <svg
-                      className="h-5 w-5 text-red-400"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-red-800">
-                      Diqqat!
-                    </h4>
-                    <p className="text-sm text-red-700 mt-1">
-                      Buyurtmani bekor qilganingizdan so'ng, uni qayta tiklash
-                      mumkin emas. Ushbu amal qaytarib bo'lmaydi.
-                    </p>
-                  </div>
+              {/* Footer */}
+              <div className="flex items-center justify-between gap-3 p-6 border-t border-gray-200 bg-gray-50">
+                <Button
+                  variant="outlined"
+                  size="middle"
+                  onClick={() => setShowCheckedWarehouseModal(false)}
+                  className="gap-2"
+                >
+                  <ArrowLeft className="size-4" />
+                  Yopish
+                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    variant="outlined"
+                    size="middle"
+                    color="blue"
+                    className="gap-2"
+                  >
+                    <Download className="size-4" />
+                    Hisobotni yuklash
+                  </Button>
+                  <Button
+                    variant="filled"
+                    type="primary"
+                    size="middle"
+                    onClick={() => {
+                      toast.info("Boshqa omborlarni tekshirilmoqda...");
+                      // Add logic to check other warehouses
+                    }}
+                    className="gap-2"
+                  >
+                    <Warehouse className="size-4" />
+                    Boshqa omborlarni tekshirish
+                  </Button>
                 </div>
               </div>
             </div>
+          </div>
+        )}
 
-            {/* Footer */}
-            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
-              <Button
-                variant="outlined"
-                size="middle"
-                onClick={() => {
-                  setShowCancelConfirm(false);
-                  setCancelDesc("");
-                  setCancelProducts([]);
-                }}
-                className="gap-2"
-              >
-                <ArrowLeft className="size-4" />
-                Bekor qilish
-              </Button>
-              <Button
-                variant="filled"
-                type="primary"
-                size="middle"
-                danger
-                disabled={cancelDesc.trim().length === 0}
-                onClick={() => {
-                  if (cancelDesc.trim().length > 0) {
-                    handleCancelOrder();
+        {showCancelConfirm && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl mx-auto max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-orange-50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-red-100 rounded-lg">
+                    <X size={24} color="#ef4444" strokeWidth={2} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">
+                      Buyurtmani bekor qilish
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-0.5">
+                      Bekor qilish sababini kiriting
+                    </p>
+                  </div>
+                </div>
+                <button
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  onClick={() => {
                     setShowCancelConfirm(false);
                     setCancelDesc("");
                     setCancelProducts([]);
-                  }
-                }}
-                className="gap-2 bg-red-500 hover:bg-red-600 border-red-500"
-              >
-                <X className="size-4" />
-                Ok
-              </Button>
+                  }}
+                >
+                  <X size={20} className="text-gray-500" />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bekor qilish sababi <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={cancelDesc}
+                    onChange={(e) => setCancelDesc(e.target.value)}
+                    placeholder="Buyurtmani bekor qilish sababini batafsil yozing..."
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors resize-none"
+                    rows={4}
+                  />
+                  {cancelDesc.trim().length === 0 && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      Sabab ko'rsatish majburiy
+                    </p>
+                  )}
+                </div>
+
+                {/* Products Selection Table */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Bekor qilinadigan tovarlar (ixtiyoriy)
+                    </label>
+                    <div className="flex gap-2">
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={selectAllProducts}
+                      >
+                        Barchasini tanlash
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={deselectAllProducts}
+                      >
+                        Tozalash
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-200">
+                          <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-16">
+                            <input
+                              type="checkbox"
+                              checked={cancelProducts.every((p) => p.is_cancel)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  selectAllProducts();
+                                } else {
+                                  deselectAllProducts();
+                                }
+                              }}
+                              className="size-4 rounded border-gray-300"
+                            />
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            №
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Tovar nomi
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Model
+                          </th>
+                          <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Jami soni
+                          </th>
+                          <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Bekor qilinadigan soni
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {orderData?.products.map((product, index) => {
+                          const cancelProduct = cancelProducts.find(
+                            (p) => p.id === product.id,
+                          );
+                          return (
+                            <tr
+                              key={product.id}
+                              className={`hover:bg-gray-50 transition-colors {
+                              cancelProduct?.is_cancel ? "bg-red-50/30" : ""
+                            }`}
+                            >
+                              <td className="px-4 py-3 text-center">
+                                <input
+                                  type="checkbox"
+                                  checked={cancelProduct?.is_cancel || false}
+                                  onChange={() =>
+                                    toggleCancelProduct(product.id)
+                                  }
+                                  className="size-4 rounded border-gray-300"
+                                />
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-600">
+                                {index + 1}
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {product.name || "-"}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {getFieldLabel(product.size) || "-"}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-700">
+                                {getModelLabel(product) || "-"}
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                <span className="text-sm font-semibold text-gray-900">
+                                  {product.quantity}{" "}
+                                  {getFieldLabel(product.unit)}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  max={product.quantity}
+                                  value={
+                                    cancelProduct?.cancel_quantity ||
+                                    product.quantity
+                                  }
+                                  onChange={(e) => {
+                                    const value = Math.min(
+                                      Math.max(
+                                        1,
+                                        parseInt(e.target.value) || 1,
+                                      ),
+                                      product.quantity,
+                                    );
+                                    updateCancelQuantity(product.id, value);
+                                  }}
+                                  disabled={!cancelProduct?.is_cancel}
+                                  className="w-24 text-center"
+                                  suffix={getFieldLabel(product.unit)}
+                                />
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    {cancelProducts.filter((p) => p.is_cancel).length > 0
+                      ? `${cancelProducts.filter((p) => p.is_cancel).length} ta tovar tanlandi`
+                      : "Agar hech qanday tovar tanlamasangiz, butun buyurtma bekor qilinadi"}
+                  </p>
+                </div>
+
+                {/* Warning */}
+                <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded">
+                  <div className="flex items-start gap-3">
+                    <div className="shrink-0 mt-0.5">
+                      <svg
+                        className="h-5 w-5 text-red-400"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-red-800">
+                        Diqqat!
+                      </h4>
+                      <p className="text-sm text-red-700 mt-1">
+                        Buyurtmani bekor qilganingizdan so'ng, uni qayta tiklash
+                        mumkin emas. Ushbu amal qaytarib bo'lmaydi.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+                <Button
+                  variant="outlined"
+                  size="middle"
+                  onClick={() => {
+                    setShowCancelConfirm(false);
+                    setCancelDesc("");
+                    setCancelProducts([]);
+                  }}
+                  className="gap-2"
+                >
+                  <ArrowLeft className="size-4" />
+                  Bekor qilish
+                </Button>
+                <Button
+                  variant="filled"
+                  type="primary"
+                  size="middle"
+                  danger
+                  disabled={cancelDesc.trim().length === 0}
+                  onClick={() => {
+                    if (cancelDesc.trim().length > 0) {
+                      handleCancelOrder();
+                      setShowCancelConfirm(false);
+                      setCancelDesc("");
+                      setCancelProducts([]);
+                    }
+                  }}
+                  className="gap-2 bg-red-500 hover:bg-red-600 border-red-500"
+                >
+                  <X className="size-4" />
+                  Ok
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+        <Modal
+          open={!!selectedFile}
+          onCancel={() => setSelectedFile(null)}
+          footer={null}
+          width={900}
+          centered
+          bodyStyle={{ padding: 0, height: "65vh" }}
+        >
+          <FilePreviewer file={selectedFile!} />
+        </Modal>
+      </div>
+      {showSelectEmployeeModal > 0 && (
+        <EmployeeSelectModal
+          onClose={() => setShowSelectEmployeeModal(0)}
+          onSelect={(employee: any) => {
+            setOrderData((prev) => {
+              if (!prev) return null;
+
+              const updatedProducts = prev.products.map((product) => {
+                if (product.id === showSelectEmployeeModal) {
+                  return {
+                    ...product,
+                    attached_employee: {
+                      ...product.attached_employee,
+                      id: employee[0].id,
+                      name: employee[0].full_name,
+                    },
+                  };
+                }
+                return product;
+              });
+
+              return {
+                ...prev,
+                products: updatedProducts,
+              };
+            });
+            setShowSelectEmployeeModal(0);
+            toast.success("Xodim muvaffaqiyatli tanlandi");
+          }}
+          selectionType="single"
+        />
       )}
-      <Modal
-        open={!!selectedFileUrl}
-        onCancel={() => setSelectedFileUrl(null)}
-        footer={null}
-        width={900}
-        centered
-        bodyStyle={{ padding: 0, height: "65vh" }}
-      >
-        <FilePreviewer file_url={selectedFileUrl!} />
-      </Modal>
-    </div>
+    </>
   );
 };
 

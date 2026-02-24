@@ -1,6 +1,6 @@
 import { axiosAPI } from "@/service/axiosAPI";
 import React, { useEffect, useRef, useMemo } from "react";
-import { Table, Spin, Button, Checkbox } from "antd";
+import { Table, Spin, Button, Checkbox, Input } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { Check, X } from "lucide-react";
 
@@ -20,11 +20,13 @@ const EmployeeSelectModal: React.FC<IProps> = ({
     EmployeeType[]
   >([]);
   const [currentPage, setCurrentPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(20);
+  const [pageSize] = React.useState(20);
   const [total, setTotal] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(false);
   const [hasMore, setHasMore] = React.useState(true);
+  const [searchQuery, setSearchQuery] = React.useState("");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isFetchingRef = useRef(false);
 
   // Handle employee selection
   const handleSelectEmployee = (employee: EmployeeType) => {
@@ -89,13 +91,13 @@ const EmployeeSelectModal: React.FC<IProps> = ({
       ),
     },
     {
-      title: "ФИ.О.",
+      title: "Ism familiya",
       dataIndex: "full_name",
       key: "full_name",
       width: 200,
     },
     {
-      title: "Лавозими",
+      title: "Lavozimi",
       dataIndex: "position_name",
       key: "position_name",
       width: 200,
@@ -107,12 +109,26 @@ const EmployeeSelectModal: React.FC<IProps> = ({
     return employeeList.length < total && hasMore && !isLoading;
   }, [employeeList.length, total, hasMore, isLoading]);
 
-  // Fetch employee list from API
-  const fetchEmployees = async (page: number) => {
-    if (isLoading) return;
+  // Filter employees based on search query
+  const filteredEmployees = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return employeeList;
+    
+    return employeeList.filter(
+      (employee) =>
+        (employee.full_name?.toLowerCase().includes(query) ?? false) ||
+        (employee.position_name?.toLowerCase().includes(query) ?? false)
+    );
+  }, [employeeList, searchQuery]);
+
+  // Fetch employee list from API with pagination (no search parameter)
+  const fetchEmployees = async (page: number = 1) => {
+    if (isLoading || isFetchingRef.current || !hasMore) return;
+
+    isFetchingRef.current = true;
+    setIsLoading(true);
 
     try {
-      setIsLoading(true);
       const response = await axiosAPI.get("staff/by-name/", {
         params: {
           page,
@@ -135,57 +151,83 @@ const EmployeeSelectModal: React.FC<IProps> = ({
         }
 
         // Check if we've loaded all data
-        if (employeeList.length + results.length >= count) {
-          setHasMore(false);
-        }
+        const totalLoaded = page * pageSize;
+        setHasMore(totalLoaded < (count || 0));
       }
     } catch (error) {
       console.log("Error fetching employees:", error);
-      setHasMore(false);
     } finally {
       setIsLoading(false);
+      isFetchingRef.current = false;
     }
   };
 
   // Initial fetch
   useEffect(() => {
+    setCurrentPage(1);
+    setEmployeeList([]);
+    setHasMore(true);
+    isFetchingRef.current = false;
     fetchEmployees(1);
   }, []);
+
+  // Handle page change for infinite scroll
+  useEffect(() => {
+    if (currentPage > 1) {
+      fetchEmployees(currentPage);
+    }
+  }, [currentPage]);
+
+  // Handle search - update state only (no API request)
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
+  };
 
   // Handle scroll event for infinite scroll
   const handleTableScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
     const { scrollTop, scrollHeight, clientHeight } = target;
 
-    // Check if scrolled to bottom (within 100px threshold)
+    // Check if scrolled to bottom (within 50px threshold)
     if (
-      scrollHeight - scrollTop - clientHeight < 100 &&
+      scrollHeight - scrollTop - clientHeight < 50 &&
       canLoadMore &&
       !isLoading
     ) {
-      fetchEmployees(currentPage + 1);
+      setCurrentPage((prev) => prev + 1);
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
       <div className="flex flex-col max-w-175 max-h-125 w-full bg-white rounded-lg">
+        {/* Fixed Header */}
+        <div className="p-4 border-b border-gray-200 shrink-0">
+          <div className="flex items-center justify-between gap-4 mb-3">
+            <h2>
+              Xodimlar ro'yxati ({employeeList.length} / {total})
+            </h2>
+            <span className="text-3xl cursor-pointer" onClick={onClose}>
+              &times;
+            </span>
+          </div>
+          <Input
+            placeholder="Qidirish..."
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
+            allowClear
+          />
+        </div>
+
+        {/* Scrollable Content */}
         <div
           ref={scrollContainerRef}
           className="flex-1 overflow-y-auto"
           onScroll={handleTableScroll}
         >
-          <div className="flex items-center justify-between gap-4 p-4 border-b border-gray-200">
-            <h2>
-              Xodimlar ro'yxati ({employeeList.length} / {total})
-            </h2>
-            <span className="text-3xl" onClick={onClose}>
-              &times;
-            </span>
-          </div>
           <Table
             columns={columns}
-            dataSource={employeeList}
+            dataSource={filteredEmployees}
             rowKey="id"
             pagination={false}
             loading={isLoading && employeeList.length === 0}
@@ -209,6 +251,12 @@ const EmployeeSelectModal: React.FC<IProps> = ({
           )}
 
           {/* Empty state */}
+          {filteredEmployees.length === 0 && employeeList.length > 0 && searchQuery.trim() && !isLoading && (
+            <div className="flex items-center justify-center p-8 text-gray-500">
+              Xodimlar topilmadi
+            </div>
+          )}
+
           {employeeList.length === 0 && !isLoading && (
             <div className="flex items-center justify-center p-8 text-gray-500">
               Xodimlar topilmadi
