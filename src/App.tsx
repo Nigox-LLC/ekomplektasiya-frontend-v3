@@ -32,7 +32,6 @@ import {
   ExternalCreate,
 } from "@/pages";
 import { ToastContainer } from "react-toastify";
-import AgreementModal from "./components/AgreementModal";
 
 const App: React.FC = () => {
   const router = createBrowserRouter([
@@ -256,9 +255,8 @@ const App: React.FC = () => {
 
   return (
     <>
-      {/* <RouterProvider router={router} />
-      <ToastContainer /> */}
-      <AgreementModal />
+      <RouterProvider router={router} />
+      <ToastContainer />
     </>
   );
 };
