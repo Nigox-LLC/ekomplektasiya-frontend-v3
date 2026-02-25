@@ -1960,17 +1960,20 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             </div>
           </div>
         )}
+
         <Modal
           open={!!selectedFile}
           onCancel={() => setSelectedFile(null)}
           footer={null}
-          width={900}
+          width={1400}
           centered
-          bodyStyle={{ padding: 0, height: "65vh" }}
+          bodyStyle={{ padding: 0, height: "75vh", width: "100%" }}
         >
           <FilePreviewer file={selectedFile!} />
         </Modal>
+        
       </div>
+
       {showSelectEmployeeModal > 0 && (
         <EmployeeSelectModal
           onClose={() => setShowSelectEmployeeModal(0)}
