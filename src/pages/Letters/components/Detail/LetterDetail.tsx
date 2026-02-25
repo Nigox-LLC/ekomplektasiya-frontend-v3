@@ -100,7 +100,7 @@ interface Participant {
   employee_name: string;
 }
 
-interface OrderData {
+export interface OrderData {
   id: number;
   products: Product[];
   attachment_files: AttachmentFile[];
@@ -1157,7 +1157,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         </div>
 
         {/* Asosiy hujjat */}
-        <MainDocument />
+        <MainDocument orderData={orderData} />
 
         {/* Ilovalar bo'limi */}
         <div className="bg-white border border-gray-200 rounded-lg p-6">
