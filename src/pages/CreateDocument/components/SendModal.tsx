@@ -54,7 +54,7 @@ const SendModal: React.FC<SendModalProps> = ({
   };
 
   // fetch employees when sub-department is selected
-  const fetchEmployees = async (subDepartmentId: number) => {
+  const fetchEmployees = async (subDepartmentId?: number) => {
     try {
       const params = {
         department: selectedDepartment,
@@ -63,6 +63,7 @@ const SendModal: React.FC<SendModalProps> = ({
       const response = await axiosAPI.get("/staff/", {
         params: params,
       });
+      console.log(response);
       if (response.status === 200) setEmployees(response.data.results);
     } catch (error) {
       console.log(error);
@@ -115,7 +116,8 @@ const SendModal: React.FC<SendModalProps> = ({
                 value={selectedDepartment}
                 onChange={(value) => {
                   setSelectedDepartment(value);
-                  fetchSubDepartments(value);
+                  // fetchSubDepartments(value);
+                  fetchEmployees();
                 }}
                 className="w-full mb-4"
                 placeholder="Bo'limni tanlang"
@@ -172,46 +174,54 @@ const SendModal: React.FC<SendModalProps> = ({
           <div className="text-black! mb-4">
             <p className="mb-2 font-semibold">Xodimlar</p>
             <div className="max-h-48 overflow-y-auto border border-gray-300 rounded">
-              {employees.map((emp) => (
-                <div
-                  key={emp.id}
-                  className={`p-2 cursor-pointer hover:bg-gray-100 flex gap-4 ${selectedEmployee === emp.id ? "bg-gray-200" : ""}`}
-                  onClick={() => setSelectedEmployee(emp.id)}
-                >
-                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center shrink-0">
-                    <User className="size-5 text-gray-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-gray-900">
-                      {emp.full_name}
-                    </h4>
-                    <p className="text-sm text-gray-600">{emp.position.name}</p>
-                    <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
-                      <Building2 className="size-3" />
-                      <span>{emp.department.name}</span>
+              {employees.length > 0 ? (
+                employees.map((emp) => (
+                  <div
+                    key={emp.id}
+                    className={`p-2 cursor-pointer hover:bg-gray-100 flex gap-4 ${selectedEmployee === emp.id ? "bg-gray-200" : ""}`}
+                    onClick={() => setSelectedEmployee(emp.id)}
+                  >
+                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center shrink-0">
+                      <User className="size-5 text-gray-600" />
                     </div>
-                  </div>
-                  {selectedEmployee === emp.id && (
-                    <div className="shrink-0">
-                      <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                        <svg
-                          className="w-3 h-3 text-white"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={3}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-gray-900">
+                        {emp.full_name}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {emp.position ? emp.position.name : "Lavozim mavjud emas"}
+                      </p>
+                      <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+                        <Building2 className="size-3" />
+                        <span>{emp.department.name}</span>
                       </div>
                     </div>
-                  )}
+                    {selectedEmployee === emp.id && (
+                      <div className="shrink-0">
+                        <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                          <svg
+                            className="w-3 h-3 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={3}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="p-4 text-center text-gray-500">
+                  Xodim topilmadi
                 </div>
-              ))}
+              )}
             </div>
           </div>
 

@@ -71,6 +71,7 @@ const ProductFieldModal: React.FC<IProps> = ({
       title: "",
       dataIndex: "select",
       key: "select",
+      width: 80,
       render: (_: any, record: { id: number; name: string }) => (
         <input
           type="radio"
@@ -88,6 +89,7 @@ const ProductFieldModal: React.FC<IProps> = ({
       title: "ID",
       dataIndex: "id",
       key: "id",
+      width: 80,
     },
     {
       title: "Name",
@@ -96,7 +98,10 @@ const ProductFieldModal: React.FC<IProps> = ({
     },
   ];
 
-  const handleFetchProductFieldTypes = async (page: number = 1, search: string = "") => {
+  const handleFetchProductFieldTypes = async (
+    page: number = 1,
+    search: string = "",
+  ) => {
     if (isLoading || isFetchingRef.current || !hasMore) return;
 
     isFetchingRef.current = true;
@@ -122,7 +127,7 @@ const ProductFieldModal: React.FC<IProps> = ({
         } else {
           setProductFieldTypes((prev) => [...prev, ...results]);
         }
-        
+
         // Check if we have more data to fetch
         const totalLoaded = page * pageSize;
         setHasMore(totalLoaded < (count || 0));
@@ -160,7 +165,11 @@ const ProductFieldModal: React.FC<IProps> = ({
       const clientHeight = tableElement.clientHeight;
 
       // Trigger load more when user is near the bottom (within 50px)
-      if (scrollHeight - (scrollTop + clientHeight) < 50 && hasMore && !isLoading) {
+      if (
+        scrollHeight - (scrollTop + clientHeight) < 50 &&
+        hasMore &&
+        !isLoading
+      ) {
         setCurrentPage((prev) => prev + 1);
       }
     };
@@ -241,7 +250,10 @@ const ProductFieldModal: React.FC<IProps> = ({
               scroll={{ y: 320 }}
               loading={isLoading && currentPage === 1}
               locale={{
-                emptyText: productFieldTypes.length === 0 && !isLoading ? "Ma'lumot topilmadi" : "",
+                emptyText:
+                  productFieldTypes.length === 0 && !isLoading
+                    ? "Ma'lumot topilmadi"
+                    : "",
               }}
             />
           </div>

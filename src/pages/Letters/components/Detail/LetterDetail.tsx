@@ -39,6 +39,7 @@ import { useAppSelector } from "@/store/hooks/hooks";
 import FilePreviewModal from "@/components/FilePreviewModal/FilePreviewModal";
 import { FilePreviewer } from "@/components";
 import EmployeeSelectModal from "@/components/EmployeeSelectModal/EmployeeSelectModal";
+import MainDocument from "./MainDocument";
 
 interface Document {
   id: number;
@@ -67,7 +68,7 @@ type PostedWebsiteData = {
 
 interface Product {
   id: number;
-  order_product_id?: number;
+  order_product_type?: "order" | "service";
   type: string;
   yearPlan: any;
   name: string;
@@ -78,7 +79,7 @@ interface Product {
   unit: IDName | null;
   quantity: number;
   note: string;
-  attached_employee?: IDName | null;
+  attached_employee?: { id: number; full_name: string } | null;
   posted_website?: PostedWebsiteData | null;
 }
 
@@ -119,6 +120,7 @@ interface OrderData {
   comment: string;
   is_accepted: boolean;
   is_done: boolean | null;
+  is_send: boolean;
   done_date: string | null;
 }
 
@@ -173,6 +175,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
     index: number;
   }>({ type: null, index: -1 });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const mainFileInputRef = useRef<HTMLInputElement>(null);
 
   // Har bir xat uchun alohida ijro qadamlari - xat ID bo'yicha
   const [ijroSteps, setIjroSteps] = useState<Record<number, IjroStep[]>>({});
@@ -262,7 +265,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       );
 
       if (response.status === 200) {
-        setOrderData(response.data); // 🔥 faqat shuni qoldiring
+        setOrderData(response.data);
       }
     } catch (error) {
       console.log(error);
@@ -332,10 +335,11 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         const response = await axiosAPI.patch(
           `document/orders/${orderData.id}/`,
           {
-            ...orderData,
+            comment: orderData.comment,
+            participants: orderData.participants,
             products: orderData.products.map((product) => ({
               ...product,
-              order_product_id: product.order_product_id,
+              order_product_id: product.order_product_type,
               product_type: product.product_type?.id,
               product_model: product.product_model?.id,
               size: product.size?.id,
@@ -362,6 +366,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       ...prev!,
       products: updatedGoods,
     }));
+
+    console.log(orderData);
   };
 
   const handleTypeDropdownToggle = (itemId: number) => {
@@ -388,11 +394,21 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
     }
   };
 
+  const handleMainFileUpload = async (file: File) => {};
+
+  const handleMainFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      handleMainFileUpload(files[0]);
+    }
+  };
+
   const goodsColumns: ColumnsType<Product> = [
     {
       title: "№",
       key: "index",
       width: 60,
+      fixed: "left",
       render: (_value, _record, index) => (
         <span className="text-sm text-gray-600">{index + 1}</span>
       ),
@@ -400,7 +416,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
     {
       title: "Buyurtma turi",
       key: "type",
-      width: 160,
+      width: 140,
       render: (_value, item, index) => (
         <div className="relative inline-block">
           <button
@@ -409,15 +425,21 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             className="inline-flex items-center gap-2"
           >
             <Badge
-              className={`cursor-pointer transition-colors ${
-                item.type === "Tovar"
+              className={`cursor-pointer transition-colors p-2! flex! items-center! gap-2! rounded-md ${
+                item.order_product_type === "order"
                   ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
-                  : "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
+                  : item.order_product_type === "service"
+                    ? "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
+                    : ""
               }`}
             >
-              {item.type}
+              {item.order_product_type === "order"
+                ? "Tovar"
+                : item.order_product_type === "service"
+                  ? "Xizmat"
+                  : "Tanlang"}
+              <ChevronDown className="size-3 text-gray-500" />
             </Badge>
-            <ChevronDown className="size-3 text-gray-500" />
           </button>
 
           {showTypeDropdown === index && (
@@ -430,7 +452,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  handleInputOnchange(index, "type", "Tovar");
+                  handleInputOnchange(index, "order_product_type", "order");
                   setShowTypeDropdown(null);
                 }}
                 className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2 rounded-t-lg transition-colors"
@@ -441,7 +463,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  handleInputOnchange(index, "type", "Xizmat");
+                  handleInputOnchange(index, "order_product_type", "service");
                   setShowTypeDropdown(null);
                 }}
                 className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center gap-2 rounded-b-lg transition-colors"
@@ -466,16 +488,12 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             setShowYearPlanModal(true);
             setSelectedRowIndex(index);
           }}
-          className="inline-block"
+          className={`inline-block px-2 py-1 cursor-pointer rounded-md ${item.yearPlan ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200" : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"} transition-colors`}
         >
           {item.yearPlan ? (
-            <Badge className="bg-green-100 text-green-700 border-green-300 cursor-pointer hover:bg-green-200 transition-colors">
-              {item.yearPlan.name}
-            </Badge>
+            <Badge>{item.yearPlan.name}</Badge>
           ) : (
-            <Badge className="bg-gray-100 text-gray-600 border-gray-300 cursor-pointer hover:bg-gray-200 transition-colors">
-              Tanlash
-            </Badge>
+            <Badge>Tanlash</Badge>
           )}
         </button>
       ),
@@ -606,7 +624,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
     {
       title: "Biriktirilgan xodim",
       key: "attached_employee",
-      width: 200,
+      width: 150,
+      fixed: "right",
       render: (_value, item) => (
         <Button
           onClick={() => {
@@ -614,32 +633,46 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
           }}
           className="text-sm text-gray-600"
         >
-          {item.attached_employee?.name || "Yo'q"}
+          {item.attached_employee?.full_name || "Xodim tanlang"}
         </Button>
       ),
     },
-    {
-      title: "Saytga joylash",
-      key: "post",
-      width: 150,
-      align: "center",
-      render: (_value, item) => (
-        <Button
-          type="primary"
-          size="small"
-          onClick={() => handleOpenPostedModal(item)}
-          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border-0 shadow-sm hover:shadow-md transition-all flex items-center gap-1.5 px-3 py-1 h-8"
-          icon={<Globe className="w-3.5 h-3.5" />}
-        >
-          <span className="text-xs font-medium">Joylash</span>
-        </Button>
-      ),
-    },
+    ...(orderData?.movement_type === "executing"
+      ? [
+          {
+            title: "Yillik reja",
+            key: "yearPlan",
+            width: 150,
+            align: "center" as const,
+            render: (_value: any, item: Product, index: number) => (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowYearPlanModal(true);
+                  setSelectedRowIndex(index);
+                }}
+                className={`inline-block px-2 py-1 cursor-pointer rounded-md ${
+                  item.yearPlan
+                    ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200"
+                    : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"
+                } transition-colors`}
+              >
+                {item.yearPlan ? (
+                  <Badge>{item.yearPlan.name}</Badge>
+                ) : (
+                  <Badge>Tanlash</Badge>
+                )}
+              </button>
+            ),
+          },
+        ]
+      : []),
     {
       title: "Amallar",
       key: "actions",
       width: 100,
       align: "center",
+      fixed: "right",
       render: (_value, _item, index) => (
         <button
           onClick={() => {
@@ -777,22 +810,22 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               <span className="font-medium text-base">Ijro qadamlari</span>
             </Button>
             {/* Imzolash tugmasi - approval bo'limida yashirilgan */}
-            {orderData?.movement_type === "in_signing" && (
-              <Button
-                variant="filled"
-                className="border! border-blue-500!"
-                type="primary"
-                size="medium"
-                color="blue"
-                onClick={() => {
-                  setShowSigningModal(true);
-                  console.log(orderData);
-                }}
-              >
-                <Pencil className="w-4 h-4 mix-blend-multiply" />
-                <span className="font-medium text-base">Imzolash</span>
-              </Button>
-            )}
+            {/* {orderData?.movement_type === "in_signing" && ( */}
+            <Button
+              variant="filled"
+              className="border! border-blue-500!"
+              type="primary"
+              size="medium"
+              color="blue"
+              onClick={() => {
+                setShowSigningModal(true);
+                console.log(orderData);
+              }}
+            >
+              <Pencil className="w-4 h-4 mix-blend-multiply" />
+              <span className="font-medium text-base">Imzolash</span>
+            </Button>
+            {/* )} */}
 
             {orderData?.movement_type === "in_signing" && (
               <Button
@@ -808,9 +841,16 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               </Button>
             )}
             <div className="ml-auto flex items-center gap-4">
-              <Button type="primary" onClick={() => setShowSendModal(true)}>
+              <Button
+                type="primary"
+                onClick={() => setShowSendModal(true)}
+                // disabled={orderData?.is_send}
+              >
                 <Send className="w-4 h-4" />
-                <span className="text-base">Yuborish</span>
+                <span className="text-base">
+                  {/* {orderData?.is_send ? "Yuborilgan" : "Yuborish"} */}
+                  Yuborish
+                </span>
               </Button>
               <Button
                 variant="solid"
@@ -818,9 +858,12 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 color="green"
                 onClick={handleOrderUpdate}
                 className="gap-2"
+                disabled={orderData?.is_accepted}
               >
                 <FileText className="w-4 h-4" />
-                Saqlash
+                <span className="text-base">
+                  {orderData?.is_accepted ? "Qabul qilingan" : "Saqlash"}
+                </span>
               </Button>
               <Button
                 variant="filled"
@@ -832,9 +875,10 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                   setShowCancelConfirm(true);
                   initializeCancelProducts();
                 }}
+                disabled={orderData?.is_accepted}
               >
                 <X className="size-4" />
-                Bekor qilish
+                <span className="text-base">Bekor qilish</span>
               </Button>
             </div>
           </div>
@@ -889,16 +933,14 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               </div>
 
               {/* Yangi qator qo'shish tugmasi */}
-              <div className="mt-4 flex items-center gap-6 justify-between">
+              <div className="m-4 flex items-center gap-6 justify-between">
                 <Button
                   variant="outlined"
                   className="gap-2"
                   onClick={() => {
                     // Yangi bo'sh qator qo'shish
                     const newRow = {
-                      id: Date.now(),
                       type: "Tovar",
-                      yearPlan: null,
                       name: "",
                       model: "",
                       product_type: { id: 0, name: "" },
@@ -913,6 +955,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                       ...prev,
                       products: [...(prev?.products || []), newRow],
                     }));
+
+                    console.log(orderData);
                   }}
                 >
                   <Plus className="size-4" />
@@ -959,7 +1003,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                     <Edit2 className="size-4" />
                   </button>
                   <span className="text-base text-gray-900 font-medium">
-                    {orderData?.incoming_number || orderData.old_number}
+                    {orderData?.incoming_number || orderData?.old_number}
                   </span>
                 </div>
               </div>
@@ -971,7 +1015,14 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 </label>
                 <div className="flex-1">
                   <span className="text-base text-gray-900">
-                    {orderData?.created_at && orderData.created_at.split("T")[0].split("-").reverse().join("-")+" "+orderData.created_at.split("T")[1].slice(0,5)}
+                    {orderData?.created_at &&
+                      orderData.created_at
+                        .split("T")[0]
+                        .split("-")
+                        .reverse()
+                        .join("-") +
+                        " " +
+                        orderData.created_at.split("T")[1].slice(0, 5)}
                   </span>
                 </div>
               </div>
@@ -1104,6 +1155,9 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Asosiy hujjat */}
+        <MainDocument />
 
         {/* Ilovalar bo'limi */}
         <div className="bg-white border border-gray-200 rounded-lg p-6">
@@ -1373,7 +1427,6 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
           onClose={() => setShowSigningModal(false)}
           documentId={orderData?.id.toString() || ""}
           onCancel={() => {
-            toast.info("Hujjat imzolash bekor qilindi");
             setShowSigningModal(false);
           }}
         />
@@ -1945,8 +1998,14 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               };
             });
             setShowSelectEmployeeModal(0);
+            handleOrderUpdate();
             toast.success("Xodim muvaffaqiyatli tanlandi");
           }}
+          selectedEmployeeIds={
+            orderData?.products
+              .filter((p) => p.attached_employee)
+              .map((p) => p.attached_employee!.id) || []
+          }
           selectionType="single"
         />
       )}

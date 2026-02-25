@@ -36,6 +36,12 @@ interface SavedEimzoCert {
 
 interface EmployeeType {
   id: number;
+  is_active: boolean;
+  phone: string | null;
   full_name: string;
-  position_name: string;
+  department: IDName;
+  district: IDName;
+  position: IDName;
+  region: IDName;
+  role_display: string;
 }

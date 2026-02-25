@@ -151,6 +151,7 @@ const SignerCardSection: React.FC<IProps> = ({ orderID }) => {
           onClose={() => setSignerSelectModalOpen(false)}
           onSelect={handleAddSigner}
           selectionType="single"
+          selectedEmployeeIds={signers.map((s) => Number(s.id))}
         />
       )}
     </>

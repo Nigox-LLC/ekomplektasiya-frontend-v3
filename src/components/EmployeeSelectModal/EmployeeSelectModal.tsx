@@ -8,12 +8,14 @@ interface IProps {
   onClose: () => void;
   onSelect: (employees: EmployeeType[]) => void;
   selectionType?: "single" | "multiple";
+  selectedEmployeeIds: number[];
 }
 
 const EmployeeSelectModal: React.FC<IProps> = ({
   onClose,
   onSelect,
   selectionType = "multiple",
+  selectedEmployeeIds,
 }) => {
   const [employeeList, setEmployeeList] = React.useState<EmployeeType[]>([]);
   const [selectedEmployees, setSelectedEmployees] = React.useState<
@@ -170,6 +172,18 @@ const EmployeeSelectModal: React.FC<IProps> = ({
     isFetchingRef.current = false;
     fetchEmployees(1);
   }, []);
+
+  // Set selected employees based on selectedEmployeeIds when employee list changes
+  useEffect(() => {
+    if (employeeList.length > 0 && selectedEmployeeIds.length > 0) {
+      const preSelectedEmployees = employeeList.filter((emp) =>
+        selectedEmployeeIds.includes(emp.id)
+      );
+      setSelectedEmployees(preSelectedEmployees);
+    }
+    console.log(selectedEmployeeIds)
+    console.log(employeeList)
+  }, [employeeList, selectedEmployeeIds]);
 
   // Handle page change for infinite scroll
   useEffect(() => {

@@ -12,6 +12,7 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.2",
     "antd": "^6.3.0",
+    "antd-style": "^4.1.0",
     "docx-preview": "^0.3.7",
     "lucide-react": "^0.564.0",
     "react": "^19.2.0",
