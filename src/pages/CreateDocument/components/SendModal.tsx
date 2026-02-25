@@ -54,10 +54,10 @@ const SendModal: React.FC<SendModalProps> = ({
   };
 
   // fetch employees when sub-department is selected
-  const fetchEmployees = async (subDepartmentId?: number) => {
+  const fetchEmployees = async (departmentID?: number) => {
     try {
       const params = {
-        department: selectedDepartment,
+        department: departmentID,
         // sub_department: subDepartmentId,
       };
       const response = await axiosAPI.get("/staff/", {
@@ -117,7 +117,7 @@ const SendModal: React.FC<SendModalProps> = ({
                 onChange={(value) => {
                   setSelectedDepartment(value);
                   // fetchSubDepartments(value);
-                  fetchEmployees();
+                  fetchEmployees(value);
                 }}
                 className="w-full mb-4"
                 placeholder="Bo'limni tanlang"
@@ -189,7 +189,9 @@ const SendModal: React.FC<SendModalProps> = ({
                         {emp.full_name}
                       </h4>
                       <p className="text-sm text-gray-600">
-                        {emp.position ? emp.position.name : "Lavozim mavjud emas"}
+                        {emp.position
+                          ? emp.position.name
+                          : "Lavozim mavjud emas"}
                       </p>
                       <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
                         <Building2 className="size-3" />
