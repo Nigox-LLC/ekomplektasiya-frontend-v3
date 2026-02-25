@@ -6,6 +6,9 @@ import { FaFileWord } from "react-icons/fa6";
 import { Download, Eye, Pencil } from "lucide-react";
 import { toast } from "react-toastify";
 import FilePreviewer from "@/components/FilePreviewer/FilePreviewer";
+import { CreateAboveModal } from "@/components";
+import type { IDname } from "@/pages/PriceAnaliysis/PriceAnalysisForm/PriceAnalysisForm";
+import OrderMainDocumentCreate from "@/pages/CreateDocument/components/MainDocument/MainDocument";
 
 type MainDocumentType = {
   id: number;
@@ -28,11 +31,16 @@ const MainDocument: React.FC<{ orderData: OrderData | null }> = ({
   const [mainDocument, setMainDocument] = useState<MainDocumentType | null>(
     null,
   );
-  const [fileTemplates, setFileTemplates] = useState<IDName[]>([]);
-  const [showTemplatesList, setShowTemplatesList] = useState(false);
+  const [showCreateAboveModal, setShowCreateAboveModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  var newWindow: Window | null = null;
+  // templates
+  const [templates, setTemplates] = useState<IDname[]>([]);
+  const [showTemplates, setShowTemplates] = useState(false);
+
+  const userType: "order" | "above" = "order";
+
+  let newWindow: Window | null = null;
 
   const createMainDocByTemplate = async (templateID: number) => {
     try {
@@ -49,30 +57,32 @@ const MainDocument: React.FC<{ orderData: OrderData | null }> = ({
     }
   };
 
-  useEffect(() => {
-    async function fetchFileTemplates() {
-      try {
-        const response = await axiosAPI.get("directory/template/by-name/");
-        if (response.status === 200) setFileTemplates(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-
-    fetchFileTemplates();
-  }, []);
-
-  useEffect(() => {
-    if (orderData?.movement_files.length)
-      setMainDocument(orderData.movement_files[0]);
-    else setMainDocument(null);
-  }, [orderData]);
-
   function openEditor() {
     const url = "https://editor.ekomplektasiya.uz/";
     const features =
       "width=1200,height=800,menubar=no,toolbar=no,location=no,status=no";
     newWindow = window.open(url, "SuperDocWindow", features);
+  }
+
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const response = await axiosAPI.get("directory/template/by-name/");
+        if (response.status === 200) setTemplates(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchTemplates();
+  }, []);
+
+  if (userType === "order") {
+    return (
+      <>
+        <OrderMainDocumentCreate orderDataID={orderData?.id!} />
+      </>
+    );
   }
 
   return (
@@ -175,27 +185,17 @@ const MainDocument: React.FC<{ orderData: OrderData | null }> = ({
           <p className="w-full">Asosiy fayl qo'shish</p>
           <Button
             onClick={() => {
-              if (fileTemplates.length > 0) {
-                setShowTemplatesList(true);
-              } else {
-                alert("Shablonlar mavjud emas!");
-              }
+              setShowCreateAboveModal(true);
             }}
           >
             + Asosiy fayl
           </Button>
           <div className="absolute top-0 left-full bg-white border-2 border-slate-200 rounded-md shadow-md">
-            {fileTemplates.map((template) => (
-              <div
-                key={template.id}
-                className="px-4 py-2 hover:bg-gray-100 cursor-pointer w-full text-start text-black!"
-                onClick={() => {
-                  createMainDocByTemplate(template.id);
-                }}
-              >
-                <p>{template.name}</p>
-              </div>
-            ))}
+            {showCreateAboveModal && (
+              <CreateAboveModal
+                setShowCreateAboveModal={setShowCreateAboveModal}
+              />
+            )}
           </div>
         </div>
       )}

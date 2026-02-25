@@ -32,6 +32,7 @@ export interface CreateDocumentType {
 
 const CreateDocument: React.FC = () => {
   // States
+  const [showCreateError, setShowCreateError] = React.useState(false);
   const [orderData, setOrderData] = React.useState<CreateDocumentType>({
     document_type_id: 0,
     internal_document_type_id: 0,
@@ -101,6 +102,7 @@ const CreateDocument: React.FC = () => {
         }
       } catch (error) {
         console.log(error);
+        setShowCreateError(true);
       }
     };
     createOrderDocument();
@@ -133,6 +135,25 @@ const CreateDocument: React.FC = () => {
       console.log(error);
     }
   };
+
+  if (showCreateError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen gap-4">
+        <h2 className="text-2xl font-semibold text-red-600">
+          Hujjat yaratishda xatolik yuz berdi!
+        </h2>
+        <p className="text-gray-600">
+          Iltimos, sahifani yangilab qayta urinib ko'ring.
+        </p>
+        <Button
+          onClick={() => navigate(-1)}
+          className="bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Ortga qaytish
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <>

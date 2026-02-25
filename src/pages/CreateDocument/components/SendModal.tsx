@@ -26,6 +26,11 @@ const SendModal: React.FC<SendModalProps> = ({
     null,
   );
   const [movementType, setMovementType] = React.useState<string>("");
+  const [employeePage, setEmployeePage] = React.useState<number>(1);
+  const [totalEmployees, setTotalEmployees] = React.useState<number>(0);
+  const [isLoadingEmployees, setIsLoadingEmployees] =
+    React.useState<boolean>(false);
+  const itemsPerPage = 10;
 
   // fetch departments
   const fetchDepartments = async () => {
@@ -54,19 +59,31 @@ const SendModal: React.FC<SendModalProps> = ({
   };
 
   // fetch employees when sub-department is selected
-  const fetchEmployees = async (departmentID?: number) => {
+  const fetchEmployees = async (departmentID?: number, page: number = 1) => {
     try {
+      setIsLoadingEmployees(true);
       const params = {
         department: departmentID,
+        page: page,
+        limit: itemsPerPage,
         // sub_department: subDepartmentId,
       };
       const response = await axiosAPI.get("/staff/", {
         params: params,
       });
       console.log(response);
-      if (response.status === 200) setEmployees(response.data.results);
+      if (response.status === 200) {
+        setTotalEmployees(response.data.count || 0);
+        if (page === 1) {
+          setEmployees(response.data.results);
+        } else {
+          setEmployees((prev) => [...prev, ...response.data.results]);
+        }
+      }
+      setIsLoadingEmployees(false);
     } catch (error) {
       console.log(error);
+      setIsLoadingEmployees(false);
     }
   };
 
@@ -173,7 +190,24 @@ const SendModal: React.FC<SendModalProps> = ({
           {/* Employees table */}
           <div className="text-black! mb-4">
             <p className="mb-2 font-semibold">Xodimlar</p>
-            <div className="max-h-48 overflow-y-auto border border-gray-300 rounded">
+            <div
+              className="max-h-48 overflow-y-auto border border-gray-300 rounded"
+              onScroll={(e) => {
+                const element = e.currentTarget;
+                if (
+                  element.scrollHeight - element.scrollTop <=
+                    element.clientHeight + 10 &&
+                  !isLoadingEmployees &&
+                  employees.length < totalEmployees
+                ) {
+                  fetchEmployees(
+                    selectedDepartment || selectedSubDepartment,
+                    employeePage + 1,
+                  );
+                  setEmployeePage((prev) => prev + 1);
+                }
+              }}
+            >
               {employees.length > 0 ? (
                 employees.map((emp) => (
                   <div
