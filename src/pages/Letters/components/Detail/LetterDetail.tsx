@@ -18,6 +18,7 @@ import {
   X,
   Warehouse,
   FileText,
+  Check,
 } from "lucide-react";
 import RelatedDocumentModal from "./RelatedDocumentModal";
 import { ExecutiveAction, type IjroStep } from "./ExecutiveAction";
@@ -1214,8 +1215,16 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-blue-600 truncate">
+                        <p
+                          className={`flex items-center gap-2 text-sm font-medium text-blue-600 truncate`}
+                        >
                           {file.file_name}
+                          {file.file_name.includes("signed") && (
+                            <Badge className="flex! items-center! gap-1 px-2! py-1! rounded-md! ml-2 bg-green-100 text-green-700 border-green-300">
+                              <Check className="size-3" />
+                              Imzolangan
+                            </Badge>
+                          )}
                         </p>
                         <p className="text-xs text-gray-400">
                           {formatDate(file.created_at)}
@@ -1971,7 +1980,6 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         >
           <FilePreviewer file={selectedFile!} />
         </Modal>
-        
       </div>
 
       {showSelectEmployeeModal > 0 && (
