@@ -37,7 +37,7 @@ const Signed: React.FC = () => {
       try {
         setLoading(true);
         const response = await axios.get<DocumentData>(
-          `https://v3.ekomplektasiya.uz/api/document/orders/qr-code/${id}/`
+          `https://v3.ekomplektasiya.uz/api/document/orders/qr-code/${id}/`,
         );
         setData(response.data);
       } catch (error) {

@@ -32,6 +32,7 @@ import {
   ExternalCreate,
 } from "@/pages";
 import { ToastContainer } from "react-toastify";
+import Signed from "./components/Signed/Signed";
 
 const App: React.FC = () => {
   const router = createBrowserRouter([
@@ -251,6 +252,10 @@ const App: React.FC = () => {
       path: "login",
       element: <Login />,
     },
+    {
+      path: "signed/:id",
+      element: <Signed />,
+    }
   ]);
 
   return (

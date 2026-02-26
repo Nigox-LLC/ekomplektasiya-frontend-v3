@@ -1,3 +1,4 @@
+import { CreateAboveModal } from "@/components";
 import type { OrderData } from "@/pages/Letters/components/Detail/LetterDetail";
 import { axiosAPI } from "@/service/axiosAPI";
 import { Button, Card } from "antd";
@@ -24,44 +25,95 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
   const [selectedDocument, setSelectedDocument] = useState<MainDocument | null>(
     null,
   );
+  const documentInputRef = useRef<HTMLInputElement>(null);
+  const [isFishka, setIsFishka] = useState(false);
 
   const newWindowRef = useRef<Window | null>(null);
 
-  useEffect(() => {
-    const handler = (e: MessageEvent) => {
-      // console.log("Parent received message:", e.data);
+  // useEffect(() => {
+  //   const handler = (e: MessageEvent) => {
+  //     // console.log("Parent received message:", e.data);
 
-      if (e.data && e.data.status === "ready" && newWindowRef.current && selectedDocument) {
-        // console.log("✅ Child window tayyor!");
-        const token = localStorage.getItem("v3_ganiwer");
+  //     if (e.data && e.data.status === "ready" && newWindowRef.current && selectedDocument) {
+  //       // console.log("✅ Child window tayyor!");
+  //       const token = localStorage.getItem("v3_ganiwer");
 
-        console.log(selectedDocument);
+  //       console.log(selectedDocument);
 
-        const data = {
-          input_url: selectedDocument.file_url,
-          output_url:
-            axiosAPI.getUri() + `/document/orders/word/${selectedDocument.id}/`,
-          v3_ganiwer: token,
-        };
+  //       const data = {
+  //         input_url: selectedDocument.file_url,
+  //         output_url:
+  //           axiosAPI.getUri() + `/document/orders/word/${selectedDocument.id}/`,
+  //         v3_ganiwer: token,
+  //       };
 
-        newWindowRef.current.postMessage(data, "*");
+  //       newWindowRef.current.postMessage(data, "*");
+  //     }
+
+  //     if (e.data && e.data.status === "loaded") {
+  //       console.log("✅ Hujjat yuklandi:", e.data.url);
+  //     }
+  //   };
+
+  //   window.addEventListener("message", handler);
+  //   return () => window.removeEventListener("message", handler);
+  // }, [selectedDocument]);
+
+  // function openEditor() {
+  //   const url = "https://editor.ekomplektasiya.uz/";
+  //   const features =
+  //     "width=1200,height=800,menubar=no,toolbar=no,location=no,status=no";
+  //   newWindowRef.current = window.open(url, "SuperDocWindow", features);
+  // }
+
+  const createMainDocument = async (file: File) => {
+    try {
+      const fd = new FormData();
+      fd.append("file", file, "new_document.docx");
+      const response = await axiosAPI.post(
+        `document/orders/${orderDataID}/add-file/`,
+        fd,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+
+      if (response.status === 200) {
+        setMainDocument((prev) => [...prev, response.data]);
       }
+    } catch (error: any) {
+      console.log(error);
+      toast.error(
+        error.response?.data?.message || "Hujjat yaratishda xatolik yuz berdi!",
+      );
+    }
+  };
 
-      if (e.data && e.data.status === "loaded") {
-        console.log("✅ Hujjat yuklandi:", e.data.url);
+  const handleUpdateDocument = async (file: File, doc: MainDocument) => {
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const response = await axiosAPI.put(
+        `document/orders/word/${doc.id}/`,
+        fd,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+      if (response.status === 200) {
+        setMainDocument((prev) =>
+          prev.map((d) => (d.id === doc.id ? response.data : d)),
+        );
+        toast.success("Hujjat muvaffaqiyatli yangilandi!");
       }
-    };
-
-    window.addEventListener("message", handler);
-    return () => window.removeEventListener("message", handler);
-  }, [selectedDocument]);
-
-  function openEditor() {
-    const url = "https://editor.ekomplektasiya.uz/";
-    const features =
-      "width=1200,height=800,menubar=no,toolbar=no,location=no,status=no";
-    newWindowRef.current = window.open(url, "SuperDocWindow", features);
-  }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const createMainDocByTemplate = async (templateID: number) => {
     try {
@@ -103,68 +155,110 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
     <>
       {mainDocument.length > 0 ? (
         <>
-          {mainDocument.map((doc, index) => (
-            <Card
-              key={index}
-              className="border-2 border-blue-200 rounded-lg shadow-md hover:shadow-lg transition-shadow bg-gradient-to-r from-blue-50 to-indigo-50"
-            >
-              <div className="flex items-center justify-between gap-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <FileText className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-800">
-                      {doc.file_name}
-                    </p>
-                    <p className="text-xs text-gray-500">Asosiy hujjat</p>
-                  </div>
-                </div>
-
-                <Button
-                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white"
-                  onClick={() => {
-                    setSelectedDocument(doc);
-                    openEditor();
-                  }}
+          {mainDocument.map(
+            (doc, index) =>
+              doc.word_file_id && (
+                <Card
+                  key={index}
+                  className="border-2 border-blue-200 rounded-lg shadow-md hover:shadow-lg transition-shadow bg-gradient-to-r from-blue-50 to-indigo-50"
                 >
-                  <Pencil className="w-4 h-4" />
-                  Tahrirlash
-                </Button>
-              </div>
-            </Card>
-          ))}
+                  <div className="flex items-center justify-between gap-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <FileText className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800">
+                          {doc.file_name}
+                        </p>
+                        <p className="text-xs text-gray-500">Asosiy hujjat</p>
+                      </div>
+                    </div>
+
+                    <Button
+                      className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white"
+                      onClick={() => {
+                        setSelectedDocument(doc);
+                        documentInputRef.current?.click();
+                        // openEditor();
+                      }}
+                    >
+                      <Pencil className="w-4 h-4" />
+                      Tahrirlash
+                    </Button>
+                    <input
+                      type="file"
+                      ref={documentInputRef}
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file && selectedDocument) {
+                          handleUpdateDocument(file, selectedDocument);
+                        }
+                      }}
+                    />
+                  </div>
+                </Card>
+              ),
+          )}
         </>
       ) : (
         <div className="flex flex-col items-start gap-2 my-6">
-          <p>Asosiy fayl qo'shish</p>
-          <Button
-            onClick={() => {
-              if (fileTemplates.length > 0) {
-                setShowTemplatesList(true);
-              } else {
-                toast.error("Shablonlar mavjud emas!");
-              }
-            }}
-            className="ml-[50%] translate-x-[-50%]"
-          >
-            Asosiy fayl
-            <Plus className="w-4 h-4" />
+          <div className="flex items-center gap-1 relative">
+            <p>Asosiy fayl qo'shish</p>
+            <p
+              className="text-blue-500 underline cursor-pointer hover:text-blue-700"
+              onClick={() => setShowTemplatesList((prev) => !prev)}
+            >
+              (shablonlardan tanlash)
+            </p>
             {showTemplatesList && (
-              <div className="absolute top-0 left-full bg-white border-2 border-slate-200 rounded-md shadow-md">
-                {fileTemplates.map((template) => (
+              <div className="absolute top-0 left-full w-full z-50 bg-white border-2 border-slate-200 rounded-md shadow-md">
+                {fileTemplates.map((template, index) => (
                   <div
-                    key={template.id}
+                    key={index}
                     className="px-4 py-2 hover:bg-gray-100 cursor-pointer w-full text-start text-black!"
-                    onClick={() => createMainDocByTemplate(template.id)}
+                    onClick={() => {
+                      if(template.is_fishka) {
+                        setIsFishka(true);
+                      } else {
+                        createMainDocByTemplate(template.id)
+                      }
+                    }}
                   >
-                    <p>{template.name}</p>
+                    <p>
+                      <span>{index + 1}.</span> {template.name}
+                    </p>
                   </div>
                 ))}
               </div>
             )}
+          </div>
+          <Button
+            onClick={() => {
+              documentInputRef.current?.click();
+            }}
+            className="ml-[50%] translate-x-[-50%]"
+          >
+            Fayl yuklash
+            <Plus className="w-4 h-4" />
+            <input
+              type="file"
+              ref={documentInputRef}
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  createMainDocument(file);
+                }
+              }}
+            />
           </Button>
         </div>
+      )}
+      
+      {isFishka && (
+        <CreateAboveModal setShowCreateAboveModal={setIsFishka} />
       )}
     </>
   );
