@@ -52,9 +52,16 @@ export default function FilePreviewer({
       useBase64URL: true,
       experimental: true,
     }).catch((e) => {
+      console.log(e);
+      const isCorrupted =
+        String(e).includes("Corrupted zip") ||
+        String(e).includes("End of data");
+      const errorMsg = isCorrupted
+        ? "Word fayli buzilgan yoki to'liq emas. Fayl qayta yuklang."
+        : `Word faylni ochib bo'lmadi: ${String(e)}`;
       wordRef.current!.innerHTML = `
         <div style="color:#dc2626;padding:12px">
-          Word faylni ochib bo‘lmadi: ${String(e)}
+          ${errorMsg}
         </div>`;
     });
   }, [file, ext]);
