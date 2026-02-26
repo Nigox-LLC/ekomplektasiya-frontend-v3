@@ -259,14 +259,48 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
   };
 
   // fetch orderData detail
+  // const fetchOrderData = async () => {
+  //   try {
+  //     const response = await axiosAPI.get(
+  //       `document/orders/${documentProp?.id}/`,
+  //     );
+
+  //     if (response.status === 200) {
+  //       setOrderData(response.data);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
   const fetchOrderData = async () => {
     try {
-      const response = await axiosAPI.get(
-        `document/orders/${documentProp?.id}/`,
-      );
-
+      const response = await axiosAPI.get(`document/orders/${documentProp?.id}/`);
       if (response.status === 200) {
-        setOrderData(response.data);
+        const data = response.data;
+  
+        const transformedProducts = data.products.map((p: any) => ({
+          id: p.id,
+          order_product_type: p.order_product_type === "product" ? "order" : p.order_product_type,
+          name: p.product_name || "",
+          model: p.product_model?.name || "",
+          product_type: p.product_type ? { id: p.product_type.id, name: p.product_type.name } : null,
+          product_model: p.product_model ? { id: p.product_model.id, name: p.product_model.name } : null,
+          size: p.size ? { id: p.size.id, name: p.size.name } : null,
+          unit: p.unit ? { id: p.unit.id, name: p.unit.name } : null,
+          quantity: p.quantity,
+          note: p.comment || "",
+          attached_employee: p.attached_employee
+            ? { id: p.attached_employee.id, full_name: p.attached_employee.name || p.attached_employee.full_name }
+            : null,
+          posted_website: p.posted_website,
+          // yearPlan: p.annual_plan,
+        }));
+  
+        setOrderData({
+          ...data,
+          products: transformedProducts,
+        });
       }
     } catch (error) {
       console.log(error);
@@ -330,27 +364,65 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
   };
 
   // handleUpdate order
+
+  // const handleOrderUpdate = async () => {
+  //   if (orderData) {
+  //     try {
+  //       const response = await axiosAPI.patch(
+  //         `document/orders/${orderData.id}/`,
+  //         {
+  //           comment: orderData.comment,
+  //           participants: orderData.participants,
+  //           products: orderData.products.map((product) => ({
+  //             ...product,
+  //             order_product_id: product.order_product_type,
+  //             product_type: product.product_type?.id,
+  //             product_model: product.product_model?.id,
+  //             size: product.size?.id,
+  //             unit: product.unit?.id,
+  //             attached_employee: product.attached_employee?.id,
+  //           })),
+  //         },
+  //       );
+  //       if (response.status === 200) {
+  //         toast.success("Buyurtma muvaffaqiyatli yangilandi");
+  //       }
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   }
+  // };
+
   const handleOrderUpdate = async () => {
     if (orderData) {
       try {
-        const response = await axiosAPI.patch(
-          `document/orders/${orderData.id}/`,
-          {
-            comment: orderData.comment,
-            participants: orderData.participants,
-            products: orderData.products.map((product) => ({
-              ...product,
-              order_product_id: product.order_product_type,
+        const payload = {
+          comment: orderData.comment,
+          participants: orderData.participants,
+          products: orderData.products.map((product) => {
+            const prod: any = {
+              ...(product.id && { id: product.id }),
+              order_product_type: product.order_product_type === "order" ? "product" : product.order_product_type,
+              product_name: product.name,
+              comment: product.note,
               product_type: product.product_type?.id,
               product_model: product.product_model?.id,
               size: product.size?.id,
               unit: product.unit?.id,
               attached_employee: product.attached_employee?.id,
-            })),
-          },
-        );
+              quantity: product.quantity,
+            };
+            // if (product.yearPlan?.id) {
+            //   prod.annual_plan = product.yearPlan.id;
+            // }
+            return prod;
+          }),
+        };
+  
+        const response = await axiosAPI.patch(`document/orders/${orderData.id}/`, payload);
         if (response.status === 200) {
           toast.success("Buyurtma muvaffaqiyatli yangilandi");
+          fetchOrderData();
         }
       } catch (error) {
         console.log(error);
@@ -640,32 +712,32 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
     },
     ...(orderData?.movement_type === "executing"
       ? [
-          {
-            title: "Yillik reja",
-            key: "yearPlan",
-            width: 150,
-            align: "center" as const,
-            render: (_value: any, item: Product, index: number) => (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowYearPlanModal(true);
-                  setSelectedRowIndex(index);
-                }}
-                className={`inline-block px-2 py-1 cursor-pointer rounded-md ${
-                  item.yearPlan
-                    ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200"
-                    : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"
-                } transition-colors`}
-              >
-                {item.yearPlan ? (
-                  <Badge>{item.yearPlan.name}</Badge>
-                ) : (
-                  <Badge>Tanlash</Badge>
-                )}
-              </button>
-            ),
-          },
+          // {
+          //   title: "Yillik reja",
+          //   key: "yearPlan",
+          //   width: 150,
+          //   align: "center" as const,
+          //   render: (_value: any, item: Product, index: number) => (
+          //     <button
+          //       onClick={(e) => {
+          //         e.stopPropagation();
+          //         setShowYearPlanModal(true);
+          //         setSelectedRowIndex(index);
+          //       }}
+          //       className={`inline-block px-2 py-1 cursor-pointer rounded-md ${
+          //         item.yearPlan
+          //           ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200"
+          //           : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"
+          //       } transition-colors`}
+          //     >
+          //       {item.yearPlan ? (
+          //         <Badge>{item.yearPlan.name}</Badge>
+          //       ) : (
+          //         <Badge>Tanlash</Badge>
+          //       )}
+          //     </button>
+          //   ),
+          // },
         ]
       : []),
     {
@@ -941,7 +1013,6 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                   onClick={() => {
                     // Yangi bo'sh qator qo'shish
                     const newRow = {
-                      type: "Tovar",
                       name: "",
                       model: "",
                       product_type: { id: 0, name: "" },

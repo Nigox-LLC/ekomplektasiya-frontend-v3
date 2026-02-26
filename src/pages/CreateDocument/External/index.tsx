@@ -255,7 +255,6 @@ const CreateDocument: React.FC = () => {
                     !item.quantity ||
                     !item.product_type.id ||
                     !item.product_model.id ||
-                    !item.size.id ||
                     !item.unit.id,
                 )
               ) {
