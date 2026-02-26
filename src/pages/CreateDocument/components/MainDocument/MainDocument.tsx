@@ -1,11 +1,13 @@
+import type { OrderData } from "@/pages/Letters/components/Detail/LetterDetail";
 import { axiosAPI } from "@/service/axiosAPI";
 import { Button, Card } from "antd";
 import { FileText, Pencil, Plus } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 
 interface IProps {
   orderDataID: number | null;
+  orderData: OrderData | null;
 }
 
 export interface MainDocument {
@@ -14,41 +16,51 @@ export interface MainDocument {
   file_url: string;
 }
 
-const MainDocument: React.FC<IProps> = ({ orderDataID }) => {
+const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
   const [fileTemplates, setFileTemplates] = useState<IDName[]>([]);
   const [showTemplatesList, setShowTemplatesList] = useState(false);
 
-  const [mainDocument, setMainDocument] = useState<MainDocument | null>(null);
+  const [mainDocument, setMainDocument] = useState<MainDocument[]>([]);
+  const [selectedDocument, setSelectedDocument] = useState<MainDocument | null>(
+    null,
+  );
 
-  var newWindow: Window | null = null;
+  const newWindowRef = useRef<Window | null>(null);
 
-  window.addEventListener("message", (e) => {
-    // console.log("Parent received message:", e.data);
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      // console.log("Parent received message:", e.data);
 
-    if (e.data && e.data.status === "ready" && newWindow && mainDocument) {
-      // console.log("✅ Child window tayyor!");
-      const token = localStorage.getItem("v3_ganiwer");
+      if (e.data && e.data.status === "ready" && newWindowRef.current && selectedDocument) {
+        // console.log("✅ Child window tayyor!");
+        const token = localStorage.getItem("v3_ganiwer");
 
-      var data = {
-        input_url: mainDocument.file_url,
-        output_url:
-          axiosAPI.getUri() + `/document/orders/word/${mainDocument.id}/`,
-        v3_ganiwer: token,
-      };
+        console.log(selectedDocument);
 
-      newWindow.postMessage(data, "*");
-    }
+        const data = {
+          input_url: selectedDocument.file_url,
+          output_url:
+            axiosAPI.getUri() + `/document/orders/word/${selectedDocument.id}/`,
+          v3_ganiwer: token,
+        };
 
-    if (e.data && e.data.status === "loaded") {
-      console.log("✅ Hujjat yuklandi:", e.data.url);
-    }
-  });
+        newWindowRef.current.postMessage(data, "*");
+      }
+
+      if (e.data && e.data.status === "loaded") {
+        console.log("✅ Hujjat yuklandi:", e.data.url);
+      }
+    };
+
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, [selectedDocument]);
 
   function openEditor() {
     const url = "https://editor.ekomplektasiya.uz/";
     const features =
       "width=1200,height=800,menubar=no,toolbar=no,location=no,status=no";
-    newWindow = window.open(url, "SuperDocWindow", features);
+    newWindowRef.current = window.open(url, "SuperDocWindow", features);
   }
 
   const createMainDocByTemplate = async (templateID: number) => {
@@ -60,7 +72,9 @@ const MainDocument: React.FC<IProps> = ({ orderDataID }) => {
         },
       );
 
-      if (response.status === 200) setMainDocument(response.data);
+      if (response.status === 200) {
+        setMainDocument((prev) => [...prev, response.data]);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -79,31 +93,47 @@ const MainDocument: React.FC<IProps> = ({ orderDataID }) => {
     fetchFileTemplates();
   }, []);
 
+  useEffect(() => {
+    if (orderData?.movement_files?.length) {
+      setMainDocument(orderData.movement_files);
+    }
+  }, [orderData]);
+
   return (
     <>
-      {mainDocument ? (
+      {mainDocument.length > 0 ? (
         <>
-          <Card className="border-2 border-blue-200 rounded-lg shadow-md hover:shadow-lg transition-shadow bg-gradient-to-r from-blue-50 to-indigo-50">
-            <div className="flex items-center justify-between gap-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <FileText className="w-5 h-5 text-blue-600" />
+          {mainDocument.map((doc, index) => (
+            <Card
+              key={index}
+              className="border-2 border-blue-200 rounded-lg shadow-md hover:shadow-lg transition-shadow bg-gradient-to-r from-blue-50 to-indigo-50"
+            >
+              <div className="flex items-center justify-between gap-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <FileText className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-800">
+                      {doc.file_name}
+                    </p>
+                    <p className="text-xs text-gray-500">Asosiy hujjat</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-semibold text-gray-800">{mainDocument?.file_name}</p>
-                  <p className="text-xs text-gray-500">Asosiy hujjat</p>
-                </div>
-              </div>
 
-              <Button
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white"
-                onClick={() => openEditor()}
-              >
-                <Pencil className="w-4 h-4" />
-                Tahrirlash
-              </Button>
-            </div>
-          </Card>
+                <Button
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white"
+                  onClick={() => {
+                    setSelectedDocument(doc);
+                    openEditor();
+                  }}
+                >
+                  <Pencil className="w-4 h-4" />
+                  Tahrirlash
+                </Button>
+              </div>
+            </Card>
+          ))}
         </>
       ) : (
         <div className="flex flex-col items-start gap-2 my-6">

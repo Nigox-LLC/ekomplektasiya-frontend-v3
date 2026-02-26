@@ -28,9 +28,7 @@ type QrData = {};
 const MainDocument: React.FC<{ orderData: OrderData | null }> = ({
   orderData,
 }) => {
-  const [mainDocument, setMainDocument] = useState<MainDocumentType | null>(
-    null,
-  );
+  const [mainDocuments, setMainDocuments] = useState<MainDocumentType[]>([]);
   const [showCreateAboveModal, setShowCreateAboveModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -51,7 +49,7 @@ const MainDocument: React.FC<{ orderData: OrderData | null }> = ({
         },
       );
 
-      if (response.status === 200) setMainDocument(response.data);
+      // if (response.status === 200) setMainDocument(response.data);
     } catch (error) {
       console.log(error);
     }
@@ -77,108 +75,118 @@ const MainDocument: React.FC<{ orderData: OrderData | null }> = ({
     fetchTemplates();
   }, []);
 
+  useEffect(() => {
+    if (orderData?.movement_files?.length) {
+      setMainDocuments(orderData.movement_files);
+    }
+  }, [orderData]);
+
+  console.log(mainDocuments)
+
   if (userType === "order") {
     return (
       <>
-        <OrderMainDocumentCreate orderDataID={orderData?.id!} />
+        <OrderMainDocumentCreate orderDataID={orderData?.id!} orderData={orderData} />
       </>
     );
   }
 
   return (
     <>
-      {mainDocument ? (
-        <div className="flex items-center w-full">
-          {/* Main document card */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 w-full flex justify-between">
-            {/* left side - document icon and title */}
-            <div className="flex flex-col gap-4 items-start">
-              <div className="flex items-center justify-center mr-4 gap-2">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  {/* Document icon */}
-                  <FaFileWord size={24} className="text-blue-500" />
+      {mainDocuments.length > 0 ? (
+        <div className="flex flex-col gap-4">
+          {mainDocuments.map((doc, index) => (
+            <div key={index} className="flex items-center w-full">
+              {/* Main document card */}
+              <div className="bg-white border border-gray-200 rounded-lg p-6 w-full flex justify-between">
+                {/* left side - document icon and title */}
+                <div className="flex flex-col gap-4 items-start">
+                  <div className="flex items-center justify-center mr-4 gap-2">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      {/* Document icon */}
+                      <FaFileWord size={24} className="text-blue-500" />
+                    </div>
+                    <h2 className="text-lg font-semibold">
+                      {doc.word_file_name} - Usti hat
+                    </h2>
+                  </div>
+                  <div>
+                    <p className="text-xl">{doc.employee_name}</p>
+                    <p className="text-xs text-blue-600">
+                      {doc.created_at.split("T")[0] +
+                        " " +
+                        doc.created_at.split("T")[1].split(".")[0]}
+                    </p>
+                  </div>
                 </div>
-                <h2 className="text-lg font-semibold">
-                  {orderData?.movement_files[0]?.word_file_name} - Usti hat
-                </h2>
-              </div>
-              <div>
-                <p className="text-xl">
-                  {orderData?.movement_files[0]?.employee_name}
-                </p>
-                <p className="text-xs text-blue-600">
-                  {orderData?.movement_files[0]?.created_at.split("T")[0] +
-                    " " +
-                    orderData?.movement_files[0]?.created_at
-                      .split("T")[1]
-                      .split(".")[0]}
-                </p>
-              </div>
-            </div>
 
-            {/* Right side - actions (preview, edit,download) three dot menu */}
-            <div className="relative group flex flex-col items-end gap-2">
-              <button
-                className="flex gap-2 items-center text-end w-full px-4 py-2 text-blue-500 hover:bg-gray-300 bg-gray-200 rounded-md"
-                onClick={() => {
-                  async function fetchAndOpenFile() {
-                    try {
-                      const response = await axiosAPI.get(
-                        `document/orders/word/${mainDocument?.word_file_id}/`,
-                      );
-                      if (response.status === 200)
-                        return response.data.file_url;
-                    } catch (error) {
-                      console.log(error);
-                      toast.error("Faylni yuklab olishda xatolik yuz berdi");
-                    }
-                  }
-
-                  fetchAndOpenFile().then((url) => {
-                    if (url) {
-                      fetch(url)
-                        .then((res) => {
-                          if (!res.ok)
-                            throw new Error(
-                              `HTTP error! status: ${res.status}`,
-                            );
-                          return res.blob();
-                        })
-                        .then((blob) => {
-                          const fileObj: File = new File(
-                            [blob],
-                            mainDocument?.word_file_name,
-                            { type: blob.type },
+                {/* Right side - actions (preview, edit,download) three dot menu */}
+                <div className="relative group flex flex-col items-end gap-2">
+                  <button
+                    className="flex gap-2 items-center text-end w-full px-4 py-2 text-blue-500 hover:bg-gray-300 bg-gray-200 rounded-md"
+                    onClick={() => {
+                      async function fetchAndOpenFile() {
+                        try {
+                          const response = await axiosAPI.get(
+                            `document/orders/word/${doc.word_file_id}/`,
                           );
-                          setSelectedFile(fileObj);
-                        })
-                        .catch((error) => {
+                          if (response.status === 200)
+                            return response.data.file_url;
+                        } catch (error) {
                           console.log(error);
+                          toast.error(
+                            "Faylni yuklab olishda xatolik yuz berdi",
+                          );
+                        }
+                      }
+
+                      fetchAndOpenFile().then((url) => {
+                        if (url) {
+                          fetch(url)
+                            .then((res) => {
+                              if (!res.ok)
+                                throw new Error(
+                                  `HTTP error! status: ${res.status}`,
+                                );
+                              return res.blob();
+                            })
+                            .then((blob) => {
+                              const fileObj: File = new File(
+                                [blob],
+                                doc.word_file_name,
+                                { type: blob.type },
+                              );
+                              setSelectedFile(fileObj);
+                            })
+                            .catch((error) => {
+                              console.log(error);
+                              toast.error(
+                                "Faylni ochib bo'lmadi. Iltimos, qayta urinib ko'ring.",
+                              );
+                            });
+                        } else
                           toast.error(
                             "Faylni ochib bo'lmadi. Iltimos, qayta urinib ko'ring.",
                           );
-                        });
-                    } else
-                      toast.error(
-                        "Faylni ochib bo'lmadi. Iltimos, qayta urinib ko'ring.",
-                      );
-                  });
-                }}
-              >
-                <Eye className="w-4 h-4" />
-                Ko'rish
-              </button>
-              <button
-                className="flex gap-2 items-center text-end w-full px-4 py-2 text-green-500 hover:bg-gray-300 bg-gray-200 rounded-md"
-                onClick={() => openEditor()}
-              >
-                <Pencil className="w-4 h-4" /> Tahrirlash
-              </button>
-              <button className="flex gap-2 items-center text-end w-full px-4 py-2 text-gray-500 hover:bg-gray-300 bg-gray-200 rounded-md">
-                <Download className="w-4 h-4" /> Yuklab olish
-              </button>
+                      });
+                    }}
+                  >
+                    <Eye className="w-4 h-4" />
+                    Ko'rish
+                  </button>
+                  <button
+                    className="flex gap-2 items-center text-end w-full px-4 py-2 text-green-500 hover:bg-gray-300 bg-gray-200 rounded-md"
+                    onClick={() => openEditor()}
+                  >
+                    <Pencil className="w-4 h-4" /> Tahrirlash
+                  </button>
+                  <button className="flex gap-2 items-center text-end w-full px-4 py-2 text-gray-500 hover:bg-gray-300 bg-gray-200 rounded-md">
+                    <Download className="w-4 h-4" /> Yuklab olish
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          ))}
         </div>
       ) : (
         <div className="flex flex-col items-center gap-2 my-6">
