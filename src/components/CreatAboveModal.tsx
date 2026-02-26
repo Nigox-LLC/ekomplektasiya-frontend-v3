@@ -2,6 +2,9 @@ import { Button, Radio } from "antd";
 import { UserOutlined, DeleteOutlined } from "@ant-design/icons";
 import React from "react";
 import EmployeeSelectModal from "./EmployeeSelectModal/EmployeeSelectModal";
+import { axiosAPI } from "@/service/axiosAPI";
+import type { OrderData } from "@/pages/Letters/components/Detail/LetterDetail";
+import { toast } from "react-toastify";
 
 type Executor = {
   id: number;
@@ -61,24 +64,55 @@ const ExecutorCard = React.memo(
 
 interface IProps {
   setShowCreateAboveModal: React.Dispatch<React.SetStateAction<boolean>>;
+  orderDataID: number
+  templateID: number;
 }
 
-const CreatAboveModal: React.FC<IProps> = ({ setShowCreateAboveModal }) => {
+const CreatAboveModal: React.FC<IProps> = ({
+  setShowCreateAboveModal,
+  orderDataID,
+  templateID,
+}) => {
   const [executors, setExecutors] = React.useState<Executor[]>([]);
   const [mainExecutorId, setMainExecutorId] = React.useState<number | null>(
     null,
   );
   const [showSelectEmployeeModal, setShowSelectEmployeeModal] =
     React.useState(false);
+  const [deadline, setDeadline] = React.useState<string>("");
 
   const handleDeleteExecutor = React.useCallback((executorId: number) => {
-    setExecutors((prev) => prev.filter((executor) => executor.id !== executorId));
+    setExecutors((prev) =>
+      prev.filter((executor) => executor.id !== executorId),
+    );
     setMainExecutorId((prev) => (prev === executorId ? null : prev));
   }, []);
 
   const handleSetMainExecutor = React.useCallback((executorId: number) => {
     setMainExecutorId(executorId);
   }, []);
+
+  const handleCreateAbove = async () => {
+    try {
+      const response = await axiosAPI.post(
+        `document/orders/${orderDataID}/signing/`,
+        {
+          deadline: deadline,
+          executers: executors.map((executor) => ({
+            employee: executor.id,
+            is_main: executor.id === mainExecutorId,
+          })),
+          template: templateID,
+        },
+      );
+      if (response.status === 200) {
+        toast.success("Usti xat muvaffaqiyatli yaratildi");
+        setShowCreateAboveModal(false);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const executorCards = React.useMemo(
     () =>
@@ -133,7 +167,9 @@ const CreatAboveModal: React.FC<IProps> = ({ setShowCreateAboveModal }) => {
               {/* list of executors */}
               <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
                 <Radio.Group
-                  onChange={(event) => handleSetMainExecutor(event.target.value)}
+                  onChange={(event) =>
+                    handleSetMainExecutor(event.target.value)
+                  }
                   value={mainExecutorId}
                   className="grid! grid-cols-1! sm:grid-cols-1! lg:grid-cols-2! xl:grid-cols-3! gap-3!"
                 >
@@ -154,6 +190,8 @@ const CreatAboveModal: React.FC<IProps> = ({ setShowCreateAboveModal }) => {
               <input
                 type="date"
                 className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
               />
             </div>
 
@@ -165,7 +203,11 @@ const CreatAboveModal: React.FC<IProps> = ({ setShowCreateAboveModal }) => {
               >
                 Bekor qilish
               </Button>
-              <Button type="primary" className="px-4 py-2">
+              <Button
+                type="primary"
+                className="px-4 py-2"
+                onClick={handleCreateAbove}
+              >
                 Yaratish
               </Button>
             </div>

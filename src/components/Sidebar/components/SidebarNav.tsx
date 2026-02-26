@@ -46,7 +46,7 @@ const SidebarNav: React.FC = React.memo(() => {
       icon: <Calendar className="size-5" />,
     },
     {
-      id: "outgoing",
+      id: "OUT",
       label: "Yuborilgan",
       icon: <Send className="size-5" />,
       subItems: [
@@ -83,7 +83,7 @@ const SidebarNav: React.FC = React.memo(() => {
       ],
     },
     {
-      id: "incoming",
+      id: "IN",
       label: "Kelib tushgan",
       icon: <Inbox className="size-5" />,
       subItems: [

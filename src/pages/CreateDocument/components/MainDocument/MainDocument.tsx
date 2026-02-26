@@ -1,10 +1,11 @@
-import { CreateAboveModal } from "@/components";
+import { CreateAboveModal, FilePreviewer } from "@/components";
 import type { OrderData } from "@/pages/Letters/components/Detail/LetterDetail";
 import { axiosAPI } from "@/service/axiosAPI";
-import { Button, Card } from "antd";
-import { FileText, Pencil, Plus } from "lucide-react";
+import { Button, Card, Modal } from "antd";
+import { Check, CheckCircle, Eye, FileText, Pencil, Plus } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
+import SigningModal from "@/pages/Letters/components/Detail/SigningModal";
 
 interface IProps {
   orderDataID: number | null;
@@ -27,6 +28,10 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
   );
   const documentInputRef = useRef<HTMLInputElement>(null);
   const [isFishka, setIsFishka] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedOrderFileID, setSelectedOrderFileID] = useState<number | null>(
+    null,
+  );
 
   const newWindowRef = useRef<Window | null>(null);
 
@@ -175,17 +180,62 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
                       </div>
                     </div>
 
-                    <Button
-                      className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white"
-                      onClick={() => {
-                        setSelectedDocument(doc);
-                        documentInputRef.current?.click();
-                        // openEditor();
-                      }}
-                    >
-                      <Pencil className="w-4 h-4" />
-                      Tahrirlash
-                    </Button>
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 border-none"
+                        onClick={() => {
+                          fetch(doc.file_url)
+                            .then((res) => {
+                              if (!res.ok)
+                                throw new Error(
+                                  `HTTP error! status: ${res.status}`,
+                                );
+                              return res.blob();
+                            })
+                            .then((blob) => {
+                              const fileObj = new File(
+                                [blob],
+                                doc.word_file_name,
+                                {
+                                  type: blob.type,
+                                },
+                              );
+                              console.log(doc);
+                              console.log(fileObj);
+                              if (fileObj) setSelectedFile(fileObj);
+                            })
+                            .catch((err) => {
+                              console.error("Faylni olishda xatolik:", err);
+                              toast.error("Faylni olishda xatolik yuz berdi!");
+                            });
+                        }}
+                      >
+                        <Eye className="w-4 h-4" />
+                        Ko'rish
+                      </Button>
+
+                      <Button
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white"
+                        onClick={() => {
+                          setSelectedDocument(doc);
+                          documentInputRef.current?.click();
+                          // openEditor();
+                        }}
+                      >
+                        <Pencil className="w-4 h-4" />
+                        Tahrirlash
+                      </Button>
+                      <Button
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white"
+                        onClick={() => {
+                          setSelectedOrderFileID(doc.id);
+                        }}
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        Imzolash
+                      </Button>
+                    </div>
+
                     <input
                       type="file"
                       ref={documentInputRef}
@@ -219,10 +269,13 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
                     key={index}
                     className="px-4 py-2 hover:bg-gray-100 cursor-pointer w-full text-start text-black!"
                     onClick={() => {
-                      if(template.is_fishka) {
+                      console.log(template)
+                      if (template.is_fishka) {
                         setIsFishka(true);
+                        console.log(orderData)
+                        setShowTemplatesList(false);
                       } else {
-                        createMainDocByTemplate(template.id)
+                        createMainDocByTemplate(template.id);
                       }
                     }}
                   >
@@ -256,9 +309,35 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
           </Button>
         </div>
       )}
-      
-      {isFishka && (
-        <CreateAboveModal setShowCreateAboveModal={setIsFishka} />
+
+      {isFishka && orderDataID && (
+        <CreateAboveModal
+          setShowCreateAboveModal={setIsFishka}
+          orderDataID={orderDataID}
+          templateID={fileTemplates.find((t) => t.is_fishka)?.id || 0}
+        />
+      )}
+
+      {selectedFile && (
+        <Modal
+          open={!!selectedFile}
+          onCancel={() => setSelectedFile(null)}
+          footer={null}
+          width={1400}
+          centered
+          bodyStyle={{ padding: 0, height: "75vh", width: "100%" }}
+        >
+          <FilePreviewer file={selectedFile} />
+        </Modal>
+      )}
+
+      {selectedOrderFileID && (
+        <SigningModal
+          orderFileID={selectedOrderFileID}
+          isOpen={!!selectedOrderFileID}
+          onClose={() => setSelectedOrderFileID(null)}
+          documentId={orderDataID + ""}
+        />
       )}
     </>
   );

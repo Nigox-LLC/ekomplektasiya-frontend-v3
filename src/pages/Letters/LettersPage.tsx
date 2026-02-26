@@ -122,14 +122,21 @@ const LettersPage: React.FC = () => {
 
       setIsLoading(true);
       try {
-        const params = {
-          status: status
-            ? status
-            : location.pathname.split("/").pop() === "my_letter"
-              ? "my_letter"
-              : "all",
+        let direction = location.pathname.includes("IN")
+          ? "IN"
+          : location.pathname.includes("OUT")
+            ? "OUT"
+            : false;
+        const params: any = {
           page: page,
         };
+        const isPathMyLetter = location.pathname.includes("my_letter");
+        if(isPathMyLetter) params.status = "my_letter";
+        if (direction) params.direction = direction;
+        if (status && status !== "all_count") {
+          params.status = status;
+        }
+
         const response = await axiosAPI.get("document/orders/", { params });
         if (response.status === 200) {
           const newLetters = response.data.results;

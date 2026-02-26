@@ -41,6 +41,7 @@ interface EImzoSigningProps {
   onClose: () => void;
   onCancel?: () => void;
   documentId?: string; // Imzolanadigan hujjat ID si
+  orderFileID?: number; // Imzolanadigan fayl ID si (agar kerak bo'lsa)
   onSignSuccess?: (response: any) => void; // Muvaffaqiyatli imzolash callback
 }
 
@@ -91,6 +92,7 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
   onCancel,
   documentId,
   onSignSuccess,
+  orderFileID,
 }) => {
   // State management
   const [certificates, setCertificates] = useState<CertificateParsed[]>([]);
@@ -135,7 +137,7 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
   // Backendga imzolash so'rovini yuborish
   const handleSignDocument = useCallback(
     async (pkcs7_64: string) => {
-      if (!documentId) {
+      if (!documentId || !orderFileID) {
         toast.error("Hujjat ID si topilmadi!", { closeButton: false });
         return;
       }
@@ -144,20 +146,22 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
 
       try {
         // Bu yerda o'zingizning API endpoint'ingizga so'rov yuboring
+        const payload: any = {
+          signature: pkcs7_64,
+          certificateInfo: {
+            disk: selectedCertRef.current?.disk,
+            path: selectedCertRef.current?.path,
+            name: selectedCertRef.current?.name,
+            alias: selectedCertRef.current?.alias,
+            cn: selectedCertRef.current?.cn,
+            validFrom: selectedCertRef.current?.validFrom,
+            validTo: selectedCertRef.current?.validTo,
+          },
+        };
+        if (orderFileID) payload.order_file_id = orderFileID;
         const response = await axiosAPI.post(
           `document/orders/${documentId}/signing/`,
-          {
-            signature: pkcs7_64,
-            certificateInfo: {
-              disk: selectedCertRef.current?.disk,
-              path: selectedCertRef.current?.path,
-              name: selectedCertRef.current?.name,
-              alias: selectedCertRef.current?.alias,
-              cn: selectedCertRef.current?.cn,
-              validFrom: selectedCertRef.current?.validFrom,
-              validTo: selectedCertRef.current?.validTo,
-            },
-          },
+          payload,
         );
         if (response.status === 200) {
           toast.success("Hujjat muvaffaqiyatli imzolandi!", {
@@ -181,10 +185,11 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
           // Modalni yopish
         }
         handleCancel();
-      } catch (error) {
+      } catch (error: any) {
         console.error("Sign document error:", error);
         toast.error(
-          "Hujjatni imzolashda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
+          error.response?.data?.message ||
+            "Hujjatni imzolashda xatolik yuz berdi!",
           { closeButton: false },
         );
       } finally {

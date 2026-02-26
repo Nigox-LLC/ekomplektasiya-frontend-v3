@@ -18,7 +18,6 @@ export default function FilePreviewer({
 }: Props) {
   const [url, setUrl] = useState<string>();
   const [htmlContent, setHtmlContent] = useState<string>("");
-
   const ext = useMemo(() => {
     const name = file?.name || file_url || "";
     return (name.split(".").pop() || "").toLowerCase();

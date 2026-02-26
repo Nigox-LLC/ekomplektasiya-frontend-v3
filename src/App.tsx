@@ -49,7 +49,7 @@ const App: React.FC = () => {
           element: <Calendar />,
         },
         {
-          path: "incoming",
+          path: "IN",
           element: <Outlet />,
           children: [
             {
@@ -59,7 +59,7 @@ const App: React.FC = () => {
           ],
         },
         {
-          path: "outgoing",
+          path: "OUT",
           element: <Outlet />,
           children: [
             {
