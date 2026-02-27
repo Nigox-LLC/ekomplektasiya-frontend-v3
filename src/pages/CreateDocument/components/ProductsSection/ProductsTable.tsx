@@ -173,8 +173,8 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                         });
                       }}
                     >
-                      {item.product_type.id
-                        ? item.product_type.name
+                      {item.product_type?.id
+                        ? item.product_type?.name
                         : "Turi tanlang"}
                     </Button>
                   </td>
@@ -189,10 +189,10 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                         });
                         console.log(products);
                       }}
-                      disabled={!item.product_type.id}
+                      disabled={!item.product_type?.id}
                     >
-                      {item.product_model.id
-                        ? item.product_model.name
+                      {item.product_model?.id
+                        ? item.product_model?.name
                         : "Tanlang"}
                     </Button>
                   </td>
@@ -206,9 +206,9 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                           index,
                         });
                       }}
-                      disabled={!item.product_model.id}
+                      disabled={!item.product_model?.id}
                     >
-                      {item.size.id ? item.size.name : "O'lcham tanlang"}
+                      {item.size?.id ? item.size?.name : "O'lcham tanlang"}
                     </Button>
                   </td>
 
@@ -222,8 +222,8 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                         });
                       }}
                     >
-                      {item.unit.id
-                        ? item.unit.name
+                      {item.unit?.id
+                        ? item.unit?.name
                         : "O'lchov birligini tanlang"}
                     </Button>
                   </td>

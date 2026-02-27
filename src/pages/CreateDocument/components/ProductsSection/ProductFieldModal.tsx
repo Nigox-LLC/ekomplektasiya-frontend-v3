@@ -269,7 +269,16 @@ const ProductFieldModal: React.FC<IProps> = ({
           )}
 
           <div className="flex items-center justify-end mt-4">
-            <Button type="primary" onClick={() => onSelect(selectedValue)}>
+            <Button
+              type="primary"
+              onClick={() => {
+                if (!selectedValue) {
+                  return;
+                }
+                onSelect(selectedValue);
+              }}
+              disabled={!selectedValue}
+            >
               Tanlash
             </Button>
             <Button className="ml-2" onClick={onCancel}>

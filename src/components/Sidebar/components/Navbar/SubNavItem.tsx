@@ -15,7 +15,10 @@ const SubNavItem: React.FC<IProps> = React.memo(
 
     const isActive = () => {
       const pathname = location.pathname;
-      return pathname.includes(`${itemID}/${subItem.id}`) || pathname.endsWith(`/${subItem.id}`);
+      return (
+        pathname.includes(`${itemID}/${subItem.id}`) ||
+        pathname.endsWith(`/${subItem.id}`)
+      );
     };
 
     const subItemCounts = () => {
@@ -23,18 +26,17 @@ const SubNavItem: React.FC<IProps> = React.memo(
 
       switch (subItem.id) {
         case "all_count":
-          return counts[`${itemID === "outgoing" ? "out" : "in"}`].all_count;
+          return counts[`${itemID === "OUT" ? "out" : "in"}`].all_count;
         case "executing":
-          return counts[`${itemID === "outgoing" ? "out" : "in"}`].executing;
+          return counts[`${itemID === "OUT" ? "out" : "in"}`].executing;
         case "for_above":
-          return counts[`${itemID === "outgoing" ? "out" : "in"}`].for_above;
+          return counts[`${itemID === "OUT" ? "out" : "in"}`].for_above;
         case "for_information":
-          return counts[`${itemID === "outgoing" ? "out" : "in"}`]
-            .for_information;
+          return counts[`${itemID === "OUT" ? "out" : "in"}`].for_information;
         case "in_approval":
-          return counts[`${itemID === "outgoing" ? "out" : "in"}`].in_approval;
+          return counts[`${itemID === "OUT" ? "out" : "in"}`].in_approval;
         case "in_signing":
-          return counts[`${itemID === "outgoing" ? "out" : "in"}`].in_signing;
+          return counts[`${itemID === "OUT" ? "out" : "in"}`].in_signing;
         default:
           return null;
       }

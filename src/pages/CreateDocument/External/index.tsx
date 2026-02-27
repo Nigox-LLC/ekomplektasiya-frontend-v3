@@ -120,10 +120,10 @@ const CreateDocument: React.FC = () => {
         is_mistake: false,
         products: orderData.products.map((item) => ({
           ...item,
-          product_type: item.product_type.id ? item.product_type.id : null,
-          product_model: item.product_model.id ? item.product_model.id : null,
-          size: item.size.id ? item.size.id : null,
-          unit: item.unit.id ? item.unit.id : null,
+          product_type: item.product_type.id || null,
+          product_model: item.product_model.id || null,
+          size: item.size.id || null,
+          unit: item.unit.id || null,
         })),
       });
       if (response.status === 200) {

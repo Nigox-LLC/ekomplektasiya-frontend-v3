@@ -21,6 +21,7 @@ const UsernameInput: React.FC<Props> = React.memo(({ value, onChange }) => {
           onChange={(e) => onChange(e.target.value)}
           placeholder="Loginni kiriting"
           className="px-4! py-4! text-[16px]!"
+          autoComplete="on"
         />
       </div>
     </div>

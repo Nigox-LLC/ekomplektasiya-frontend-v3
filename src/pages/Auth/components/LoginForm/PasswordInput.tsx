@@ -26,6 +26,7 @@ const PasswordInput: React.FC<Props> = React.memo(({ value, onChange }) => {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="px-4! py-4! text-[16px]!"
+          autoComplete="on"
         />
       </div>
     </div>

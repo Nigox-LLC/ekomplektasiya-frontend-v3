@@ -1,6 +1,6 @@
 import { axiosAPI } from "@/service/axiosAPI";
-import { Button, Checkbox, Select } from "antd";
-import { Building2, Check, Send, User } from "lucide-react";
+import { Button, Checkbox, Input, Select } from "antd";
+import { Building2, Check, Search, Send, User } from "lucide-react";
 import React, { useEffect } from "react";
 import { toast } from "react-toastify";
 
@@ -30,6 +30,7 @@ const SendModal: React.FC<SendModalProps> = ({
   const [totalEmployees, setTotalEmployees] = React.useState<number>(0);
   const [isLoadingEmployees, setIsLoadingEmployees] =
     React.useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = React.useState<string>("");
   const itemsPerPage = 10;
 
   // fetch departments
@@ -43,31 +44,38 @@ const SendModal: React.FC<SendModalProps> = ({
   };
 
   // fetch sub-departments when department is selected
-  const fetchSubDepartments = async (departmentId: number) => {
-    try {
-      const response = await axiosAPI.get(
-        "/directory/organization/sub-department/",
-        {
-          params: { department: departmentId },
-        },
-      );
+  // const fetchSubDepartments = async (departmentId: number) => {
+  //   try {
+  //     const response = await axiosAPI.get(
+  //       "/directory/organization/sub-department/",
+  //       {
+  //         params: { department: departmentId },
+  //       },
+  //     );
 
-      if (response.status === 200) setSubDepartments(response.data.results);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  //     if (response.status === 200) setSubDepartments(response.data.results);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   // fetch employees when sub-department is selected
-  const fetchEmployees = async (departmentID?: number, page: number = 1) => {
+  const fetchEmployees = async (
+    departmentID?: number,
+    page: number = 1,
+    search?: string,
+  ) => {
     try {
       setIsLoadingEmployees(true);
-      const params = {
+      const params: any = {
         department: departmentID,
         page: page,
         limit: itemsPerPage,
         // sub_department: subDepartmentId,
       };
+      if (search) {
+        params.search = search;
+      }
       const response = await axiosAPI.get("/staff/", {
         params: params,
       });
@@ -108,6 +116,22 @@ const SendModal: React.FC<SendModalProps> = ({
     }
   };
 
+  // Debounced search effect
+  useEffect(() => {
+    if (!selectedDepartment && !selectedSubDepartment) return;
+
+    const timeoutId = setTimeout(() => {
+      setEmployeePage(1);
+      fetchEmployees(
+        selectedDepartment || selectedSubDepartment || undefined,
+        1,
+        searchQuery,
+      );
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, selectedDepartment, selectedSubDepartment]);
+
   useEffect(() => {
     fetchDepartments();
   }, []);
@@ -147,8 +171,28 @@ const SendModal: React.FC<SendModalProps> = ({
               </Select>
             </div>
 
-            {/* Sub-department section */}
+            {/* Movement type section */}
             <div className="w-full">
+              <p className="mb-2 font-semibold">Yuborish maqsadi</p>
+              <Select
+                className="w-full mb-4"
+                placeholder="Yuborish maqsadini tanlang"
+                value={movementType || undefined}
+                onChange={(value) => setMovementType(value)}
+              >
+                <Select.Option value="for_information">
+                  Ma'lumot uchun
+                </Select.Option>
+                <Select.Option value="in_signing">Imzolash uchun</Select.Option>
+                <Select.Option value="in_approval">
+                  Tasdiqlash uchun
+                </Select.Option>
+                <Select.Option value="for_above">Usti xat uchun</Select.Option>
+              </Select>
+            </div>
+
+            {/* Sub-department section */}
+            {/* <div className="w-full">
               <p className="mb-2 font-semibold">Quyi bo'lim</p>
               <Select
                 value={selectedSubDepartment}
@@ -165,31 +209,23 @@ const SendModal: React.FC<SendModalProps> = ({
                   </Select.Option>
                 ))}
               </Select>
-            </div>
-          </div>
-          {/* Movement type section */}
-          <div className="mb-6">
-            <p className="mb-2 font-semibold">Yuborish maqsadi</p>
-            <Select
-              className="w-full mb-4"
-              placeholder="Yuborish maqsadini tanlang"
-              value={movementType || undefined}
-              onChange={(value) => setMovementType(value)}
-            >
-              <Select.Option value="for_information">
-                Ma'lumot uchun
-              </Select.Option>
-              <Select.Option value="in_signing">Imzolash uchun</Select.Option>
-              <Select.Option value="in_approval">
-                Tasdiqlash uchun
-              </Select.Option>
-              <Select.Option value="for_above">Usti xat uchun</Select.Option>
-            </Select>
+            </div> */}
           </div>
 
           {/* Employees table */}
           <div className="text-black! mb-4">
             <p className="mb-2 font-semibold">Xodimlar</p>
+            {/* Search box */}
+            <div className="mb-2">
+              <Input
+                placeholder="Xodim qidirish..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                prefix={<Search className="size-4 text-gray-400" />}
+                allowClear
+                className="w-full"
+              />
+            </div>
             <div
               className="max-h-48 overflow-y-auto border border-gray-300 rounded"
               onScroll={(e) => {
@@ -201,8 +237,9 @@ const SendModal: React.FC<SendModalProps> = ({
                   employees.length < totalEmployees
                 ) {
                   fetchEmployees(
-                    selectedDepartment || selectedSubDepartment,
+                    selectedDepartment || selectedSubDepartment || undefined,
                     employeePage + 1,
+                    searchQuery,
                   );
                   setEmployeePage((prev) => prev + 1);
                 }

@@ -126,7 +126,7 @@ const LettersPage: React.FC = () => {
           ? "IN"
           : location.pathname.includes("OUT")
             ? "OUT"
-            : false;
+          : false;
         const params: any = {
           page: page,
         };

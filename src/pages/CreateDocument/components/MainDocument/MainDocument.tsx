@@ -132,8 +132,11 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
       if (response.status === 200) {
         setMainDocument((prev) => [...prev, response.data]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
+      toast.error(
+        error.response?.data?.message || "Hujjat yaratishda xatolik yuz berdi!",
+      );
     }
   };
 
@@ -269,10 +272,8 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
                     key={index}
                     className="px-4 py-2 hover:bg-gray-100 cursor-pointer w-full text-start text-black!"
                     onClick={() => {
-                      console.log(template)
                       if (template.is_fishka) {
                         setIsFishka(true);
-                        console.log(orderData)
                         setShowTemplatesList(false);
                       } else {
                         createMainDocByTemplate(template.id);

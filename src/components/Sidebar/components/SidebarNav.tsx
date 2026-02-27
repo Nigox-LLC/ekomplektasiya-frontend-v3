@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import NavItem from "./Navbar/NavItem";
 import { axiosAPI } from "@/service/axiosAPI";
+import { useAppSelector } from "@/store/hooks/hooks";
 
 export type SidebarMenuItem = {
   id: string;
@@ -33,8 +34,13 @@ const SidebarNav: React.FC = React.memo(() => {
   );
 
   const [counts, setCounts] = React.useState<SidebarCounts | null>(null);
+  const [navItems, setNavItems] = React.useState<SidebarMenuItem[]>([]);
 
-  const navItems: SidebarMenuItem[] = [
+  const { department_category } = useAppSelector(
+    (state) => state.info.currentUserInfo,
+  );
+
+  const baseNavItems: SidebarMenuItem[] = [
     {
       id: "/",
       label: "Bosh sahifa",
@@ -124,11 +130,13 @@ const SidebarNav: React.FC = React.memo(() => {
       label: "Mening hujjatlarim",
       icon: <FileText className="size-5" />,
     },
+    // murojat xati - index: 5
     {
       id: "appeal-letter",
       label: "Murojaat xati",
       icon: <Mail className="size-5" />,
     },
+    // narx tahlil - index: 6
     {
       id: "price-analysis",
       label: "Narx tahlil",
@@ -268,6 +276,18 @@ const SidebarNav: React.FC = React.memo(() => {
       icon: <User className="size-5" />,
     },
   ];
+
+  useEffect(() => {
+    let filteredItems = [...baseNavItems];
+    
+    if (department_category !== "completasiya") {
+      // remove murojat xati index 5 and narx tahlil index 6 from navItems
+      filteredItems.splice(5, 2);
+      setExpandedSection(null);
+    }
+    
+    setNavItems(filteredItems);
+  }, [department_category]);
 
   // fetch sidebar counts
   useEffect(() => {

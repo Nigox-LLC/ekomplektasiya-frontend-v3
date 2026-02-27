@@ -137,7 +137,7 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
   // Backendga imzolash so'rovini yuborish
   const handleSignDocument = useCallback(
     async (pkcs7_64: string) => {
-      if (!documentId || !orderFileID) {
+      if (!documentId) {
         toast.error("Hujjat ID si topilmadi!", { closeButton: false });
         return;
       }

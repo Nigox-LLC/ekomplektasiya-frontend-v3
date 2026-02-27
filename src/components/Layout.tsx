@@ -38,7 +38,7 @@ const Layout: React.FC = () => {
     <>
       <div className="flex items-start">
         <Sidebar />
-        <div className="flex flex-col flex-[75%] min-w-0 w-full">
+        <div className="flex flex-col flex-[90%] min-w-0 w-full">
           <Header />
           <main className="p-6">
             <Outlet />

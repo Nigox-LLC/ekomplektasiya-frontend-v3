@@ -275,28 +275,39 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
   const fetchOrderData = async () => {
     try {
-      const response = await axiosAPI.get(`document/orders/${documentProp?.id}/`);
+      const response = await axiosAPI.get(
+        `document/orders/${documentProp?.id}/`,
+      );
       if (response.status === 200) {
         const data = response.data;
-  
+
         const transformedProducts = data.products.map((p: any) => ({
           id: p.id,
-          order_product_type: p.order_product_type === "product" ? "order" : p.order_product_type,
+          order_product_type:
+            p.order_product_type === "product" ? "order" : p.order_product_type,
           name: p.product_name || "",
           model: p.product_model?.name || "",
-          product_type: p.product_type ? { id: p.product_type.id, name: p.product_type.name } : null,
-          product_model: p.product_model ? { id: p.product_model.id, name: p.product_model.name } : null,
+          product_type: p.product_type
+            ? { id: p.product_type.id, name: p.product_type.name }
+            : null,
+          product_model: p.product_model
+            ? { id: p.product_model.id, name: p.product_model.name }
+            : null,
           size: p.size ? { id: p.size.id, name: p.size.name } : null,
           unit: p.unit ? { id: p.unit.id, name: p.unit.name } : null,
           quantity: p.quantity,
           note: p.comment || "",
           attached_employee: p.attached_employee
-            ? { id: p.attached_employee.id, full_name: p.attached_employee.name || p.attached_employee.full_name }
+            ? {
+                id: p.attached_employee.id,
+                full_name:
+                  p.attached_employee.name || p.attached_employee.full_name,
+              }
             : null,
           posted_website: p.posted_website,
           // yearPlan: p.annual_plan,
         }));
-  
+
         setOrderData({
           ...data,
           products: transformedProducts,
@@ -395,31 +406,27 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
   const handleOrderUpdate = async () => {
     if (orderData) {
+      if (orderData.products.length === 0) {
+        toast.error("Mahsulotlar ro'yxati bo'sh bo'lishi mumkin emas!");
+        return;
+      }
       try {
         const payload = {
           comment: orderData.comment,
           participants: orderData.participants,
-          products: orderData.products.map((product) => {
-            const prod: any = {
-              ...(product.id && { id: product.id }),
-              order_product_type: product.order_product_type === "order" ? "product" : product.order_product_type,
-              product_name: product.name,
-              comment: product.note,
-              product_type: product.product_type?.id,
-              product_model: product.product_model?.id,
-              size: product.size?.id,
-              unit: product.unit?.id,
-              attached_employee: product.attached_employee?.id,
-              quantity: product.quantity,
-            };
-            // if (product.yearPlan?.id) {
-            //   prod.annual_plan = product.yearPlan.id;
-            // }
-            return prod;
-          }),
+          products: orderData.products.map((item) => ({
+            ...item,
+            product_type: item.product_type?.id || null,
+            product_model: item.product_model?.id || null,
+            size: item.size?.id || null,
+            unit: item.unit?.id || null,
+          })),
         };
-  
-        const response = await axiosAPI.patch(`document/orders/${orderData.id}/`, payload);
+
+        const response = await axiosAPI.patch(
+          `document/orders/${orderData.id}/`,
+          payload,
+        );
         if (response.status === 200) {
           toast.success("Buyurtma muvaffaqiyatli yangilandi");
           fetchOrderData();
@@ -475,6 +482,10 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       handleMainFileUpload(files[0]);
     }
   };
+
+  const { department_category } = useAppSelector(
+    (state) => state.info.currentUserInfo,
+  );
 
   const goodsColumns: ColumnsType<Product> = [
     {
@@ -694,22 +705,26 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         />
       ),
     },
-    {
-      title: "Biriktirilgan xodim",
-      key: "attached_employee",
-      width: 150,
-      fixed: "right",
-      render: (_value, item) => (
-        <Button
-          onClick={() => {
-            setShowSelectEmployeeModal(item.id);
-          }}
-          className="text-sm text-gray-600"
-        >
-          {item.attached_employee?.full_name || "Xodim tanlang"}
-        </Button>
-      ),
-    },
+    ...(department_category === "completasiya"
+      ? [
+          {
+            title: "Biriktirilgan xodim",
+            key: "attached_employee",
+            width: 150,
+            fixed: "right" as const,
+            render: (_value: any, item: Product) => (
+              <Button
+                onClick={() => {
+                  setShowSelectEmployeeModal(item.id);
+                }}
+                className="text-sm text-gray-600"
+              >
+                {item.attached_employee?.full_name || "Xodim tanlang"}
+              </Button>
+            ),
+          },
+        ]
+      : []),
     ...(orderData?.movement_type === "executing"
       ? [
           // {
@@ -873,7 +888,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 </span>
               </Button>
             )}
-            <Button
+            {/* <Button
               variant="outlined"
               size="medium"
               onClick={() => setShowExecutiveActionModal(true)}
@@ -881,7 +896,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             >
               <GitBranch className="w-4 h-4" />
               <span className="font-medium text-base">Ijro qadamlari</span>
-            </Button>
+            </Button> */}
             {/* Imzolash tugmasi - approval bo'limida yashirilgan */}
             {/* {orderData?.movement_type === "in_signing" && ( */}
             <Button
@@ -931,12 +946,9 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 color="green"
                 onClick={handleOrderUpdate}
                 className="gap-2"
-                disabled={orderData?.is_accepted}
               >
                 <FileText className="w-4 h-4" />
-                <span className="text-base">
-                  {orderData?.is_accepted ? "Qabul qilingan" : "Saqlash"}
-                </span>
+                <span className="text-base">Saqlash</span>
               </Button>
               <Button
                 variant="filled"
