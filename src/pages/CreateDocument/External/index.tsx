@@ -210,7 +210,7 @@ const CreateDocument: React.FC = () => {
           orderDataID={orderDataID}
         />
         <>
-          <SignerCardSection orderID={orderDataID} />
+          <SignerCardSection orderData={orderData} setOrderData={setOrderData} />
 
           {/* Comment of order */}
           <div className="my-2">

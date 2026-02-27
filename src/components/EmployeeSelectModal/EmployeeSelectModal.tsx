@@ -1,6 +1,6 @@
 import { axiosAPI } from "@/service/axiosAPI";
 import React, { useEffect, useRef, useMemo } from "react";
-import { Table, Spin, Button, Checkbox, Input } from "antd";
+import { Table, Spin, Button, Checkbox, Input, Select } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { Check, X } from "lucide-react";
 
@@ -9,6 +9,7 @@ interface IProps {
   onSelect: (employees: EmployeeType[]) => void;
   selectionType?: "single" | "multiple";
   selectedEmployeeIds: number[];
+  selectingPurpose?: boolean;
 }
 
 const EmployeeSelectModal: React.FC<IProps> = ({
@@ -16,6 +17,7 @@ const EmployeeSelectModal: React.FC<IProps> = ({
   onSelect,
   selectionType = "multiple",
   selectedEmployeeIds,
+  selectingPurpose,
 }) => {
   const [employeeList, setEmployeeList] = React.useState<EmployeeType[]>([]);
   const [selectedEmployees, setSelectedEmployees] = React.useState<
@@ -27,8 +29,34 @@ const EmployeeSelectModal: React.FC<IProps> = ({
   const [isLoading, setIsLoading] = React.useState(false);
   const [hasMore, setHasMore] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [selectedPurposeById, setSelectedPurposeById] = React.useState<
+    Record<number, string>
+  >({});
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isFetchingRef = useRef(false);
+
+  const forPurpose = [
+    {
+      label: "Ijro uchun",
+      value: "executing",
+    },
+    {
+      label: "Imzolash uchun",
+      value: "in_signing",
+    },
+    {
+      label: "Kelishish uchun",
+      value: "in_approval",
+    },
+    {
+      label: "Ustixat uchun",
+      value: "for_above",
+    },
+    {
+      label: "Ma'lumot uchun",
+      value: "for_information",
+    },
+  ];
 
   // Handle employee selection
   const handleSelectEmployee = (employee: EmployeeType) => {
@@ -56,6 +84,15 @@ const EmployeeSelectModal: React.FC<IProps> = ({
 
   // Handle confirm selection
   const handleConfirm = () => {
+    if (selectingPurpose) {
+      const employeesWithPurpose = selectedEmployees.map((employee) => ({
+        ...employee,
+        purpose: selectedPurposeById[employee.id],
+      }));
+      onSelect(employeesWithPurpose);
+      onClose();
+      return;
+    }
     onSelect(selectedEmployees);
     onClose();
   };
@@ -104,6 +141,31 @@ const EmployeeSelectModal: React.FC<IProps> = ({
       key: "position_name",
       width: 200,
     },
+    // Optional purpose column if selectingPurpose is true. Purpose value for each employee
+    {
+      title: "Maqsadi",
+      key: "purpose",
+      render: (_, record) => (
+        <Select
+          style={{ width: 150 }}
+          disabled={!selectingPurpose}
+          placeholder="Maqsadni tanlang"
+          value={selectedPurposeById[record.id]}
+          onChange={(value) =>
+            setSelectedPurposeById((prev) => ({
+              ...prev,
+              [record.id]: value,
+            }))
+          }
+        >
+          {forPurpose.map((option) => (
+            <Select.Option key={option.value} value={option.value}>
+              {option.label}
+            </Select.Option>
+          ))}
+        </Select>
+      ),
+    },
   ];
 
   // Check if we can load more data
@@ -115,11 +177,11 @@ const EmployeeSelectModal: React.FC<IProps> = ({
   const filteredEmployees = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return employeeList;
-    
+
     return employeeList.filter(
       (employee) =>
         (employee.full_name?.toLowerCase().includes(query) ?? false) ||
-        (employee.position_name?.toLowerCase().includes(query) ?? false)
+        (employee.position_name?.toLowerCase().includes(query) ?? false),
     );
   }, [employeeList, searchQuery]);
 
@@ -177,12 +239,12 @@ const EmployeeSelectModal: React.FC<IProps> = ({
   useEffect(() => {
     if (employeeList.length > 0 && selectedEmployeeIds.length > 0) {
       const preSelectedEmployees = employeeList.filter((emp) =>
-        selectedEmployeeIds.includes(emp.id)
+        selectedEmployeeIds.includes(emp.id),
       );
       setSelectedEmployees(preSelectedEmployees);
     }
-    console.log(selectedEmployeeIds)
-    console.log(employeeList)
+    console.log(selectedEmployeeIds);
+    console.log(employeeList);
   }, [employeeList, selectedEmployeeIds]);
 
   // Handle page change for infinite scroll
@@ -265,11 +327,14 @@ const EmployeeSelectModal: React.FC<IProps> = ({
           )}
 
           {/* Empty state */}
-          {filteredEmployees.length === 0 && employeeList.length > 0 && searchQuery.trim() && !isLoading && (
-            <div className="flex items-center justify-center p-8 text-gray-500">
-              Xodimlar topilmadi
-            </div>
-          )}
+          {filteredEmployees.length === 0 &&
+            employeeList.length > 0 &&
+            searchQuery.trim() &&
+            !isLoading && (
+              <div className="flex items-center justify-center p-8 text-gray-500">
+                Xodimlar topilmadi
+              </div>
+            )}
 
           {employeeList.length === 0 && !isLoading && (
             <div className="flex items-center justify-center p-8 text-gray-500">

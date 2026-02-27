@@ -5,8 +5,10 @@ import EmployeeSelectModal from "./EmployeeSelectModal/EmployeeSelectModal";
 import { axiosAPI } from "@/service/axiosAPI";
 import type { OrderData } from "@/pages/Letters/components/Detail/LetterDetail";
 import { toast } from "react-toastify";
+import { CheckCircle } from "lucide-react";
+import EImzoSigning from "@/pages/Letters/components/Detail/SigningModal";
 
-type Executor = {
+export type Executor = {
   id: number;
   full_name: string;
   position_name: string | null;
@@ -64,7 +66,7 @@ const ExecutorCard = React.memo(
 
 interface IProps {
   setShowCreateAboveModal: React.Dispatch<React.SetStateAction<boolean>>;
-  orderDataID: number
+  orderDataID: number;
   templateID: number;
 }
 
@@ -74,6 +76,7 @@ const CreatAboveModal: React.FC<IProps> = ({
   templateID,
 }) => {
   const [executors, setExecutors] = React.useState<Executor[]>([]);
+  const [showSigningModal, setShowSigningModal] = React.useState(false);
   const [mainExecutorId, setMainExecutorId] = React.useState<number | null>(
     null,
   );
@@ -203,6 +206,18 @@ const CreatAboveModal: React.FC<IProps> = ({
               >
                 Bekor qilish
               </Button>
+              {/* sign button */}
+              <Button
+                type="primary"
+                onClick={() => setShowSigningModal(true)}
+                disabled={
+                  (executors.length === 0 || !mainExecutorId) && !deadline
+                }
+                className="px-4 py-2"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Imzolash va Yaratish
+              </Button>
               <Button
                 type="primary"
                 className="px-4 py-2"
@@ -226,6 +241,14 @@ const CreatAboveModal: React.FC<IProps> = ({
           selectionType="multiple"
         />
       )}
+      <EImzoSigning
+        isOpen={showSigningModal}
+        onClose={() => setShowSigningModal(false)}
+        documentId={String(orderDataID)}
+        templateID={templateID}
+        deadline={deadline}
+        executors={executors}
+      />
     </>
   );
 };

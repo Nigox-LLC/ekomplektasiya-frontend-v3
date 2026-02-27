@@ -14,6 +14,8 @@ import {
   setEimzoSigningData,
 } from "@/store/slices/infoSlice";
 import { axiosAPI } from "@/service/axiosAPI";
+import type { Executor } from "@/components/CreatAboveModal";
+import { saveEimzoCert } from "@/utils/eimzoStorage";
 
 interface CertificateRaw {
   disk: string;
@@ -43,6 +45,9 @@ interface EImzoSigningProps {
   documentId?: string; // Imzolanadigan hujjat ID si
   orderFileID?: number; // Imzolanadigan fayl ID si (agar kerak bo'lsa)
   onSignSuccess?: (response: any) => void; // Muvaffaqiyatli imzolash callback
+  templateID?: number;
+  deadline?: string;
+  executors?: Executor[];
 }
 
 // Utility functions
@@ -86,6 +91,8 @@ const isExpired = (validTo?: string | null) => {
   return dt ? dt.getTime() < Date.now() : false;
 };
 
+type PendingAction = "sign" | "remember" | null;
+
 const EImzoSigning: React.FC<EImzoSigningProps> = ({
   isOpen,
   onClose,
@@ -93,6 +100,9 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
   documentId,
   onSignSuccess,
   orderFileID,
+  templateID,
+  deadline,
+  executors,
 }) => {
   // State management
   const [certificates, setCertificates] = useState<CertificateParsed[]>([]);
@@ -115,10 +125,25 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
   const keyLoadedRef = useRef(false);
   const pkcs7DataRef = useRef<string | null>(null);
 
+  const pendingActionRef = useRef<PendingAction>(null);
+
+  const executorsRef = useRef(executors);
+  const deadlineRef = useRef(deadline);
+  const templateIDRef = useRef(templateID);
+  const orderFileIDRef = useRef(orderFileID);
+
   // Check if ready to proceed
   const isReadyToSign = useMemo(() => {
     return Boolean(selectedCertificate && keyId);
   }, [selectedCertificate, keyId]);
+
+  // Update refs when props change
+  useEffect(() => {
+    executorsRef.current = executors;
+    deadlineRef.current = deadline;
+    templateIDRef.current = templateID;
+    orderFileIDRef.current = orderFileID;
+  }, [executors, deadline, templateID, orderFileID]);
 
   // Reset state
   const resetState = useCallback(() => {
@@ -127,7 +152,10 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
     setSelectedCertificate(null);
     setKeyId("");
     setSigningLoading(false);
+
     signingInFlightRef.current = false;
+    pendingActionRef.current = null;
+
     selectedCertRef.current = null;
     keyLoadedRef.current = false;
     apiKeyAcceptedRef.current = false;
@@ -145,7 +173,6 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
       setSigningLoading(true);
 
       try {
-        // Bu yerda o'zingizning API endpoint'ingizga so'rov yuboring
         const payload: any = {
           signature: pkcs7_64,
           certificateInfo: {
@@ -158,17 +185,23 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
             validTo: selectedCertRef.current?.validTo,
           },
         };
-        if (orderFileID) payload.order_file_id = orderFileID;
+
+        if (orderFileIDRef.current) payload.order_file_id = orderFileIDRef.current;
+        if (templateIDRef.current) payload.template = templateIDRef.current;
+
+        if (deadlineRef.current) payload.deadline = deadlineRef.current;
+        if (executorsRef.current) payload.executers = [...executorsRef.current];
+
         const response = await axiosAPI.post(
           `document/orders/${documentId}/signing/`,
           payload,
         );
+
         if (response.status === 200) {
           toast.success("Hujjat muvaffaqiyatli imzolandi!", {
             autoClose: 3000,
           });
 
-          // Redux store'ga saqlash
           dispatch(
             setEimzoSigningData({
               pkcs7_64,
@@ -177,13 +210,11 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
             }),
           );
 
-          // Callback chaqirish
           if (onSignSuccess) {
             onSignSuccess(response.data);
           }
-
-          // Modalni yopish
         }
+
         handleCancel();
       } catch (error: any) {
         console.error("Sign document error:", error);
@@ -195,10 +226,34 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
       } finally {
         setSigningLoading(false);
         signingInFlightRef.current = false;
+        pendingActionRef.current = null;
       }
     },
     [documentId, dispatch, onSignSuccess],
   );
+
+  const saveRememberedCert = useCallback(() => {
+  const cert = selectedCertRef.current;
+  if (!cert) return;
+
+  const payload = {
+    disk: cert.disk,
+    path: cert.path,
+    name: cert.name,
+    alias: cert.alias,
+    cn: cert.cn,
+    validFrom: cert.validFrom,
+    validTo: cert.validTo,
+  };
+
+  // ✅ localStorage
+  saveEimzoCert(payload);
+
+  // ✅ redux
+  dispatch(setEimzoRememberedCert(payload));
+
+  toast.success("Kalit muvaffaqiyatli eslab qolindi", { autoClose: 2000 });
+}, [dispatch]);
 
   // WebSocket and initialization effect
   useEffect(() => {
@@ -209,13 +264,13 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
       return;
     }
 
-    // Connect WebSocket and handle messages
     webSocketService.connect(
       "wss://127.0.0.1:64443/service/cryptapi",
       (msg: any) => {
         try {
           const parsed = JSON.parse(msg);
 
+          // Step 1: API key accepted -> list certificates
           if (
             parsed.success === true &&
             !apiKeyAcceptedRef.current &&
@@ -243,9 +298,10 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
                 parsedCerts.push(certItem);
               }
             });
+
             setCertificates(parsedCerts);
 
-            // Auto-restore saved certificate
+            // Auto-restore saved certificate (faqat tanlab qo'yamiz, parol oynasi bu yerda ochilmaydi)
             if (savedCert && parsedCerts.length > 0) {
               const matchedCert = parsedCerts.find(
                 (c) => c.name === savedCert.name && c.disk === savedCert.disk,
@@ -263,7 +319,7 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
                     matchedCert.alias,
                   ],
                 });
-                toast.info("Saqlangan kalit avtomatik yuklandi", {
+                toast.info("Saqlangan kalit avtomatik tanlandi", {
                   autoClose: 2000,
                 });
               }
@@ -278,9 +334,9 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
             setKeyId(parsed.keyId);
             keyLoadedRef.current = true;
 
-            // Agar imzolash jarayoni boshlangan bo'lsa, create_pkcs7 chaqiramiz
-            // Bu E-IMZO modulining o'z parol oynasini ochadi
-            if (signingInFlightRef.current) {
+            // Agar hozir "sign" yoki "remember" jarayoni boshlangan bo'lsa:
+            // create_pkcs7 chaqiramiz -> bu E-IMZO parol oynasini chiqaradi
+            if (signingInFlightRef.current && pendingActionRef.current) {
               webSocketService.sendMessage(
                 JSON.stringify({
                   plugin: "pkcs7",
@@ -290,13 +346,26 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
               );
             }
           }
-          // Step 4: Handle pkcs7 creation response (E-IMZO parol oynasidan keyin)
+          // Step 4: Handle pkcs7 creation response (parol oynasidan keyin)
           else if (parsed.pkcs7_64 && parsed.success) {
-            // Parol to'g'ri kiritildi, imzolash muvaffaqiyatli
             pkcs7DataRef.current = parsed.pkcs7_64;
 
-            // Hujjatni imzolash funksiyasini chaqirish
-            handleSignDocument(parsed.pkcs7_64);
+            // Qaysi action ekanini tekshiramiz
+            if (pendingActionRef.current === "sign") {
+              handleSignDocument(parsed.pkcs7_64);
+              return;
+            }
+
+            if (pendingActionRef.current === "remember") {
+              // Parol to'g'ri -> endi kalitni saqlaymiz
+              saveRememberedCert();
+
+              // remember jarayonini yakunlaymiz (modal yopilmaydi)
+              signingInFlightRef.current = false;
+              pendingActionRef.current = null;
+              setSigningLoading(false);
+              return;
+            }
           }
           // Handle errors
           else if (parsed.success === false) {
@@ -305,6 +374,7 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
             });
             setSigningLoading(false);
             signingInFlightRef.current = false;
+            pendingActionRef.current = null;
           }
         } catch (error) {
           console.error("WebSocket parse error:", error);
@@ -315,7 +385,7 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
     return () => {
       webSocketService.disconnect();
     };
-  }, [isOpen, resetState, savedCert, handleSignDocument]);
+  }, [isOpen, resetState, savedCert, handleSignDocument, saveRememberedCert]);
 
   // Initialize E-IMZO connection
   useEffect(() => {
@@ -323,7 +393,6 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
 
     const timer = window.setInterval(() => {
       if (!initSentRef.current && webSocketService.isConnected()) {
-        // Send API key
         webSocketService.sendMessage(
           JSON.stringify({
             name: "apikey",
@@ -350,7 +419,7 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
     return () => window.clearInterval(timer);
   }, [isOpen]);
 
-  // Handle confirm button - E-IMZO native parol oynasini chaqirish
+  // Handle confirm button - imzolash (parol oynasi chiqadi)
   const handleConfirm = () => {
     if (!selectedCertificate) {
       toast.error("Iltimos, sertifikatni tanlang!", { closeButton: false });
@@ -364,9 +433,11 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
       return;
     }
 
+    pendingActionRef.current = "sign";
+    signingInFlightRef.current = true;
+
     // Agar key allaqachon yuklangan bo'lsa, to'g'ridan-to'g'ri create_pkcs7 chaqiramiz
     if (keyLoadedRef.current && keyId) {
-      signingInFlightRef.current = true;
       webSocketService.sendMessage(
         JSON.stringify({
           plugin: "pkcs7",
@@ -375,17 +446,22 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
         }),
       );
     } else {
-      // Avval kalitni yuklaymiz, keyin create_pkcs7 chaqiriladi
-      signingInFlightRef.current = true;
+      // Avval kalitni yuklaymiz, keyin ws keyId qaytgach create_pkcs7 ishlaydi
       keyLoadedRef.current = false;
       webSocketService.sendMessage(JSON.stringify(selectedCertificate));
     }
   };
 
-  // Handle remember key
+  // Handle remember key (parol oynasi chiqadi -> to'g'ri bo'lsa saqlaydi)
   const handleRememberKey = () => {
     if (!selectedCertRef.current || !selectedCertificate) {
       toast.error("Iltimos, sertifikatni tanlang!", { closeButton: false });
+      return;
+    }
+    if (isExpired(selectedCertRef.current.validTo)) {
+      toast("Bu kalitning muddati tugagan, saqlab bo'lmaydi.", {
+        type: "warning",
+      });
       return;
     }
     if (!webSocketService.isConnected()) {
@@ -395,30 +471,24 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
       return;
     }
 
-    // Kalitni eslab qolish uchun ham avval kalitni yuklash kerak
+    // "Remember" jarayonini boshlaymiz: parol oynasini majburiy ochamiz
+    pendingActionRef.current = "remember";
+    signingInFlightRef.current = true;
+    setSigningLoading(true);
+
     if (keyLoadedRef.current && keyId) {
-      // Kalit allaqachon yuklangan, faqat saqlaymiz
-      const cert = selectedCertRef.current;
-      dispatch(
-        setEimzoRememberedCert({
-          disk: cert.disk,
-          path: cert.path,
-          name: cert.name,
-          alias: cert.alias,
-          cn: cert.cn,
-          validFrom: cert.validFrom,
-          validTo: cert.validTo,
+      // Key yuklangan -> bevosita parol oynasini ochamiz
+      webSocketService.sendMessage(
+        JSON.stringify({
+          plugin: "pkcs7",
+          name: "create_pkcs7",
+          arguments: ["Test", keyId, "no"],
         }),
       );
-      toast.success("Kalit muvaffaqiyatli eslab qolindi", {
-        autoClose: 2000,
-      });
     } else {
-      // Kalitni yuklashni boshlaymiz
+      // Key yuklanmagan -> load_key yuboramiz (keyId qaytgach create_pkcs7 avtomatik ketadi)
       keyLoadedRef.current = false;
       webSocketService.sendMessage(JSON.stringify(selectedCertificate));
-      // Bu yerda parol kiritilgandan keyin kalit saqlanishi mumkin
-      // Lekin hozirgi logikada bu qism murakkabroq
     }
   };
 
@@ -433,7 +503,7 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
     resetState();
   };
 
-  // Handle certificate selection clearing saved confirm
+  // Handle certificate selection
   const handleCertificateSelect = (record: CertificateParsed) => {
     if (isExpired(record.validTo)) {
       toast("Bu kalitning muddati tugagan, tanlab bo'lmaydi.", {
@@ -562,9 +632,7 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
               const isSaved =
                 savedCert?.name === r.name && savedCert?.disk === r.disk;
               return isSaved ? (
-                <span className="text-green-600 text-xs">
-                  ✓ Kalit saqlangan
-                </span>
+                <span className="text-green-600 text-xs">✓ Kalit saqlangan</span>
               ) : (
                 <span className="text-gray-400 text-xs">Kalit saqlanmagan</span>
               );

@@ -2,7 +2,15 @@ import { CreateAboveModal, FilePreviewer } from "@/components";
 import type { OrderData } from "@/pages/Letters/components/Detail/LetterDetail";
 import { axiosAPI } from "@/service/axiosAPI";
 import { Button, Card, Modal } from "antd";
-import { Check, CheckCircle, Eye, FileText, Pencil, Plus } from "lucide-react";
+import {
+  Check,
+  CheckCircle,
+  Download,
+  Eye,
+  FileText,
+  Pencil,
+  Plus,
+} from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import SigningModal from "@/pages/Letters/components/Detail/SigningModal";
@@ -35,41 +43,44 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
 
   const newWindowRef = useRef<Window | null>(null);
 
-  // useEffect(() => {
-  //   const handler = (e: MessageEvent) => {
-  //     // console.log("Parent received message:", e.data);
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      // console.log("Parent received message:", e.data);
 
-  //     if (e.data && e.data.status === "ready" && newWindowRef.current && selectedDocument) {
-  //       // console.log("✅ Child window tayyor!");
-  //       const token = localStorage.getItem("v3_ganiwer");
+      if (
+        e.data &&
+        e.data.status === "ready" &&
+        newWindowRef.current &&
+        selectedDocument
+      ) {
+        // console.log("✅ Child window tayyor!");
+        const token = localStorage.getItem("v3_ganiwer");
 
-  //       console.log(selectedDocument);
+        const data = {
+          input_url: selectedDocument.file_url,
+          output_url:
+            axiosAPI.getUri() + `/document/orders/word/${selectedDocument.id}/`,
+          v3_ganiwer: token,
+        };
 
-  //       const data = {
-  //         input_url: selectedDocument.file_url,
-  //         output_url:
-  //           axiosAPI.getUri() + `/document/orders/word/${selectedDocument.id}/`,
-  //         v3_ganiwer: token,
-  //       };
+        newWindowRef.current.postMessage(data, "*");
+      }
 
-  //       newWindowRef.current.postMessage(data, "*");
-  //     }
+      if (e.data && e.data.status === "loaded") {
+        console.log("✅ Hujjat yuklandi:", e.data.url);
+      }
+    };
 
-  //     if (e.data && e.data.status === "loaded") {
-  //       console.log("✅ Hujjat yuklandi:", e.data.url);
-  //     }
-  //   };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, [selectedDocument]);
 
-  //   window.addEventListener("message", handler);
-  //   return () => window.removeEventListener("message", handler);
-  // }, [selectedDocument]);
-
-  // function openEditor() {
-  //   const url = "https://editor.ekomplektasiya.uz/";
-  //   const features =
-  //     "width=1200,height=800,menubar=no,toolbar=no,location=no,status=no";
-  //   newWindowRef.current = window.open(url, "SuperDocWindow", features);
-  // }
+  function openEditor() {
+    const url = "https://editor.ekomplektasiya.uz/";
+    const features =
+      "width=1200,height=800,menubar=no,toolbar=no,location=no,status=no";
+    newWindowRef.current = window.open(url, "SuperDocWindow", features);
+  }
 
   const createMainDocument = async (file: File) => {
     try {
@@ -156,6 +167,8 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
   useEffect(() => {
     if (orderData?.movement_files?.length) {
       setMainDocument(orderData.movement_files);
+    } else {
+      setMainDocument([]);
     }
   }, [orderData]);
 
@@ -165,7 +178,7 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
         <>
           {mainDocument.map(
             (doc, index) =>
-              doc.word_file_id && (
+              (doc.word_id || doc.word_file_id) && (
                 <Card
                   key={index}
                   className="border-2 border-blue-200 rounded-lg shadow-md hover:shadow-lg transition-shadow bg-gradient-to-r from-blue-50 to-indigo-50"
@@ -176,8 +189,14 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
                         <FileText className="w-5 h-5 text-blue-600" />
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-800">
-                          {doc.file_name}
+                        <p className="font-semibold text-gray-800 flex items-center gap-2">
+                          {doc.word_file_name}
+                          {doc.file_pdf_id && (
+                            <span className="flex items-center gap-1 text-xs text-green-600">
+                              <CheckCircle className="w-4 h-4" />
+                              Imzolangan
+                            </span>
+                          )}
                         </p>
                         <p className="text-xs text-gray-500">Asosiy hujjat</p>
                       </div>
@@ -187,37 +206,36 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
                       <Button
                         className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 border-none"
                         onClick={() => {
-                          fetch(doc.file_url)
-                            .then((res) => {
-                              if (!res.ok)
-                                throw new Error(
-                                  `HTTP error! status: ${res.status}`,
-                                );
-                              return res.blob();
-                            })
-                            .then((blob) => {
-                              const fileObj = new File(
-                                [blob],
-                                doc.word_file_name,
-                                {
-                                  type: blob.type,
-                                },
-                              );
-                              console.log(doc);
-                              console.log(fileObj);
-                              if (fileObj) setSelectedFile(fileObj);
-                            })
-                            .catch((err) => {
-                              console.error("Faylni olishda xatolik:", err);
-                              toast.error("Faylni olishda xatolik yuz berdi!");
-                            });
+                          // fetch(doc.file_url)
+                          //   .then((res) => {
+                          //     if (!res.ok)
+                          //       throw new Error(
+                          //         `HTTP error! status: ${res.status}`,
+                          //       );
+                          //     return res.blob();
+                          //   })
+                          //   .then((blob) => {
+                          //     const fileObj = new File(
+                          //       [blob],
+                          //       doc.word_file_name,
+                          //       {
+                          //         type: blob.type,
+                          //       },
+                          //     );
+                          //     if (fileObj) setSelectedFile(fileObj);
+                          //   })
+                          //   .catch((err) => {
+                          //     console.error("Faylni olishda xatolik:", err);
+                          //     toast.error("Faylni olishda xatolik yuz berdi!");
+                          //   });
+                          openEditor();
                         }}
                       >
                         <Eye className="w-4 h-4" />
                         Ko'rish
                       </Button>
 
-                      <Button
+                      {/* <Button
                         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white"
                         onClick={() => {
                           setSelectedDocument(doc);
@@ -227,15 +245,26 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
                       >
                         <Pencil className="w-4 h-4" />
                         Tahrirlash
-                      </Button>
+                      </Button> */}
                       <Button
                         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white"
                         onClick={() => {
                           setSelectedOrderFileID(doc.id);
                         }}
+                        disabled={!!doc.file_pdf_id}
                       >
                         <CheckCircle className="w-4 h-4" />
                         Imzolash
+                      </Button>
+
+                      {/* Download button */}
+                      <Button
+                        href={doc.file_url}
+                        target="_blank"
+                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 border-none text-white"
+                      >
+                        <Download className="w-4 h-4" />
+                        Yuklab olish
                       </Button>
                     </div>
 

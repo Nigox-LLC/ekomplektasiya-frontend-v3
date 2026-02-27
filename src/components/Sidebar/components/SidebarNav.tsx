@@ -36,9 +36,10 @@ const SidebarNav: React.FC = React.memo(() => {
   const [counts, setCounts] = React.useState<SidebarCounts | null>(null);
   const [navItems, setNavItems] = React.useState<SidebarMenuItem[]>([]);
 
-  const { department_category } = useAppSelector(
+  const currentUserInfo = useAppSelector(
     (state) => state.info.currentUserInfo,
   );
+  const department_category = currentUserInfo?.department_category;
 
   const baseNavItems: SidebarMenuItem[] = [
     {

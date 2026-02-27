@@ -81,8 +81,6 @@ const MainDocument: React.FC<{ orderData: OrderData | null }> = ({
     }
   }, [orderData]);
 
-  console.log(mainDocuments)
-
   if (userType === "order") {
     return (
       <>

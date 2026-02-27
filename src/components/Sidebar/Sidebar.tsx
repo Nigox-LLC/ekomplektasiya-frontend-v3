@@ -5,8 +5,12 @@ import SidebarHeader from "./components/SidebarHeader";
 import SidebarFooter from "./components/SidebarFooter";
 import SidebarNav from "./components/SidebarNav";
 import { useAppDispatch } from "@/store/hooks/hooks";
-import { setCurrentUserInfo } from "@/store/slices/infoSlice";
+import {
+  setCurrentUserInfo,
+  setEimzoRememberedCert,
+} from "@/store/slices/infoSlice";
 import { useNavigate } from "react-router";
+import { clearSavedEimzoCert } from "@/utils/eimzoStorage";
 
 const Sidebar: React.FC = () => {
   const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
@@ -19,6 +23,8 @@ const Sidebar: React.FC = () => {
     dispatch(setCurrentUserInfo(null));
     localStorage.removeItem("v3_ganiwer");
     navigate("/login");
+    clearSavedEimzoCert();
+    dispatch(setEimzoRememberedCert(null));
   };
 
   return (
