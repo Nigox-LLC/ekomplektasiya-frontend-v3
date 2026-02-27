@@ -176,66 +176,65 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
     <>
       {mainDocument.length > 0 ? (
         <>
-          {mainDocument.map(
-            (doc, index) =>
-              (doc.word_id || doc.word_file_id) && (
-                <Card
-                  key={index}
-                  className="border-2 border-blue-200 rounded-lg shadow-md hover:shadow-lg transition-shadow bg-gradient-to-r from-blue-50 to-indigo-50"
-                >
-                  <div className="flex items-center justify-between gap-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <FileText className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-800 flex items-center gap-2">
-                          {doc.word_file_name}
-                          {doc.file_pdf_id && (
-                            <span className="flex items-center gap-1 text-xs text-green-600">
-                              <CheckCircle className="w-4 h-4" />
-                              Imzolangan
-                            </span>
-                          )}
-                        </p>
-                        <p className="text-xs text-gray-500">Asosiy hujjat</p>
-                      </div>
+          {mainDocument.map((doc, index) =>
+            doc.is_main ? (
+              <Card
+                key={index}
+                className="border-2 border-blue-200 rounded-lg shadow-md hover:shadow-lg transition-shadow bg-gradient-to-r from-blue-50 to-indigo-50"
+              >
+                <div className="flex items-center justify-between gap-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <FileText className="w-5 h-5 text-blue-600" />
                     </div>
+                    <div>
+                      <p className="font-semibold text-gray-800 flex items-center gap-2">
+                        {doc.word_file_name}
+                        {doc.file_pdf_id && (
+                          <span className="flex items-center gap-1 text-xs text-green-600">
+                            <CheckCircle className="w-4 h-4" />
+                            Imzolangan
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-xs text-gray-500">Asosiy hujjat</p>
+                    </div>
+                  </div>
 
-                    <div className="flex flex-col gap-2">
-                      <Button
-                        className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 border-none"
-                        onClick={() => {
-                          // fetch(doc.file_url)
-                          //   .then((res) => {
-                          //     if (!res.ok)
-                          //       throw new Error(
-                          //         `HTTP error! status: ${res.status}`,
-                          //       );
-                          //     return res.blob();
-                          //   })
-                          //   .then((blob) => {
-                          //     const fileObj = new File(
-                          //       [blob],
-                          //       doc.word_file_name,
-                          //       {
-                          //         type: blob.type,
-                          //       },
-                          //     );
-                          //     if (fileObj) setSelectedFile(fileObj);
-                          //   })
-                          //   .catch((err) => {
-                          //     console.error("Faylni olishda xatolik:", err);
-                          //     toast.error("Faylni olishda xatolik yuz berdi!");
-                          //   });
-                          openEditor();
-                        }}
-                      >
-                        <Eye className="w-4 h-4" />
-                        Ko'rish
-                      </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 border-none"
+                      onClick={() => {
+                        // fetch(doc.file_url)
+                        //   .then((res) => {
+                        //     if (!res.ok)
+                        //       throw new Error(
+                        //         `HTTP error! status: ${res.status}`,
+                        //       );
+                        //     return res.blob();
+                        //   })
+                        //   .then((blob) => {
+                        //     const fileObj = new File(
+                        //       [blob],
+                        //       doc.word_file_name,
+                        //       {
+                        //         type: blob.type,
+                        //       },
+                        //     );
+                        //     if (fileObj) setSelectedFile(fileObj);
+                        //   })
+                        //   .catch((err) => {
+                        //     console.error("Faylni olishda xatolik:", err);
+                        //     toast.error("Faylni olishda xatolik yuz berdi!");
+                        //   });
+                        openEditor();
+                      }}
+                    >
+                      <Eye className="w-4 h-4" />
+                      Ko'rish
+                    </Button>
 
-                      {/* <Button
+                    {/* <Button
                         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white"
                         onClick={() => {
                           setSelectedDocument(doc);
@@ -246,42 +245,96 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
                         <Pencil className="w-4 h-4" />
                         Tahrirlash
                       </Button> */}
-                      <Button
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white"
-                        onClick={() => {
-                          setSelectedOrderFileID(doc.id);
-                        }}
-                        disabled={!!doc.file_pdf_id}
-                      >
-                        <CheckCircle className="w-4 h-4" />
-                        Imzolash
-                      </Button>
-
-                      {/* Download button */}
-                      <Button
-                        href={doc.file_url}
-                        target="_blank"
-                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 border-none text-white"
-                      >
-                        <Download className="w-4 h-4" />
-                        Yuklab olish
-                      </Button>
-                    </div>
-
-                    <input
-                      type="file"
-                      ref={documentInputRef}
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file && selectedDocument) {
-                          handleUpdateDocument(file, selectedDocument);
-                        }
+                    <Button
+                      className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white"
+                      onClick={() => {
+                        setSelectedOrderFileID(doc.id);
                       }}
-                    />
+                      disabled={!!doc.file_pdf_id}
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      Imzolash
+                    </Button>
+
+                    {/* Download button */}
+                    <Button
+                      href={doc.file_url}
+                      target="_blank"
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 border-none text-white"
+                    >
+                      <Download className="w-4 h-4" />
+                      Yuklab olish
+                    </Button>
                   </div>
-                </Card>
-              ),
+
+                  <input
+                    type="file"
+                    ref={documentInputRef}
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file && selectedDocument) {
+                        handleUpdateDocument(file, selectedDocument);
+                      }
+                    }}
+                  />
+                </div>
+              </Card>
+            ) : (
+              <div className="flex flex-col items-start gap-2 my-6">
+                <div className="flex items-center gap-1 relative">
+                  <p>Asosiy fayl qo'shish</p>
+                  <p
+                    className="text-blue-500 underline cursor-pointer hover:text-blue-700"
+                    onClick={() => setShowTemplatesList((prev) => !prev)}
+                  >
+                    (shablonlardan tanlash)
+                  </p>
+                  {showTemplatesList && (
+                    <div className="absolute top-0 left-full w-full z-50 bg-white border-2 border-slate-200 rounded-md shadow-md">
+                      {fileTemplates.map((template, index) => (
+                        <div
+                          key={index}
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer w-full text-start text-black!"
+                          onClick={() => {
+                            if (template.is_fishka) {
+                              setIsFishka(true);
+                              setShowTemplatesList(false);
+                            } else {
+                              createMainDocByTemplate(template.id);
+                            }
+                          }}
+                        >
+                          <p>
+                            <span>{index + 1}.</span> {template.name}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <Button
+                  onClick={() => {
+                    documentInputRef.current?.click();
+                  }}
+                  className="ml-[50%] translate-x-[-50%]"
+                >
+                  Fayl yuklash
+                  <Plus className="w-4 h-4" />
+                  <input
+                    type="file"
+                    ref={documentInputRef}
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        createMainDocument(file);
+                      }
+                    }}
+                  />
+                </Button>
+              </div>
+            ),
           )}
         </>
       ) : (
