@@ -139,7 +139,7 @@ const PriceAnalysisStep: React.FC<PriceAnalysisStepProps> = ({
         toast.success("Narx tahlili muvaffaqiyatli yaratildi");
       }
     } catch (error) {
-      toast.error("Xatoni yaratishda xatolik yuz berdi");
+      toast.error("Narx tahlilini yaratishda xatolik yuz berdi");
     } finally {
       setLoading(false);
     }
@@ -154,7 +154,7 @@ const PriceAnalysisStep: React.FC<PriceAnalysisStepProps> = ({
         await getFileByURL(response.data.file_url);
       }
     } catch (error) {
-      toast.error("Imzolangan faylni olishda xatolik");
+      toast.error("Imzolangan faylni olishda xatolik yuz berdi");
     }
   };
 
