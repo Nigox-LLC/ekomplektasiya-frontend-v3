@@ -41,6 +41,7 @@ import FilePreviewModal from "@/components/FilePreviewModal/FilePreviewModal";
 import { FilePreviewer } from "@/components";
 import EmployeeSelectModal from "@/components/EmployeeSelectModal/EmployeeSelectModal";
 import MainDocument from "./MainDocument";
+import TextArea from "antd/es/input/TextArea";
 
 interface Document {
   id: number;
@@ -130,13 +131,13 @@ interface DocumentDetailViewProps {
   onBack?: () => void;
   onClose?: () => void;
   category?:
-  | "execution"
-  | "signing"
-  | "resolution"
-  | "info"
-  | "approval"
-  | "for-signing"
-  | "backup";
+    | "execution"
+    | "signing"
+    | "resolution"
+    | "info"
+    | "approval"
+    | "for-signing"
+    | "backup";
   onSuccess?: (message: string) => void;
 }
 
@@ -168,11 +169,11 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
   const [productFieldModalOpen, setProductFieldModalOpen] = useState<{
     type:
-    | "product/type"
-    | "measurement/size"
-    | "measurement/unit"
-    | "product/model"
-    | null;
+      | "product/type"
+      | "measurement/size"
+      | "measurement/unit"
+      | "product/model"
+      | null;
     index: number;
   }>({ type: null, index: -1 });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -284,7 +285,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         const transformedProducts = data.products.map((p: any) => ({
           id: p.id,
           order_product_type: p.order_product_type,
-          name: p.product_name || "",
+          product_name: p.product_name || "",
           model: p.product_model?.name || "",
           product_type: p.product_type
             ? { id: p.product_type.id, name: p.product_type.name }
@@ -298,10 +299,10 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
           note: p.comment || "",
           attached_employee: p.attached_employee
             ? {
-              id: p.attached_employee.id,
-              full_name:
-                p.attached_employee.name || p.attached_employee.full_name,
-            }
+                id: p.attached_employee.id,
+                full_name:
+                  p.attached_employee.name || p.attached_employee.full_name,
+              }
             : null,
           posted_website: p.posted_website,
           // yearPlan: p.annual_plan,
@@ -412,7 +413,6 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       try {
         const payload = {
           comment: orderData.comment,
-          participants: orderData.participants,
           products: orderData.products.map((item) => ({
             ...item,
             product_type: item.product_type?.id || null,
@@ -437,7 +437,6 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       }
     }
   };
-
 
   // handle update orderdata products input onchange
   const handleInputOnchange = (index: number, field: string, value: any) => {
@@ -476,7 +475,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
     }
   };
 
-  const handleMainFileUpload = async (file: File) => { };
+  const handleMainFileUpload = async (file: File) => {};
 
   const handleMainFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -509,12 +508,13 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             className="inline-flex items-center gap-2"
           >
             <Badge
-              className={`cursor-pointer transition-colors p-2! flex! items-center! gap-2! rounded-md ${item.order_product_type === "product"
-                ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
-                : item.order_product_type === "service"
-                  ? "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
-                  : ""
-                }`}
+              className={`cursor-pointer transition-colors p-2! flex! items-center! gap-2! rounded-md ${
+                item.order_product_type === "product"
+                  ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
+                  : item.order_product_type === "service"
+                    ? "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
+                    : ""
+              }`}
             >
               {item.order_product_type === "product"
                 ? "Tovar"
@@ -705,55 +705,55 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       ),
     },
     ...(role === "assistant_performer" ||
-      orderData?.receiver_name === currentUserInfo?.full_name
+    orderData?.receiver_name === currentUserInfo?.full_name
       ? [
-        {
-          title: "Biriktirilgan xodim",
-          key: "attached_employee",
-          width: 150,
-          fixed: "right" as const,
-          render: (_value: any, item: Product) => (
-            <Button
-              onClick={() => {
-                setShowSelectEmployeeModal(item.id);
-              }}
-              className="text-sm text-gray-600"
-            >
-              {item.attached_employee?.full_name || "Xodim tanlang"}
-            </Button>
-          ),
-        },
-      ]
+          {
+            title: "Biriktirilgan xodim",
+            key: "attached_employee",
+            width: 150,
+            fixed: "right" as const,
+            render: (_value: any, item: Product) => (
+              <Button
+                onClick={() => {
+                  setShowSelectEmployeeModal(item.id);
+                }}
+                className="text-sm text-gray-600"
+              >
+                {item.attached_employee?.full_name || "Xodim tanlang"}
+              </Button>
+            ),
+          },
+        ]
       : []),
     ...(orderData?.movement_type === "executing"
       ? [
-        // {
-        //   title: "Yillik reja",
-        //   key: "yearPlan",
-        //   width: 150,
-        //   align: "center" as const,
-        //   render: (_value: any, item: Product, index: number) => (
-        //     <button
-        //       onClick={(e) => {
-        //         e.stopPropagation();
-        //         setShowYearPlanModal(true);
-        //         setSelectedRowIndex(index);
-        //       }}
-        //       className={`inline-block px-2 py-1 cursor-pointer rounded-md ${
-        //         item.yearPlan
-        //           ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200"
-        //           : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"
-        //       } transition-colors`}
-        //     >
-        //       {item.yearPlan ? (
-        //         <Badge>{item.yearPlan.name}</Badge>
-        //       ) : (
-        //         <Badge>Tanlash</Badge>
-        //       )}
-        //     </button>
-        //   ),
-        // },
-      ]
+          // {
+          //   title: "Yillik reja",
+          //   key: "yearPlan",
+          //   width: 150,
+          //   align: "center" as const,
+          //   render: (_value: any, item: Product, index: number) => (
+          //     <button
+          //       onClick={(e) => {
+          //         e.stopPropagation();
+          //         setShowYearPlanModal(true);
+          //         setSelectedRowIndex(index);
+          //       }}
+          //       className={`inline-block px-2 py-1 cursor-pointer rounded-md ${
+          //         item.yearPlan
+          //           ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200"
+          //           : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"
+          //       } transition-colors`}
+          //     >
+          //       {item.yearPlan ? (
+          //         <Badge>{item.yearPlan.name}</Badge>
+          //       ) : (
+          //         <Badge>Tanlash</Badge>
+          //       )}
+          //     </button>
+          //   ),
+          // },
+        ]
       : []),
     {
       title: "Amallar",
@@ -867,14 +867,15 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 variant="outlined"
                 size="medium"
                 onClick={() => setShowAgreementModal(true)}
-                className={`gap-2 border-2 h-12 px-6 ${agreementStatus === "roziman"
-                  ? "border-green-600 text-green-700 bg-green-50 hover:bg-green-100 hover:border-green-700"
-                  : agreementStatus === "rozi-emasman"
-                    ? "border-red-500 text-red-700 bg-red-50 hover:bg-red-100"
-                    : agreementStatus === "qisman"
-                      ? "border-yellow-500 text-yellow-700 bg-yellow-50 hover:bg-yellow-100"
-                      : "border-purple-300 text-purple-600 hover:border-purple-500 hover:bg-purple-50"
-                  }`}
+                className={`gap-2 border-2 h-12 px-6 ${
+                  agreementStatus === "roziman"
+                    ? "border-green-600 text-green-700 bg-green-50 hover:bg-green-100 hover:border-green-700"
+                    : agreementStatus === "rozi-emasman"
+                      ? "border-red-500 text-red-700 bg-red-50 hover:bg-red-100"
+                      : agreementStatus === "qisman"
+                        ? "border-yellow-500 text-yellow-700 bg-yellow-50 hover:bg-yellow-100"
+                        : "border-purple-300 text-purple-600 hover:border-purple-500 hover:bg-purple-50"
+                }`}
               >
                 {(!agreementStatus || agreementStatus === "roziman") && (
                   <HandshakeIcon className="w-4 h-4 mix-blend-multiply" />
@@ -898,7 +899,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             </Button> */}
             {/* Imzolash tugmasi - approval bo'limida yashirilgan */}
             {/* {orderData?.movement_type === "in_signing" && ( */}
-            <Button
+            {/* <Button
               variant="filled"
               className="border! border-blue-500!"
               type="primary"
@@ -911,10 +912,10 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             >
               <Pencil className="w-4 h-4 mix-blend-multiply" />
               <span className="font-medium text-base">Imzolash</span>
-            </Button>
+            </Button> */}
             {/* )} */}
 
-            {orderData?.movement_type === "in_signing" && (
+            {orderData?.movement_type === "in_approval" && (
               <Button
                 variant="outlined"
                 size="medium"
@@ -931,7 +932,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               <Button
                 type="primary"
                 onClick={() => setShowSendModal(true)}
-              // disabled={orderData?.is_send}
+                // disabled={orderData?.is_send}
               >
                 <Send className="w-4 h-4" />
                 <span className="text-base">
@@ -1105,8 +1106,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                         .split("-")
                         .reverse()
                         .join("-") +
-                      " " +
-                      orderData.created_at.split("T")[1].slice(0, 5)}
+                        " " +
+                        orderData.created_at.split("T")[1].slice(0, 5)}
                   </span>
                 </div>
               </div>
@@ -1167,14 +1168,20 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 <label className="text-sm text-gray-500 w-48 pt-1">
                   Qisqacha mazmuni
                 </label>
-                <div className="flex-1 flex items-start gap-3">
-                  <button className="text-gray-400 hover:text-gray-600 mt-1">
-                    <Edit2 className="size-4" />
-                  </button>
-                  <p className="text-base text-gray-900 flex-1">
-                    {orderData?.comment || "-"}
-                  </p>
-                </div>
+                <TextArea
+                  value={orderData?.comment || ""}
+                  placeholder="Qisqacha mazmun..."
+                  onChange={(e) => {
+                    setOrderData((prev) =>
+                      prev
+                        ? {
+                            ...prev,
+                            comment: e.target.value,
+                          }
+                        : null,
+                    );
+                  }}
+                />
               </div>
 
               {/* Status */}
@@ -1182,8 +1189,9 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 <label className="text-sm text-gray-500 w-48">Holat</label>
                 <div className="flex-1">
                   <span
-                    className={`text-base font-medium ${orderData?.is_accepted ? "text-green-600" : "text-red-600"
-                      }`}
+                    className={`text-base font-medium ${
+                      orderData?.is_accepted ? "text-green-600" : "text-red-600"
+                    }`}
                   >
                     {orderData?.is_accepted
                       ? "Qabul qilingan"
@@ -1270,8 +1278,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
           {/* Fayllar grid */}
           {orderData &&
-            orderData.attachment_files &&
-            orderData.attachment_files.length > 0 ? (
+          orderData.attachment_files &&
+          orderData.attachment_files.length > 0 ? (
             <div className="grid grid-cols-2 gap-4 mb-6">
               {orderData.attachment_files.map((file) => {
                 const fileExtension =
@@ -1286,7 +1294,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 const handleDownload = async () => {
                   try {
                     const response = await axiosAPI.get(
-                      `document/orders/attachment/${file.id}/`
+                      `document/orders/attachment/${file.id}/`,
                     );
                     if (response.status === 200) {
                       const fileUrl = response.data.file_url;
@@ -1703,8 +1711,9 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                         return (
                           <tr
                             key={product.id}
-                            className={`hover:bg-gray-50 transition-colors ${!isAvailable ? "bg-red-50/30" : ""
-                              }`}
+                            className={`hover:bg-gray-50 transition-colors ${
+                              !isAvailable ? "bg-red-50/30" : ""
+                            }`}
                           >
                             <td className="px-4 py-3 text-sm text-gray-600">
                               {index + 1}
@@ -1727,10 +1736,11 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                             </td>
                             <td className="px-4 py-3 text-center">
                               <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-semibold ${isAvailable
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-red-100 text-red-800"
-                                  }`}
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-semibold ${
+                                  isAvailable
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-red-100 text-red-800"
+                                }`}
                               >
                                 {availableStock} {getFieldLabel(product.unit)}
                               </span>

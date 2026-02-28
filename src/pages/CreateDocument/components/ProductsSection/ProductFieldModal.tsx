@@ -98,6 +98,13 @@ const ProductFieldModal: React.FC<IProps> = ({
     },
   ];
 
+  const handleRowClick = (record: { id: number; name: string }) => {
+    setSelectedValue({
+      id: record.id,
+      name: record.name,
+    });
+  };
+
   const handleFetchProductFieldTypes = async (
     page: number = 1,
     search: string = "",
@@ -249,6 +256,10 @@ const ProductFieldModal: React.FC<IProps> = ({
               pagination={false}
               scroll={{ y: 320 }}
               loading={isLoading && currentPage === 1}
+              onRow={(record) => ({
+                onClick: () => handleRowClick(record),
+                style: { cursor: "pointer" },
+              })}
               locale={{
                 emptyText:
                   productFieldTypes.length === 0 && !isLoading

@@ -7,6 +7,7 @@ import type { OrderData } from "@/pages/Letters/components/Detail/LetterDetail";
 import { toast } from "react-toastify";
 import { CheckCircle } from "lucide-react";
 import EImzoSigning from "@/pages/Letters/components/Detail/SigningModal";
+import { useAppSelector } from "@/store/hooks/hooks";
 
 export type Executor = {
   id: number;
@@ -83,6 +84,10 @@ const CreatAboveModal: React.FC<IProps> = ({
   const [showSelectEmployeeModal, setShowSelectEmployeeModal] =
     React.useState(false);
   const [deadline, setDeadline] = React.useState<string>("");
+
+  const { department_category } = useAppSelector(
+    (state) => state.info.currentUserInfo,
+  );
 
   const handleDeleteExecutor = React.useCallback((executorId: number) => {
     setExecutors((prev) =>
@@ -207,17 +212,20 @@ const CreatAboveModal: React.FC<IProps> = ({
                 Bekor qilish
               </Button>
               {/* sign button */}
-              <Button
-                type="primary"
-                onClick={() => setShowSigningModal(true)}
-                disabled={
-                  (executors.length === 0 || !mainExecutorId) && !deadline
-                }
-                className="px-4 py-2"
-              >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Imzolash va Yaratish
-              </Button>
+              {department_category !== "completasiya" && (
+                <Button
+                  type="primary"
+                  onClick={() => setShowSigningModal(true)}
+                  disabled={
+                    (executors.length === 0 || !mainExecutorId) && !deadline
+                  }
+                  className="px-4 py-2"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Imzolash va Yaratish
+                </Button>
+              )}
+
               <Button
                 type="primary"
                 className="px-4 py-2"
@@ -248,9 +256,9 @@ const CreatAboveModal: React.FC<IProps> = ({
         templateID={templateID}
         deadline={deadline}
         executors={executors.map((executor) => ({
-            employee: executor.id,
-            is_main: executor.id === mainExecutorId,
-          }))}
+          employee: executor.id,
+          is_main: executor.id === mainExecutorId,
+        }))}
       />
     </>
   );

@@ -142,30 +142,33 @@ const EmployeeSelectModal: React.FC<IProps> = ({
       width: 200,
     },
     // Optional purpose column if selectingPurpose is true. Purpose value for each employee
-    {
-      title: "Maqsadi",
-      key: "purpose",
-      render: (_, record) => (
-        <Select
-          style={{ width: 150 }}
-          disabled={!selectingPurpose}
-          placeholder="Maqsadni tanlang"
-          value={selectedPurposeById[record.id]}
-          onChange={(value) =>
-            setSelectedPurposeById((prev) => ({
-              ...prev,
-              [record.id]: value,
-            }))
-          }
-        >
-          {forPurpose.map((option) => (
-            <Select.Option key={option.value} value={option.value}>
-              {option.label}
-            </Select.Option>
-          ))}
-        </Select>
-      ),
-    },
+    ...(selectingPurpose
+      ? [
+          {
+            title: "Maqsadi",
+            key: "purpose",
+            render: (_, record) => (
+              <Select
+                style={{ width: 150 }}
+                placeholder="Maqsadni tanlang"
+                value={selectedPurposeById[record.id]}
+                onChange={(value) =>
+                  setSelectedPurposeById((prev) => ({
+                    ...prev,
+                    [record.id]: value,
+                  }))
+                }
+              >
+                {forPurpose.map((option) => (
+                  <Select.Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Select.Option>
+                ))}
+              </Select>
+            ),
+          },
+        ]
+      : []),
   ];
 
   // Check if we can load more data

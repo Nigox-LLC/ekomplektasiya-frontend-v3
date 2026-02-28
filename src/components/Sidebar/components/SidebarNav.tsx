@@ -28,7 +28,11 @@ export type SidebarMenuItem = {
   subItems?: SidebarMenuItem[];
 };
 
-const SidebarNav: React.FC = React.memo(() => {
+interface SidebarNavProps {
+  isCollapsed: boolean;
+}
+
+const SidebarNav: React.FC<SidebarNavProps> = React.memo(({ isCollapsed }) => {
   const [expandedSection, setExpandedSection] = React.useState<string | null>(
     null,
   );
@@ -326,6 +330,7 @@ const SidebarNav: React.FC = React.memo(() => {
           setExpandedSection={setExpandedSection}
           expandedSection={expandedSection}
           counts={counts}
+          isCollapsed={isCollapsed}
         />
       ))}
     </nav>

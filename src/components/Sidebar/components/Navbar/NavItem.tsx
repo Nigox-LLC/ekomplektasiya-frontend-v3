@@ -9,10 +9,11 @@ interface IProps {
   setExpandedSection: React.Dispatch<React.SetStateAction<string | null>>;
   expandedSection: string | null;
   counts: SidebarCounts | null;
+  isCollapsed: boolean;
 }
 
 const NavItem: React.FC<IProps> = React.memo(
-  ({ item, setExpandedSection, expandedSection, counts }) => {
+  ({ item, setExpandedSection, expandedSection, counts, isCollapsed }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -48,30 +49,36 @@ const NavItem: React.FC<IProps> = React.memo(
               : expandedSection === item.id
                 ? "bg-gray-700"
                 : "hover:bg-gray-800"
-          }`}
+          } ${isCollapsed ? "justify-center" : ""}`}
           onClick={() => {
-            if (item.subItems) {
+            if (item.subItems && !isCollapsed) {
               setExpandedSection(expandedSection === item.id ? null : item.id);
-            } else {
+            } else if (!item.subItems) {
               navigate(`${item.id}`);
             }
           }}
         >
-          {item.icon}
-          <span>{item.label}</span>
-          {item.subItems ? (
-            <ChevronDown
-              className={`size-4 ml-auto transition-transform ${expandedSection === item.id ? "rotate-180" : ""}`}
-            />
-          ) : (
-            itemCounts() && (
-              <span className="ml-auto bg-blue-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                {itemCounts()}
-              </span>
-            )
+          <div className="flex-shrink-0">{item.icon}</div>
+          <span className={`transition-all duration-300 overflow-hidden whitespace-nowrap ${
+            isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+          }`}>{item.label}</span>
+          {!isCollapsed && (
+            <>
+              {item.subItems ? (
+                <ChevronDown
+                  className={`size-4 ml-auto transition-transform ${expandedSection === item.id ? "rotate-180" : ""}`}
+                />
+              ) : (
+                itemCounts() && (
+                  <span className="ml-auto bg-blue-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                    {itemCounts()}
+                  </span>
+                )
+              )}
+            </>
           )}
         </div>
-        {expandedSection === item.id && item.subItems && (
+        {!isCollapsed && expandedSection === item.id && item.subItems && (
           <div className="ml-6 mt-2">
             {item.subItems.map((subItem) => (
               <SubNavItem

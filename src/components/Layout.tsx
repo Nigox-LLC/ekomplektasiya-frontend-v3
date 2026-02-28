@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router";
 import Sidebar from "./Sidebar/Sidebar";
 import Header from "./Header/Header";
@@ -11,6 +11,7 @@ const Layout: React.FC = () => {
   const navigate = useNavigate();
 
   const dispatch = useAppDispatch();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     const fetchCurrentUserInfo = async () => {
@@ -34,12 +35,16 @@ const Layout: React.FC = () => {
     if (!token) navigate("/login");
   }, [token, navigate]);
 
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+
   return (
     <>
       <div className="flex items-start">
-        <Sidebar />
-        <div className="flex flex-col flex-[90%] min-w-0 w-full">
-          <Header />
+        <Sidebar isCollapsed={isSidebarCollapsed} />
+        <div className="flex flex-col flex-1 min-w-0 w-full">
+          <Header toggleSidebar={toggleSidebar} isSidebarCollapsed={isSidebarCollapsed} />
           <main className="p-6">
             <Outlet />
           </main>

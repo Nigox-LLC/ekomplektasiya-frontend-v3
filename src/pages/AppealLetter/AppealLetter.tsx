@@ -386,7 +386,10 @@ const FileItem = ({
 };
 
 // --- Asosiy Komponent ---
-function AppealLettersView({ onLetterClick, onCreateNew }: AppealLettersViewProps) {
+function AppealLettersView({
+  onLetterClick,
+  onCreateNew,
+}: AppealLettersViewProps) {
   const [selectedLetter, setSelectedLetter] = useState<AppealLetter | null>(
     null,
   );
@@ -400,55 +403,11 @@ function AppealLettersView({ onLetterClick, onCreateNew }: AppealLettersViewProp
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Mock data for signature keys and execution steps
-  const signatureKeys: SignatureKey[] = [
-    {
-      id: "1",
-      fullName: "Aliyev Jamshid Karimovich",
-      type: "Yuridik shaxs",
-      inn: "123456789",
-      series: "AA1234567",
-      organization: "O'zbekiston Respublikasi Mudofaa vazirligi",
-      validity: "2024-01-01 dan 2026-12-31 gacha",
-    },
-    {
-      id: "2",
-      fullName: "Karimov Aziz Akbarovich",
-      type: "Jismoniy shaxs",
-      inn: "987654321",
-      series: "BB7654321",
-      organization: "Individual",
-      validity: "2025-01-01 dan 2027-12-31 gacha",
-    },
-  ];
-
-  const executionSteps: ExecutionStep[] = [
-    {
-      id: 1,
-      actor: "Aliyev Jamshid",
-      position: "Direktor",
-      department: "Bosh bo'lim",
-      action: "Hujjatni tasdiqladi",
-      date: "2026-02-20",
-      isCurrent: false,
-    },
-    {
-      id: 2,
-      actor: "Karimov Aziz",
-      position: "Menejer",
-      department: "Xaridlar bo'limi",
-      date: "2026-02-25",
-      isCurrent: true,
-    },
-    {
-      id: 3,
-      actor: "Sodiqov Sardor",
-      position: "Mutaxassis",
-      department: "Moliya bo'limi",
-      date: "Kutilmoqda",
-      isCurrent: false,
-    },
-  ];
+  // Letter detail states
+  const [letterDetail, setLetterDetail] = useState<any>(null);
+  const [signatureKeys, setSignatureKeys] = useState<SignatureKey[]>([]);
+  const [executionSteps, setExecutionSteps] = useState<ExecutionStep[]>([]);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   // Fetch Appeal Letters data from API
   useEffect(() => {
@@ -457,8 +416,8 @@ function AppealLettersView({ onLetterClick, onCreateNew }: AppealLettersViewProp
         setLoading(true);
         setError(null);
         const response = await axiosAPI.get("/document/appeal/");
-        if (response.data && Array.isArray(response.data)) {
-          setAppealLetters(response.data);
+        if (response.status === 200) {
+          setAppealLetters(response.data.results);
         }
       } catch (err) {
         console.error("Error fetching appeal letters:", err);
@@ -470,6 +429,52 @@ function AppealLettersView({ onLetterClick, onCreateNew }: AppealLettersViewProp
 
     fetchAppealLetters();
   }, []);
+
+  // Fetch letter details when a letter is selected
+  useEffect(() => {
+    const fetchLetterDetails = async () => {
+      if (!selectedLetter) {
+        setLetterDetail(null);
+        setSignatureKeys([]);
+        setExecutionSteps([]);
+        return;
+      }
+
+      try {
+        setDetailLoading(true);
+        const response = await axiosAPI.get(
+          `/document/appeal/${selectedLetter.id}/`,
+        );
+        if (response.status === 200) {
+          const data = response.data;
+          setLetterDetail(data);
+
+          // Extract signature keys from API response
+          if (data.signature_keys && Array.isArray(data.signature_keys)) {
+            setSignatureKeys(data.signature_keys);
+          } else {
+            setSignatureKeys([]);
+          }
+
+          // Extract execution steps from API response
+          if (data.execution_steps && Array.isArray(data.execution_steps)) {
+            setExecutionSteps(data.execution_steps);
+          } else {
+            setExecutionSteps([]);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching letter details:", err);
+        setLetterDetail(null);
+        setSignatureKeys([]);
+        setExecutionSteps([]);
+      } finally {
+        setDetailLoading(false);
+      }
+    };
+
+    fetchLetterDetails();
+  }, [selectedLetter]);
 
   // Test uchun PDF URL manzili
   const samplePdfUrl =
@@ -759,47 +764,143 @@ function AppealLettersView({ onLetterClick, onCreateNew }: AppealLettersViewProp
                   </button>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                <AccordionItem
-                  title="Buyurtma uchun kelgan tovarlar ro'yxati"
-                  subtitle="Jami: 7 ta tovar"
-                  icon={ShoppingCart}
-                >
-                  <p>Bu yerda tovarlar ro'yxati bo'ladi.</p>
-                </AccordionItem>
-                <AccordionItem
-                  title={`Chiquvchi hujjat - ${selectedLetter.number}`}
-                  subtitle={new Date().toLocaleDateString("uz-UZ", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                  icon={FileText}
-                >
-                  <p>Bu yerda chiquvchi hujjat ma'lumotlari bo'ladi.</p>
-                </AccordionItem>
+              {detailLoading ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-600">Ma'lumot yuklanmoqda...</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                  {/* Products Section */}
+                  {letterDetail?.products && letterDetail.products.length > 0 && (
+                    <AccordionItem
+                      title="Buyurtma uchun kelgan tovarlar ro'yxati"
+                      subtitle={`Jami: ${letterDetail.products.length} ta tovar`}
+                      icon={ShoppingCart}
+                    >
+                      <div className="space-y-2">
+                        {letterDetail.products.map(
+                          (product: any, idx: number) => (
+                            <div
+                              key={idx}
+                              className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50"
+                            >
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  {product.name || `Tovar ${idx + 1}`}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  Miqdori: {product.quantity || "-"}
+                                </p>
+                              </div>
+                              <p className="font-semibold text-gray-900">
+                                {product.price || "-"}
+                              </p>
+                            </div>
+                          ),
+                        )}
+                      </div>
+                    </AccordionItem>
+                  )}
 
-                {/* FileItem komponentiga 'url' prop'i uzatildi */}
-                <DocumentCard
-                  title="Asosiy hujjat"
-                  subtitle="Hujjat yaratish va tahrirlash"
-                  icon={FileText}
-                >
-                  <FileItem
-                    name={`Ustixat_${selectedLetter.number}.pdf`}
-                    size="245.8 KB"
-                    url={samplePdfUrl}
-                  />
-                </DocumentCard>
-                <DocumentCard title="Ilovalar" subtitle="" icon={FileText}>
-                  <FileItem
-                    name="Kadrlar_jadvali_-001.pdf"
-                    size="0.35 MB"
-                    date="2026 M02 16"
-                    url={samplePdfUrl}
-                  />
-                </DocumentCard>
-              </div>
+                  {/* Letter Information Section */}
+                  <AccordionItem
+                    title={`Chiquvchi hujjat - ${selectedLetter.number}`}
+                    subtitle={letterDetail?.date || new Date().toLocaleDateString("uz-UZ", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                    icon={FileText}
+                  >
+                    <div className="space-y-3">
+                      {letterDetail?.subject && (
+                        <div>
+                          <p className="text-sm font-medium text-gray-700 mb-1">
+                            Mavzu:
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {letterDetail.subject}
+                          </p>
+                        </div>
+                      )}
+                      {letterDetail?.sender && (
+                        <div>
+                          <p className="text-sm font-medium text-gray-700 mb-1">
+                            Yuboruvchi:
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {letterDetail.sender}
+                          </p>
+                        </div>
+                      )}
+                      {letterDetail?.status && (
+                        <div>
+                          <p className="text-sm font-medium text-gray-700 mb-1">
+                            Holat:
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {letterDetail.status === "new" && "Yangi"}
+                            {letterDetail.status === "in-progress" && "Jarayonda"}
+                            {letterDetail.status === "resolved" && "Qabul qilingan"}
+                          </p>
+                        </div>
+                      )}
+                      {letterDetail?.category && (
+                        <div>
+                          <p className="text-sm font-medium text-gray-700 mb-1">
+                            Kategoriya:
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {letterDetail.category}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </AccordionItem>
+
+                  {/* Main Document Section */}
+                  {letterDetail?.main_document && (
+                    <DocumentCard
+                      title="Asosiy hujjat"
+                      subtitle="Hujjat yaratish va tahrirlash"
+                      icon={FileText}
+                    >
+                      <FileItem
+                        name={
+                          letterDetail.main_document.name ||
+                          `Ustixat_${selectedLetter.number}.pdf`
+                        }
+                        size={letterDetail.main_document.size || "0 KB"}
+                        url={letterDetail.main_document.url || letterDetail.main_document.file || samplePdfUrl}
+                      />
+                    </DocumentCard>
+                  )}
+
+                  {/* Attachments Section */}
+                  {letterDetail?.attachments && letterDetail.attachments.length > 0 && (
+                    <DocumentCard
+                      title="Ilovalar"
+                      subtitle={`Jami: ${letterDetail.attachments.length} ta ilova`}
+                      icon={FileText}
+                    >
+                      <div className="space-y-2">
+                        {letterDetail.attachments.map((attachment: any, idx: number) => (
+                          <FileItem
+                            key={idx}
+                            name={attachment.name || `Ilova_${idx + 1}.pdf`}
+                            size={attachment.size || "0 KB"}
+                            date={attachment.date || attachment.created_at || attachment.uploaded_at}
+                            url={attachment.url || attachment.file || samplePdfUrl}
+                          />
+                        ))}
+                      </div>
+                    </DocumentCard>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -12,7 +12,11 @@ import {
 import { useNavigate } from "react-router";
 import { clearSavedEimzoCert } from "@/utils/eimzoStorage";
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  isCollapsed: boolean;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
   const theme = localStorage.getItem("theme") || "light";
 
@@ -29,10 +33,14 @@ const Sidebar: React.FC = () => {
 
   return (
     <>
-      <aside className="flex flex-col flex-[20%] sticky left-0 top-0 h-screen bg-[#1a2332] text-white shadow-xl z-40">
-        <SidebarHeader />
-        <SidebarNav />
-        <SidebarFooter setShowLogoutConfirm={setShowLogoutConfirm} />
+      <aside 
+        className={`flex flex-col sticky left-0 top-0 h-screen bg-[#1a2332] text-white shadow-xl z-40 transition-all duration-300 ease-in-out ${
+          isCollapsed ? "w-20" : "w-64"
+        }`}
+      >
+        <SidebarHeader isCollapsed={isCollapsed} />
+        <SidebarNav isCollapsed={isCollapsed} />
+        <SidebarFooter setShowLogoutConfirm={setShowLogoutConfirm} isCollapsed={isCollapsed} />
       </aside>
 
       {/* Logout Confirmation Modal */}

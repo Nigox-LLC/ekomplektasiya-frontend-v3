@@ -1,9 +1,15 @@
 import { Button } from "antd";
 import { Bell, Filter, Globe, Settings } from "lucide-react";
 import React from "react";
+import { FaBars } from "react-icons/fa6";
 import { useLocation } from "react-router";
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  toggleSidebar: () => void;
+  isSidebarCollapsed: boolean;
+}
+
+const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarCollapsed }) => {
   const [showLanguage, setShowLanguage] = React.useState(false);
   const [showSettings, setShowSettings] = React.useState(false);
   const [showFilters, setShowFilters] = React.useState(false);
@@ -34,6 +40,16 @@ const Header: React.FC = () => {
               })}
             </p>
           </div>
+          {/* Toggle collapsing sidebar */}
+          <Button
+            type="text"
+            className={`ml-4 transition-transform duration-300 ${
+              isSidebarCollapsed ? "rotate-180" : ""
+            } ${theme === "dark" ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-700"}`}
+            onClick={toggleSidebar}
+          >
+            <FaBars />
+          </Button>
         </div>
         <div className="flex items-center gap-3">
           {location.pathname === "/calendar" && (

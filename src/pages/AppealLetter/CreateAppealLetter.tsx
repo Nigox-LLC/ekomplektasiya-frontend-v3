@@ -9,6 +9,7 @@ import {
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import { axiosAPI } from "@/service/axiosAPI";
+import { Select } from "antd";
 
 type Step = 1 | 2 | 3;
 type SigPurpose = "signatory" | "approver";
@@ -253,7 +254,7 @@ function CreateAppealLetter() {
   };
 
   return (
-    <div className="h-screen overflow-y-auto bg-gray-50 p-6">
+    <div className="overflow-y-auto">
       <div className=" rounded-xl border border-gray-200 bg-white shadow-sm">
         <div className="border-b border-gray-200 p-5">
           <button
@@ -337,7 +338,7 @@ function CreateAppealLetter() {
                   </button>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[400px] overflow-auto">
                   {analysisList.map((analysis) => {
                     const isChecked = selectedItemIds.has(analysis.id);
                     return (
@@ -413,7 +414,7 @@ function CreateAppealLetter() {
                   <Loader2 className="size-5 animate-spin text-blue-600" />
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[400px] overflow-auto">
                   {employees.map((employee) => {
                     const isChecked = selectedEmployeeIds.has(employee.id);
                     const selectedSig = sigs.find(
@@ -421,15 +422,17 @@ function CreateAppealLetter() {
                     );
 
                     return (
-                      <div
+                      <label
+                        htmlFor={`employee-${employee.id}`}
                         key={employee.id}
-                        className="rounded-lg border border-gray-200 p-4 transition-colors hover:border-gray-300"
+                        className="p-4 transition-colors hover:border-gray-300"
                       >
                         <div className="flex items-center justify-between gap-4">
                           <label className="flex items-center gap-3">
                             <input
                               type="checkbox"
                               checked={isChecked}
+                              id={`employee-${employee.id}`}
                               onChange={(event) =>
                                 toggleEmployee(
                                   employee.id,
@@ -449,23 +452,24 @@ function CreateAppealLetter() {
                           </label>
 
                           {isChecked && (
-                            <select
-                              value={selectedSig?.purpose || ""}
-                              onChange={(event) =>
-                                updatePurpose(
-                                  employee.id,
-                                  event.target.value as SigPurpose | "",
-                                )
+                            <Select
+                              value={selectedSig?.purpose || null}
+                              onChange={(value) =>
+                                updatePurpose(employee.id, value)
                               }
-                              className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+                              className="w-48"
+                              placeholder="Maqsadni tanlang"
                             >
-                              <option value="">Maqsadni tanlang</option>
-                              <option value="signatory">signatory</option>
-                              <option value="approver">approver</option>
-                            </select>
+                              <Select.Option value="signatory">
+                                Imzolash uchun
+                              </Select.Option>
+                              <Select.Option value="approver">
+                                Kelishish uchun
+                              </Select.Option>
+                            </Select>
                           )}
                         </div>
-                      </div>
+                      </label>
                     );
                   })}
 
@@ -524,7 +528,11 @@ function CreateAppealLetter() {
                       >
                         <span>{getEmployeeLabel(sig.employee)}</span>
                         <span className="font-semibold">
-                          {sig.purpose || "Maqsad tanlanmagan"}
+                          {sig.purpose === "signatory"
+                            ? "Imzolash uchun"
+                            : sig.purpose === "approver"
+                              ? "Kelishish uchun"
+                              : "Maqsad tanlanmagan"}
                         </span>
                       </div>
                     ))}

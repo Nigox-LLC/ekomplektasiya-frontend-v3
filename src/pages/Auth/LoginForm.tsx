@@ -5,6 +5,7 @@ import PasswordInput from "./components/LoginForm/PasswordInput";
 import SubmitButton from "./components/LoginForm/SubmitButton";
 import { axiosAPI } from "@/service/axiosAPI";
 import { useNavigate } from "react-router";
+import { toast } from "react-toastify";
 
 const LoginForm = React.memo(() => {
   const [username, setUsername] = useState("");
@@ -34,6 +35,7 @@ const LoginForm = React.memo(() => {
       }
     } catch (error) {
       console.log(error);
+      toast.error("Parol yoki foydalanuvchi nomi noto'g'ri");
     } finally {
       setLoading(false);
     }
