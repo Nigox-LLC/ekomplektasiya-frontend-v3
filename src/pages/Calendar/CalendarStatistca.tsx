@@ -1,21 +1,16 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  X,
-  Calendar,
-  FileText,
-  MapPin,
-} from "lucide-react";
-import DocumentDetailView from "./components/DocumentDetailView";
+import { ChevronLeft, ChevronRight, X, Calendar, FileText } from "lucide-react";
+import LetterDetail from "../Letters/components/Detail/LetterDetail";
 import SettingsMenu from "./components/SettingsMenu";
 import SuccessModal from "./components/SuccessModal";
-import { Badge, Button, Card, Checkbox, Select } from "antd";
+import { Badge, Button, Card, Checkbox } from "antd";
 import { axiosAPI } from "@/service/axiosAPI";
 
 interface Letter {
-  id: string;
+  id: number;
   number: string;
+  incoming_number?: string;
+  outgoing_number?: string;
   region: string;
   title: string;
   status: "overdue" | "active" | "cancelled";
@@ -23,6 +18,14 @@ interface Letter {
   day: number;
   month: number; // 0 = Yanvar, 1 = Fevral, etc.
   year: number;
+  // Raw fields from Movement API
+  is_done: boolean;
+  direction: "IN" | "OUT";
+  created_at: string;
+  movement_type: string;
+  sender_name: string | null;
+  receiver_name: string | null;
+  date: string; // YYYY-MM-DD
 }
 
 interface Movement {
@@ -34,6 +37,8 @@ interface Movement {
   sender_name: string | null;
   receiver_name: string | null;
   date: string; // YYYY-MM-DD
+  incoming_number?: string;
+  outgoing_number?: string;
 }
 
 type CalendarResponse = Record<string, Movement[]>;
@@ -47,12 +52,8 @@ const CalendarView: React.FC = () => {
 
   const [selectedDay, setSelectedDay] = useState<number | null>(todayDay); // Avtomatik bugungi kun
   const [showOnlyMyTasks, setShowOnlyMyTasks] = useState(false);
-  const [selectedRegion, setSelectedRegion] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState("all");
-  const [selectedType, setSelectedType] = useState("all");
-  const [showFilters, setShowFilters] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [showLanguage, setShowLanguage] = useState(false);
+  const [theme, setTheme] = useState<"auto" | "light" | "dark">("auto");
   const [currentMonth, setCurrentMonth] = useState(todayMonth); // Avtomatik joriy oy
   const [currentYear, setCurrentYear] = useState(todayYear); // Avtomatik joriy yil
   const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null); // Tanlangan xat
@@ -215,10 +216,21 @@ const CalendarView: React.FC = () => {
             ? movement.sender_name
             : movement.receiver_name;
         const status = movement.is_done ? "cancelled" : "active";
+        // Use incoming_number or outgoing_number if available, otherwise use movement_type or id
+        const number =
+          movement.direction === "IN"
+            ? movement.incoming_number ||
+              movement.movement_type ||
+              `#${movement.id}`
+            : movement.outgoing_number ||
+              movement.movement_type ||
+              `#${movement.id}`;
 
         letters.push({
-          id: String(movement.id),
-          number: movement.movement_type || `#${movement.id}`,
+          id: movement.id,
+          number: number,
+          incoming_number: movement.incoming_number,
+          outgoing_number: movement.outgoing_number,
           title: movement.movement_type,
           region: counterparty || "-",
           status,
@@ -226,6 +238,14 @@ const CalendarView: React.FC = () => {
           day,
           month: month - 1,
           year,
+          // Raw fields from Movement API
+          is_done: movement.is_done,
+          direction: movement.direction,
+          created_at: movement.created_at,
+          movement_type: movement.movement_type,
+          sender_name: movement.sender_name,
+          receiver_name: movement.receiver_name,
+          date: movement.date,
         });
       });
     });
@@ -247,19 +267,20 @@ const CalendarView: React.FC = () => {
   const totalMonthLetters = filteredLetters.length;
 
   const lettersByDay = useMemo(() => {
-    const map: Record<number, Letter[]> = {};
+    const map: Record<string, Letter[]> = {};
     filteredLetters.forEach((letter) => {
-      if (!map[letter.day]) {
-        map[letter.day] = [];
+      if (!map[letter.date]) {
+        map[letter.date] = [];
       }
-      map[letter.day].push(letter);
+      map[letter.date].push(letter);
     });
     return map;
   }, [filteredLetters]);
 
   const getLettersForDay = useCallback(
     (day: number) => {
-      const letters = lettersByDay[day] || [];
+      const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const letters = lettersByDay[dateStr] || [];
 
       // Agar bugungi oyda bo'lsak va kun bugundan oldin bo'lsa
       if (
@@ -301,24 +322,6 @@ const CalendarView: React.FC = () => {
     },
     [lettersByDay, currentMonth, currentYear, todayMonth, todayYear, todayDay],
   );
-
-  // Calculate today's statistics
-  const overdueCount = filteredLetters.filter(
-    (l) => l.status === "overdue",
-  ).length;
-  const activeCount = filteredLetters.filter(
-    (l) => l.status === "active",
-  ).length;
-  const completedCount = filteredLetters.filter(
-    (l) => l.status === "cancelled",
-  ).length;
-
-  const getBadgeColor = () => {
-    if (overdueCount > 0) return "bg-red-100 text-red-800 border-red-300";
-    if (activeCount > 0)
-      return "bg-yellow-100 text-yellow-800 border-yellow-300";
-    return "bg-green-100 text-green-800 border-green-300";
-  };
 
   return (
     <div className="space-y-6">
@@ -371,104 +374,6 @@ const CalendarView: React.FC = () => {
         )}
         {errorMessage && (
           <div className="text-sm text-red-600 mb-4">{errorMessage}</div>
-        )}
-
-        {/* Filter Panel */}
-        {showFilters && (
-          <div className="mb-6 pb-6 border-b border-gray-200">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Viloyat
-                </label>
-                <Select
-                  value={selectedRegion}
-                  onChange={(value) => setSelectedRegion(value)}
-                >
-                  {/* <SelectTrigger>
-                    <SelectValue placeholder="Barcha viloyatlar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Barcha viloyatlar</SelectItem>
-                    <SelectItem value="Toshkent sh.">Toshkent sh.</SelectItem>
-                    <SelectItem value="Samarqand v.">Samarqand v.</SelectItem>
-                    <SelectItem value="Buxoro v.">Buxoro v.</SelectItem>
-                    <SelectItem value="Andijon v.">Andijon v.</SelectItem>
-                    <SelectItem value="Fargona v.">Fargona v.</SelectItem>
-                  </SelectContent> */}
-                  <Select.Option>Barcha viloyatlar</Select.Option>
-                  <Select.Option>Toshkent sh.</Select.Option>
-                  <Select.Option>Samarqand v.</Select.Option>
-                  <Select.Option>Buxoro v.</Select.Option>
-                  <Select.Option>Andijon v.</Select.Option>
-                  <Select.Option>Fargona v.</Select.Option>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Holati
-                </label>
-                <Select
-                  value={selectedStatus}
-                  onChange={(value) => setSelectedStatus(value)}
-                >
-                  <Select.Option>Barcha holatlar</Select.Option>
-                  <Select.Option>Muddati o'tgan</Select.Option>
-                  <Select.Option>Faol</Select.Option>
-                  <Select.Option>Bajarilgan</Select.Option>
-
-                  {/* <SelectTrigger>
-                    <SelectValue placeholder="Barcha holatlar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Barcha holatlar</SelectItem>
-                    <SelectItem value="overdue">Muddati o'tgan</SelectItem>
-                    <SelectItem value="active">Faol</SelectItem>
-                    <SelectItem value="cancelled">Bajarilgan</SelectItem>
-                  </SelectContent> */}
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Turi
-                </label>
-                <Select
-                  value={selectedType}
-                  onChange={(value) => setSelectedType(value)}
-                >
-                  {/* <SelectTrigger>
-                    <SelectValue placeholder="Barcha turlar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Barcha turlar</SelectItem>
-                    <SelectItem value="incoming">Kiruvchi</SelectItem>
-                    <SelectItem value="outgoing">Chiquvchi</SelectItem>
-                  </SelectContent> */}
-                  <Select.Option>Barcha turlar</Select.Option>
-                  <Select.Option>Kiruvchi</Select.Option>
-                  <Select.Option>Chiquvchi</Select.Option>
-                </Select>
-              </div>
-
-              <div className="flex items-end">
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => {
-                    setSelectedRegion("all");
-                    setSelectedStatus("all");
-                    setSelectedType("all");
-                  }}
-                  className="w-full"
-                >
-                  <X className="size-4 mr-2" />
-                  Tozalash
-                </Button>
-              </div>
-            </div>
-          </div>
         )}
 
         {/* Calendar Grid */}
@@ -694,13 +599,28 @@ const CalendarView: React.FC = () => {
                       <FileText className="size-4 text-gray-400 mt-0.5 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-sm text-gray-900 mb-1">
-                          {letter.number}
+                          №{letter.incoming_number}
                         </div>
                         <h4 className="text-xs text-gray-700 mb-2 line-clamp-2 leading-relaxed">
-                          {letter.title}
+                          {letter.title === "my_letter"
+                            ? "Mening xatim"
+                            : letter.title === "application_letter"
+                              ? "Murojaat xati"
+                              : letter.title === "department_document"
+                                ? "Bo'lim hujjatlari"
+                                : letter.title === "executing"
+                                  ? "Ijro uchun"
+                                  : letter.title === "for_above"
+                                    ? "Usti xat uchun"
+                                    : letter.title === "for_information"
+                                      ? "Ma'lumot uchun"
+                                      : letter.title === "in_approval"
+                                        ? "Kelishish uchun"
+                                        : letter.title === "in_signing"
+                                          ? "Imzolash uchun"
+                                          : ""}
                         </h4>
                         <div className="flex items-center gap-1 text-xs text-gray-500">
-                          <MapPin className="size-3 shrink-0" />
                           <span className="truncate">{letter.region}</span>
                         </div>
                       </div>
@@ -711,10 +631,10 @@ const CalendarView: React.FC = () => {
             </div>
           </div>
 
-          {/* O'NG PANEL - To'liq DocumentDetailView (75%) */}
+          {/* O'NG PANEL - To'liq LetterDetail (75%) */}
           <div className="flex-1 bg-white rounded-lg shadow border border-gray-200 h-[800px] overflow-y-auto">
             {selectedLetter ? (
-              <DocumentDetailView
+              <LetterDetail
                 document={{
                   id: selectedLetter.id,
                   number: selectedLetter.number,
@@ -724,9 +644,8 @@ const CalendarView: React.FC = () => {
                   date: `${selectedDay} ${monthNames[currentMonth]} ${currentYear}`,
                   isRead: selectedLetter.status !== "active",
                   isReceived: selectedLetter.type === "incoming",
-                  hasAttachment: true,
                 }}
-                onClose={() => setSelectedLetter(null)}
+                onBack={() => setSelectedLetter(null)}
                 onSuccess={(message) => {
                   setSuccessMessage(message);
                   setShowSuccess(true);
@@ -752,6 +671,8 @@ const CalendarView: React.FC = () => {
       <SettingsMenu
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
+        theme={theme}
+        onThemeChange={setTheme}
       />
       {/* <LanguageMenu isOpen={showLanguage} onClose={() => setShowLanguage(false)} /> */}
       <SuccessModal

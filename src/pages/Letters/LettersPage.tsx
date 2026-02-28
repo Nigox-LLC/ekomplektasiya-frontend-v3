@@ -38,7 +38,7 @@ const LettersPage: React.FC = () => {
   const location = useLocation();
 
   const getStatusColor = (is_accepted: boolean) => {
-    return is_accepted ? "border-l-green-500" : "border-l-red-500";
+    return is_accepted ? "border-l-green-500!" : "border-l-red-500!";
   };
 
   const getStatusBadge = (status: string) => {
@@ -296,7 +296,7 @@ const LettersPage: React.FC = () => {
               return (
                 <Card
                   key={letter.id}
-                  className={`p-2 hover:shadow-lg transition-all cursor-pointer border-l-4 ${borderColor} ${
+                  className={`p-2 hover:shadow-lg transition-all cursor-pointer border-l-4! ${borderColor} ${
                     selectedLetter?.id === letter.id
                       ? "bg-blue-200! border-blue-600!"
                       : ""
