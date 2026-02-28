@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router";
 import {
   Search,
-  Filter,
   X,
   ChevronDown,
   FileText,
@@ -53,6 +53,10 @@ interface ExecutionStep {
   date: string;
   isCurrent?: boolean;
 }
+interface AppealLettersViewProps {
+  onLetterClick?: (letter: AppealLetter) => void;
+  onCreateNew?: () => void;
+}
 
 // --- Komponentlar ---
 
@@ -87,7 +91,7 @@ const ExecutionStepsModal = ({
           </button>
         </div>
         <div className="p-6 space-y-4">
-          {steps.map((step, index) => (
+          {steps.map((step) => (
             <div key={step.id}>
               {" "}
               <div
@@ -344,7 +348,7 @@ const FileItem = ({
 
   return (
     <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 hover:border-gray-300">
-      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-red-600 text-white font-bold text-sm">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-red-600 text-white font-bold text-sm">
         PDF
       </div>
       <div className="flex-1">
@@ -382,24 +386,69 @@ const FileItem = ({
 };
 
 // --- Asosiy Komponent ---
-function AppealLettersView({ onLetterClick }: AppealLettersViewProps) {
+function AppealLettersView({ onLetterClick, onCreateNew }: AppealLettersViewProps) {
   const [selectedLetter, setSelectedLetter] = useState<AppealLetter | null>(
     null,
   );
   const [searchQuery, setSearchQuery] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string[]>([]);
+  const [selectedStatus] = useState<string[]>([]);
+  const [selectedCategory] = useState<string[]>([]);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [showExecutionModal, setShowExecutionModal] = useState(false);
-
   // API data states
   const [appealLetters, setAppealLetters] = useState<AppealLetter[]>([]);
-  const [signatureKeys, setSignatureKeys] = useState<SignatureKey[]>([]);
-  const [executionSteps, setExecutionSteps] = useState<ExecutionStep[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Mock data for signature keys and execution steps
+  const signatureKeys: SignatureKey[] = [
+    {
+      id: "1",
+      fullName: "Aliyev Jamshid Karimovich",
+      type: "Yuridik shaxs",
+      inn: "123456789",
+      series: "AA1234567",
+      organization: "O'zbekiston Respublikasi Mudofaa vazirligi",
+      validity: "2024-01-01 dan 2026-12-31 gacha",
+    },
+    {
+      id: "2",
+      fullName: "Karimov Aziz Akbarovich",
+      type: "Jismoniy shaxs",
+      inn: "987654321",
+      series: "BB7654321",
+      organization: "Individual",
+      validity: "2025-01-01 dan 2027-12-31 gacha",
+    },
+  ];
+
+  const executionSteps: ExecutionStep[] = [
+    {
+      id: 1,
+      actor: "Aliyev Jamshid",
+      position: "Direktor",
+      department: "Bosh bo'lim",
+      action: "Hujjatni tasdiqladi",
+      date: "2026-02-20",
+      isCurrent: false,
+    },
+    {
+      id: 2,
+      actor: "Karimov Aziz",
+      position: "Menejer",
+      department: "Xaridlar bo'limi",
+      date: "2026-02-25",
+      isCurrent: true,
+    },
+    {
+      id: 3,
+      actor: "Sodiqov Sardor",
+      position: "Mutaxassis",
+      department: "Moliya bo'limi",
+      date: "Kutilmoqda",
+      isCurrent: false,
+    },
+  ];
 
   // Fetch Appeal Letters data from API
   useEffect(() => {
@@ -410,11 +459,6 @@ function AppealLettersView({ onLetterClick }: AppealLettersViewProps) {
         const response = await axiosAPI.get("/document/appeal/");
         if (response.data && Array.isArray(response.data)) {
           setAppealLetters(response.data);
-          // Extract unique categories from the data
-          const uniqueCategories = Array.from(
-            new Set(response.data.map((letter: AppealLetter) => letter.category)),
-          ) as string[];
-          setCategories(uniqueCategories);
         }
       } catch (err) {
         console.error("Error fetching appeal letters:", err);
@@ -430,48 +474,6 @@ function AppealLettersView({ onLetterClick }: AppealLettersViewProps) {
   // Test uchun PDF URL manzili
   const samplePdfUrl =
     "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
-
-  const statuses = [
-    { value: "new", label: "Yangi" },
-    { value: "in-progress", label: "Ko'rib chiqilmoqda" },
-    { value: "resolved", label: "Hal qilindi" },
-  ];
-  const getStatusBadge = (status: string) => {
-    const base =
-      "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium";
-    switch (status) {
-      case "new":
-        return (
-          <span className={`${base} bg-blue-100 text-blue-700`}>Yangi</span>
-        );
-      case "in-progress":
-        return (
-          <span className={`${base} bg-yellow-100 text-yellow-700`}>
-            Ko'rib chiqilmoqda
-          </span>
-        );
-      case "resolved":
-        return (
-          <span className={`${base} bg-green-100 text-green-700`}>
-            Hal qilindi
-          </span>
-        );
-      default:
-        return null;
-    }
-  };
-  const toggleStatus = (status: string) =>
-    setSelectedStatus((p) =>
-      p.includes(status) ? p.filter((s) => s !== status) : [...p, status],
-    );
-  const toggleCategory = (category: string) =>
-    setSelectedCategory((p) =>
-      p.includes(category) ? p.filter((c) => c !== category) : [...p, category],
-    );
-  const clearFilters = () => {
-    setSelectedStatus([]);
-    setSelectedCategory([]);
-  };
   const filteredLetters = appealLetters.filter((letter) => {
     const matchesSearch =
       searchQuery === "" ||
@@ -485,7 +487,6 @@ function AppealLettersView({ onLetterClick }: AppealLettersViewProps) {
       selectedCategory.includes(letter.category);
     return matchesSearch && matchesStatus && matchesCategory;
   });
-  const activeFiltersCount = selectedStatus.length + selectedCategory.length;
   const handleLetterClick = (letter: AppealLetter) => {
     if (onLetterClick) {
       onLetterClick(letter);
@@ -517,194 +518,291 @@ function AppealLettersView({ onLetterClick }: AppealLettersViewProps) {
   }
 
   return (
-    <div className="h-full flex bg-gray-50">
-      {/* Left Panel */}
-      <div className="w-1/3 max-w-md border-r border-gray-200 bg-white flex flex-col">
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Qidirish..."
-                className="pl-9 text-sm w-full rounded-md border border-gray-300 py-2 focus:ring-blue-500 focus:border-blue-500"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`relative p-2 hover:bg-gray-100 rounded-lg transition-colors ${showFilters ? "bg-blue-50 text-blue-600" : "text-gray-600"}`}
-            >
-              <Filter className="size-4" />
-              {activeFiltersCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </button>
+    <div className="h-full flex flex-col bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Xatlar</h1>
+            <p className="text-sm text-gray-500">
+              {new Date().toLocaleDateString("uz-UZ", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+                weekday: "short",
+              })}
+            </p>
           </div>
-          {showFilters && (
-            <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-              {" "}
-              {/* Filter UI */}{" "}
-            </div>
-          )}
-          <div className="flex items-center justify-between mt-3">
-            <span className="text-sm text-gray-600">
-              Jami: {filteredLetters.length} ta
-            </span>
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Qidiruvni tozalash
-              </button>
-            )}
-          </div>
+          <button
+            onClick={onCreateNew}
+            className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+          >
+            <FilePlus2 className="size-4" />
+            Yangi xat yaratish
+          </button>
         </div>
-        <div className="flex-1 overflow-y-auto">
+
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Hujjat raqami bo'yicha qidirish..."
+            className="pl-10 pr-4 text-sm w-full rounded-lg border border-gray-300 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        {/* Tabs */}
+        {/* <div className="flex items-center gap-2 mt-4 border-b border-gray-200">
+          <button
+            onClick={() => setActiveTab("all")}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "all"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Barchasi <span className="ml-1.5 text-xs">5</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("outgoing")}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "outgoing"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Chiquvchi hujjatlar <span className="ml-1.5 text-xs">1</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("response")}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "response"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Javob xati <span className="ml-1.5 text-xs">2</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("internal")}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "internal"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Ichki hujjatlar <span className="ml-1.5 text-xs">1</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("others")}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "others"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Boshqalar <span className="ml-1.5 text-xs">1</span>
+          </button>
+        </div> */}
+      </div>
+
+      {/* Content Area */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Panel - Letter List */}
+        <div className="w-120 border-r border-gray-200 bg-white overflow-y-auto p-4">
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">
+              MUROJAAT XATI
+            </h3>
+            <p className="text-xs text-gray-500">
+              Jami: {filteredLetters.length} ta xat
+            </p>
+          </div>
+
           {filteredLetters.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+            <div className="flex flex-col items-center justify-center h-64 text-center">
               <Search className="size-12 text-gray-300 mb-3" />
               <p className="text-sm font-medium text-gray-900 mb-1">
                 Natija topilmadi
               </p>
               <p className="text-xs text-gray-500">
-                Qidiruv so'rovingizni o'zgartiring yoki filtrlarni tozalang
+                Qidiruv so'rovingizni o'zgartiring
               </p>
             </div>
           ) : (
-            filteredLetters.map((letter) => (
-              <div
-                key={letter.id}
-                onClick={() => handleLetterClick(letter)}
-                className={`p-4 border-b border-gray-100 cursor-pointer transition-colors ${selectedLetter?.id === letter.id ? "bg-blue-100" : "hover:bg-gray-50"}`}
-              >
-                {" "}
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-gray-900 mb-1">
-                      {letter.number}
-                    </p>
-                    <p className="text-xs text-gray-500">{letter.sender}</p>
+            <div className="space-y-3">
+              {filteredLetters.map((letter) => (
+                <div
+                  key={letter.id}
+                  onClick={() => handleLetterClick(letter)}
+                  className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
+                    selectedLetter?.id === letter.id
+                      ? "border-blue-500 bg-blue-50 shadow-sm"
+                      : "border-gray-200 bg-white hover:border-gray-300"
+                  }`}
+                >
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                      <FileText className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-bold text-blue-600">
+                          {letter.number}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {letter.date}
+                        </span>
+                      </div>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-1">
+                        {letter.subject}
+                      </h4>
+                    </div>
                   </div>
-                  {getStatusBadge(letter.status)}
-                </div>{" "}
-                <p className="text-sm text-gray-700 mb-2 line-clamp-2">
-                  {letter.subject}
-                </p>{" "}
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500">{letter.date}</span>
-                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                    {letter.category}
-                  </span>
-                </div>{" "}
-              </div>
-            ))
+
+                  <div className="flex items-center justify-between">
+                    {letter.category === "Javob xati" && (
+                      <span className="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-medium text-orange-800">
+                        Javob xati
+                      </span>
+                    )}
+                    {letter.category === "Chiquvchi xat" && (
+                      <span className="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800">
+                        Chiquvchi xat
+                      </span>
+                    )}
+                    {letter.status === "in-progress" && (
+                      <span className="inline-flex items-center gap-1 text-xs text-yellow-700">
+                        <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                        Jarayonda
+                      </span>
+                    )}
+                    {letter.status === "resolved" && (
+                      <span className="inline-flex items-center gap-1 text-xs text-green-700">
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        Qabul qilingan
+                      </span>
+                    )}
+                  </div>
+
+                  {letter.status === "new" && (
+                    <div className="mt-3 flex items-center gap-2">
+                      <button className="flex-1 flex items-center justify-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700">
+                        <ChevronsRight className="size-3" />
+                        Yuborilgan
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
-      </div>
 
-      {/* Right Panel */}
-      <div className="flex-1 flex flex-col h-full">
-        {!selectedLetter ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center text-gray-500">
-              <FileText className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-              <p className="text-lg font-medium mb-1">
-                Murojaat xatini tanlang
-              </p>
-              <p className="text-sm">
-                Tafsilotlarni ko'rish uchun chap paneldan xat tanlang
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col h-full bg-gray-50">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
-              <h2 className="text-lg font-semibold text-gray-800">
-                Xat tafsilotlari
-              </h2>
-              <button
-                onClick={() => setSelectedLetter(null)}
-                className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
-              >
-                <X className="size-4" />
-                Yopish
-              </button>
-            </div>
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
-              <div className="flex items-center gap-2">
-                <button className="flex items-center gap-2 rounded-md border border-purple-200 bg-white px-4 py-2 text-sm font-semibold text-purple-700 hover:bg-purple-50">
-                  <ChevronsRight className="size-4" /> Kelishish
-                </button>
-                <button
-                  onClick={() => setShowExecutionModal(true)}
-                  className="flex items-center gap-2 rounded-md border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
-                >
-                  <ChevronsRight className="size-4" /> Ijro qadamlari
-                </button>
-                <button
-                  onClick={() => setShowSignatureModal(true)}
-                  className="flex items-center gap-2 rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50"
-                >
-                  <FileSignature className="size-4" /> Imzolash
-                </button>
-              </div>
-              <div className="flex items-center gap-2">
-                <button className="flex items-center gap-2 rounded-md border border-orange-300 bg-white px-4 py-2 text-sm font-semibold text-orange-700 hover:bg-orange-50">
-                  <AlertTriangle className="size-4" /> Bekor qilish
-                </button>
-                <button className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
-                  <Send className="size-4" /> Yuborish
-                </button>
+        {/* Right Panel - Letter Details or Empty State */}
+        <div className="flex-1 flex flex-col">
+          {!selectedLetter ? (
+            <div className="flex-1 flex items-center justify-center bg-gray-50">
+              <div className="text-center">
+                <div className="mx-auto w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                  <FileText className="w-10 h-10 text-gray-300" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Hujjat tanlanmadi
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Chap tomondan ro'yxatdan xatni tanlang
+                </p>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              <AccordionItem
-                title="Buyurtma uchun kelgan tovarlar ro'yxati"
-                subtitle="Jami: 7 ta tovar"
-                icon={ShoppingCart}
-              >
-                <p>Bu yerda tovarlar ro'yxati bo'ladi.</p>
-              </AccordionItem>
-              <AccordionItem
-                title={`Chiquvchi hujjat - ${selectedLetter.number}`}
-                subtitle={new Date().toLocaleDateString("uz-UZ", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })}
-                icon={FileText}
-              >
-                <p>Bu yerda chiquvchi hujjat ma'lumotlari bo'ladi.</p>
-              </AccordionItem>
+          ) : (
+            <div className="flex flex-col h-full bg-gray-50">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
+                <h2 className="text-lg font-semibold text-gray-800">
+                  Xat tafsilotlari
+                </h2>
+                <button
+                  onClick={() => setSelectedLetter(null)}
+                  className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+                >
+                  <X className="size-4" />
+                  Yopish
+                </button>
+              </div>
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
+                <div className="flex items-center gap-2">
+                  <button className="flex items-center gap-2 rounded-md border border-purple-200 bg-white px-4 py-2 text-sm font-semibold text-purple-700 hover:bg-purple-50">
+                    <ChevronsRight className="size-4" /> Kelishish
+                  </button>
+                  <button
+                    onClick={() => setShowExecutionModal(true)}
+                    className="flex items-center gap-2 rounded-md border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
+                  >
+                    <ChevronsRight className="size-4" /> Ijro qadamlari
+                  </button>
+                  <button
+                    onClick={() => setShowSignatureModal(true)}
+                    className="flex items-center gap-2 rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50"
+                  >
+                    <FileSignature className="size-4" /> Imzolash
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button className="flex items-center gap-2 rounded-md border border-orange-300 bg-white px-4 py-2 text-sm font-semibold text-orange-700 hover:bg-orange-50">
+                    <AlertTriangle className="size-4" /> Bekor qilish
+                  </button>
+                  <button className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+                    <Send className="size-4" /> Yuborish
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                <AccordionItem
+                  title="Buyurtma uchun kelgan tovarlar ro'yxati"
+                  subtitle="Jami: 7 ta tovar"
+                  icon={ShoppingCart}
+                >
+                  <p>Bu yerda tovarlar ro'yxati bo'ladi.</p>
+                </AccordionItem>
+                <AccordionItem
+                  title={`Chiquvchi hujjat - ${selectedLetter.number}`}
+                  subtitle={new Date().toLocaleDateString("uz-UZ", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                  icon={FileText}
+                >
+                  <p>Bu yerda chiquvchi hujjat ma'lumotlari bo'ladi.</p>
+                </AccordionItem>
 
-              {/* FileItem komponentiga 'url' prop'i uzatildi */}
-              <DocumentCard
-                title="Asosiy hujjat"
-                subtitle="Hujjat yaratish va tahrirlash"
-                icon={FileText}
-              >
-                <FileItem
-                  name={`Ustixat_${selectedLetter.number}.pdf`}
-                  size="245.8 KB"
-                  url={samplePdfUrl}
-                />
-              </DocumentCard>
-              <DocumentCard title="Ilovalar" subtitle="" icon={FileText}>
-                <FileItem
-                  name="Kadrlar_jadvali_-001.pdf"
-                  size="0.35 MB"
-                  date="2026 M02 16"
-                  url={samplePdfUrl}
-                />
-              </DocumentCard>
+                {/* FileItem komponentiga 'url' prop'i uzatildi */}
+                <DocumentCard
+                  title="Asosiy hujjat"
+                  subtitle="Hujjat yaratish va tahrirlash"
+                  icon={FileText}
+                >
+                  <FileItem
+                    name={`Ustixat_${selectedLetter.number}.pdf`}
+                    size="245.8 KB"
+                    url={samplePdfUrl}
+                  />
+                </DocumentCard>
+                <DocumentCard title="Ilovalar" subtitle="" icon={FileText}>
+                  <FileItem
+                    name="Kadrlar_jadvali_-001.pdf"
+                    size="0.35 MB"
+                    date="2026 M02 16"
+                    url={samplePdfUrl}
+                  />
+                </DocumentCard>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Modallar */}
@@ -728,4 +826,16 @@ function AppealLettersView({ onLetterClick }: AppealLettersViewProps) {
   );
 }
 
-export default AppealLettersView;
+function AppealLetterPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isCreatePage = location.pathname.endsWith("/new");
+
+  if (isCreatePage) {
+    return <Outlet />;
+  }
+
+  return <AppealLettersView onCreateNew={() => navigate("new")} />;
+}
+
+export default AppealLetterPage;

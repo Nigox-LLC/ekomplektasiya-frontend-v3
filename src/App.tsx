@@ -12,12 +12,10 @@ import {
   ReportTableOne,
   ReferenceRequisites,
   Contracts,
-  GoodsIn,
-  GoodsOut,
-  WareHouseTransfer,
   YearPlan,
   Bank,
   AppealLetter,
+  CreateAppealLetter,
   Statistics,
   PriceAnalysis,
   PriceAnalysisForm,
@@ -75,6 +73,12 @@ const App: React.FC = () => {
         {
           path: "appeal-letter",
           element: <AppealLetter />,
+          children: [
+            {
+              path: "new",
+              element: <CreateAppealLetter />,
+            },
+          ],
         },
         {
           path: "price-analysis",

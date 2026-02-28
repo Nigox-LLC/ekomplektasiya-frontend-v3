@@ -19,6 +19,7 @@ export { default as PriceAnalysis } from "./PriceAnaliysis/PriceAnalysis";
 export { default as PriceAnalysisForm } from "./PriceAnaliysis/PriceAnalysisForm/PriceAnalysisForm";
 export { default as PriceAnalysisDetail } from "./PriceAnaliysis/PriceAnalysisDetail";
 export { default as AppealLetter } from "./AppealLetter/AppealLetter";
+export { default as CreateAppealLetter } from "./AppealLetter/CreateAppealLetter";
 export { default as Statistics } from "./EmployeeStatistics/Statistics";
 
 // create order document pages
