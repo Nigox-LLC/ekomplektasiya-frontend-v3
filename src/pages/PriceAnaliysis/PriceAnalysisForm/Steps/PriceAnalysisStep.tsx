@@ -53,7 +53,7 @@ const PriceAnalysisStep: React.FC<PriceAnalysisStepProps> = ({
 
   const fetchFile = async () => {
     try {
-      const response = await axiosAPI.get(`/document/analysis/${resolvedId}/file`);
+      const response = await axiosAPI.post(`/document/analysis/${resolvedId}/generate/`);
       if (response.status === 200) {
         setFileURL(response.data.file_url);
       }
@@ -114,11 +114,9 @@ const PriceAnalysisStep: React.FC<PriceAnalysisStepProps> = ({
 
       const signs = formData.executors.map((ex) => ({
         employee: ex.id,
-        is_approved: false,
       }));
 
       const payload = {
-        number: formData.number,
         items,
         signs,
       };

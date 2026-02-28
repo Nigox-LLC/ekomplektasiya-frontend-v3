@@ -193,7 +193,7 @@ const PriceAnalysisForm: React.FC<PriceAnalysisFormProps> = ({
   return (
     <div className="bg-white rounded-lg shadow-xl w-full flex flex-col min-h-[600px]">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
+      <div className="flex items-center justify-between p-4">
         <div>
           <h2 className="text-xl font-semibold text-gray-900">
             {stepTitles[currentStep].title}
@@ -204,16 +204,6 @@ const PriceAnalysisForm: React.FC<PriceAnalysisFormProps> = ({
         </div>
         <div className="flex items-center gap-3">
           {/* Document number input */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Hujjat raqami:</span>
-            <input
-              type="text"
-              value={formData.number}
-              onChange={(e) => setFormData({ ...formData, number: e.target.value })}
-              className="border rounded px-2 py-1 text-sm w-32"
-              placeholder="0001"
-            />
-          </div>
           <button onClick={closeForm} className="p-1 hover:bg-gray-100 rounded">
             <X className="w-5 h-5" />
           </button>
@@ -221,7 +211,7 @@ const PriceAnalysisForm: React.FC<PriceAnalysisFormProps> = ({
       </div>
 
       {/* Step indicator */}
-      <div className="px-4 py-2 border-b bg-gray-50">
+      <div className="px-4 py-2 border border-gray-100 bg-gray-50">
         <div className="flex items-center justify-between">
           {[1, 2, 3, 4].map((step) => (
             <div key={step} className="flex items-center">
@@ -286,12 +276,12 @@ const PriceAnalysisForm: React.FC<PriceAnalysisFormProps> = ({
       </div>
 
       {/* Footer navigation */}
-      <div className="flex items-center justify-between p-4 border-t bg-gray-50">
+      <div className="flex items-center justify-between p-4 border-t border-gray-300 bg-gray-50">
         <div>
           {currentStep > 1 && (
             <button
               onClick={prevStep}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
             >
               <ChevronLeft className="w-4 h-4" /> Orqaga
             </button>
