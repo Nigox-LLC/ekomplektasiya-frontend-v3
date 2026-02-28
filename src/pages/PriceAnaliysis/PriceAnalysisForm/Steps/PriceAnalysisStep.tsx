@@ -3,9 +3,9 @@ import { Download, RefreshCw, PenLine, CheckCircle } from "lucide-react";
 import { Button, Modal } from "antd";
 import { toast } from "react-toastify";
 import { axiosAPI } from "@/service/axiosAPI";
-import FilePreviewer from "@/components/FilePreviewer/FilePreviewer"; // adjust import
+import FilePreviewer from "@/components/FilePreviewer/FilePreviewer";
 import DeleteAlertDialog from "@/components/DeleteAlertDialog";
-import SigningModal from "@/pages/Letters/components/Detail/SigningModal"
+import SigningModal from "@/pages/Letters/components/Detail/SigningModal";
 import { arrayBufferToFile, inferMimeFromExt } from "@/utils/file_preview";
 import type { PriceAnalysisFormData } from "../PriceAnalysisForm";
 
@@ -24,102 +24,107 @@ const PriceAnalysisStep: React.FC<PriceAnalysisStepProps> = ({
 }) => {
   const [letterFile, setLetterFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // ✅ confirm dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   const [fileURL, setFileURL] = useState("");
   const [eImzoOpen, setEImzoOpen] = useState(false);
   const [refreshModal, setRefreshModal] = useState(false);
+
   const resolvedId = formData.id || priceAnalysisId || "";
 
-  // Resolve file URL (handle relative paths)
   const resolveFileUrl = useCallback((url: string) => {
     if (!url) return url;
     try {
       const parsed = new URL(url, window.location.origin);
-      if (parsed.origin !== window.location.origin && parsed.pathname.startsWith("/media/")) {
-        return parsed.pathname + parsed.search;
-      }
       return parsed.toString();
     } catch {
       return url;
     }
   }, []);
 
-  // Fetch file when we have an ID
-  useEffect(() => {
-    if (resolvedId) {
-      fetchFile();
-    }
-  }, [resolvedId]);
+  const pickUrlFromGenerate = (data: any): string => {
+    return (
+      (Array.isArray(data?.message) ? data.message[0] : "") ||
+      data?.file_url ||
+      data?.file ||
+      ""
+    );
+  };
 
-  const fetchFile = async () => {
+  const getFileByURL = useCallback(
+    async (url: string) => {
+      if (!url) return;
+      try {
+        const resolved = resolveFileUrl(url);
+        console.log(resolved)
+        const response = await fetch(resolved, { cache: "no-store" });
+        const fileName = resolved.split("?")[0].split("/").pop() || "file";
+        const arrayBuffer = await response.arrayBuffer();
+        const mime = inferMimeFromExt(fileName) || "application/octet-stream";
+        setLetterFile(arrayBufferToFile(arrayBuffer, fileName, mime));
+      } catch (e) {
+        console.log(e);
+        toast.error("Faylni yuklab bo‘lmadi");
+      }
+    },
+    [resolveFileUrl]
+  );
+
+  // ✅ generate -> pdf url olib preview ko'rsatish
+  const fetchFile = async (id: string | number) => {
+    if (!id) return;
     try {
-      const response = await axiosAPI.post(`/document/analysis/${resolvedId}/generate/`);
+      const response = await axiosAPI.post(`/document/analysis/${id}/generate/`);
       if (response.status === 200) {
-        setFileURL(response.data.file_url);
+        const url = response.data.message[0];
+        console.log(url)
+        if (url) {
+          setFileURL(url);
+          await getFileByURL(url);
+        }
       }
     } catch (error) {
       console.error("Failed to fetch file", error);
     }
   };
 
-  // Download file blob from URL
-  const getFileByURL = useCallback(async (url: string) => {
-    if (!url) return;
-    try {
-      const resolved = resolveFileUrl(url);
-      const response = await fetch(resolved, { cache: "no-store" });
-      const fileName = resolved.split("/").pop() || "file";
-      const arrayBuffer = await response.arrayBuffer();
-      const mime = inferMimeFromExt(fileName) || "application/octet-stream";
-      setLetterFile(arrayBufferToFile(arrayBuffer, fileName, mime));
-    } catch (error) {
-      console.log(error);
-    }
-  }, [resolveFileUrl]);
-
+  // ID bo'lsa — generate qilib ko'rsatamiz (4-qadamga kirganda pdf bo'lsa ko'rinadi)
   useEffect(() => {
-    if (fileURL) getFileByURL(fileURL);
-  }, [fileURL, getFileByURL]);
+    if (resolvedId) {
+      fetchFile(resolvedId);
+    }
+  }, [resolvedId]);
 
-  // Create the analysis document (POST to /document/analysis/)
+  // ✅ CREATE / UPDATE (payloadni backend formatga mos qilamiz)
   const createAnalysis = async () => {
     try {
       setLoading(true);
-      // Build payload
+
       const items = formData.products.map((prod) => {
-        // Find all commercial IDs attached to this product
-        const commercialIds: number[] = [];
-        Object.entries(formData.attachments).forEach(([offerId, attached]) => {
-          if (attached.some((a) => a.productId === prod.id)) {
-            commercialIds.push(Number(offerId));
-          }
-        });
-        // Determine price: we use the price from the first attached commercial for this product? 
-        // Actually we have per-product per-offer prices; we need a single price per product.
-        // We'll use the minimum price among attached offers for that product.
-        let price = 0;
-        Object.entries(formData.attachments).forEach(([offerId, attached]) => {
+        const commercial_items: { commercial_id: number; price: number }[] = [];
+
+        // attachments: { [offerId]: [{productId, price}] }
+        Object.entries(formData.attachments).forEach(([offerIdStr, attached]) => {
           const found = attached.find((a) => a.productId === prod.id);
-          if (found && (found.price < price || price === 0)) {
-            price = found.price;
+          if (found) {
+            commercial_items.push({
+              commercial_id: Number(offerIdStr),
+              price: Number(found.price) || 0,
+            });
           }
         });
+
         return {
           order_product: prod.id,
           quantity: prod.selectedQuantity,
-          price: price,
-          commercials: commercialIds,
+          commercial_items, // ✅ backend kutyapti
         };
       });
 
-      const signs = formData.executors.map((ex) => ({
-        employee: ex.id,
-      }));
-
-      const payload = {
-        items,
-        signs,
-      };
+      const signs = formData.executors.map((ex) => ({ employee: ex.id }));
+      const payload = { items, signs };
 
       let response;
       if (isEditMode && resolvedId) {
@@ -129,11 +134,22 @@ const PriceAnalysisStep: React.FC<PriceAnalysisStepProps> = ({
       }
 
       if (response.status === 200 || response.status === 201) {
-        setRefreshModal(true);
-        setFileURL(response.data.file); // assuming response contains file url
-        if (!isEditMode) {
+        const newId = response.data?.id || resolvedId;
+
+        // ✅ modalni yopish (MUHIM!)
+        setDeleteDialogOpen(false);
+
+        // ✅ id ni formData ga saqlash
+        if (!isEditMode && response.data?.id) {
           setFormData((prev) => ({ ...prev, id: response.data.id }));
         }
+
+        // ✅ endi generate qilib pdfni olib ko'rsatamiz
+        if (newId) {
+          await fetchFile(newId);
+        }
+
+        setRefreshModal(true);
         toast.success("Narx tahlili muvaffaqiyatli yaratildi");
       }
     } catch (error) {
@@ -148,8 +164,15 @@ const PriceAnalysisStep: React.FC<PriceAnalysisStepProps> = ({
     try {
       const response = await axiosAPI.get(`/document/analysis/${resolvedId}/file`);
       if (response.status === 200) {
-        setFileURL(response.data.file_url);
-        await getFileByURL(response.data.file_url);
+        const url =
+          (Array.isArray(response.data?.message) ? response.data.message[0] : "") ||
+          response.data?.file_url ||
+          response.data?.file ||
+          "";
+        if (url) {
+          setFileURL(url);
+          await getFileByURL(url);
+        }
       }
     } catch (error) {
       toast.error("Imzolangan faylni olishda xatolik yuz berdi");
@@ -185,17 +208,19 @@ const PriceAnalysisStep: React.FC<PriceAnalysisStepProps> = ({
                 </Button>
               )}
             </div>
+
             <div className="flex gap-2">
               <Button icon={<Download size={16} />} onClick={downloadFile}>
                 Yuklab olish
               </Button>
-              <Button icon={<RefreshCw size={16} />} onClick={() => window.location.reload()}>
+              <Button icon={<RefreshCw size={16} />} onClick={() => resolvedId && fetchFile(resolvedId)}>
                 Yangilash
               </Button>
             </div>
           </div>
-          <div className="border rounded-lg overflow-auto max-h-[70vh]">
-            <FilePreviewer file={letterFile} className="w-full" />
+
+          <div className="border rounded-lg overflow-auto min-h-[70vh] h-full!">
+            <FilePreviewer file={letterFile} className="w-full min-h-[650px]" />
           </div>
         </>
       ) : loading ? (
@@ -208,14 +233,16 @@ const PriceAnalysisStep: React.FC<PriceAnalysisStepProps> = ({
           <p className="text-lg text-gray-600 mb-4">
             Narx tahlili shakllantirilmagan. Shakllantirish uchun pastdagi tugmani bosing.
           </p>
+
           <Button
             type="primary"
             size="large"
-            onClick={() => setDeleteDialogOpen(true)}
+            onClick={() => setDeleteDialogOpen(true)} // ✅ faqat bosilganda
             disabled={formData.products.length === 0}
           >
             Shakllantirish
           </Button>
+
           {formData.products.length === 0 && (
             <p className="text-sm text-red-500 mt-2">
               Kamida bitta tovar qo'shishingiz kerak
@@ -224,13 +251,14 @@ const PriceAnalysisStep: React.FC<PriceAnalysisStepProps> = ({
         </div>
       )}
 
-      {/* Confirmation dialog */}
+      {/* ✅ Confirmation dialog */}
       <DeleteAlertDialog
-        open={deleteDialogOpen}
+        open={deleteDialogOpen}         // ✅ mana shu bo'lmasa doim ochiq bo'ladi
         title="Narx tahlilini shakllantirish"
         message="Ushbu amalni bajarishdan oldin barcha ma'lumotlarni tekshiring."
         confirmText="Yaratish"
         cancelText="Bekor qilish"
+        loading={loading}
         onCancel={() => setDeleteDialogOpen(false)}
         onConfirm={createAnalysis}
       />
@@ -249,19 +277,6 @@ const PriceAnalysisStep: React.FC<PriceAnalysisStepProps> = ({
         }}
         documentType="price_analysis"
       />
-
-      {/* Success modal */}
-      <Modal
-        open={refreshModal}
-        onCancel={() => setRefreshModal(false)}
-        footer={null}
-        centered
-      >
-        <div className="flex flex-col items-center py-6">
-          <CheckCircle className="w-16 h-16 text-green-500 mb-4" />
-          <p className="text-lg font-semibold">Ma'lumotlar yangilandi!</p>
-        </div>
-      </Modal>
     </div>
   );
 };

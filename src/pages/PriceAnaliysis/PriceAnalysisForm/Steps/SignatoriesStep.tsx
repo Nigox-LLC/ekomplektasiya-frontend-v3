@@ -145,14 +145,13 @@ const SignatoriesStep: React.FC<SignatoriesStepProps> = ({ formData, setFormData
         </Button>
       </div>
 
-      <div className="rounded-lg overflow-auto">
+      <div className="rounded-xl border border-gray-100 overflow-hidden shadow-sm">
         <table className="w-full">
           <thead className="bg-slate-50">
             <tr>
               <th className="px-4 py-2 font-medium">N</th>
               <th className="px-4 py-2 font-medium">IMZOLOVCHI XODIM</th>
               <th className="px-4 py-2 font-medium">LAVOZIM</th>
-              <th className="px-4 py-2 font-medium">IMZO</th>
               <th className="px-4 py-2 font-medium">IMZOLANGAN VAQT</th>
               <th className="px-4 py-2 font-medium">HARAKATLAR</th>
             </tr>
@@ -174,11 +173,10 @@ const SignatoriesStep: React.FC<SignatoriesStepProps> = ({ formData, setFormData
               </tr>
             ) : (
               formData.executors.map((ex, idx) => (
-                <tr key={ex.id} className="border-t">
+                <tr key={ex.id} className="border-t border-gray-300 text-center">
                   <td className="px-4 py-2">{idx + 1}</td>
                   <td className="px-4 py-2">{ex.full_name}</td>
-                  <td className="px-4 py-2">{ex.position}</td>
-                  <td className="px-4 py-2">-</td>
+                  <td className="px-4 py-2">{ex.position_name}</td>
                   <td className="px-4 py-2">{ex.signed_at ? new Date(ex.signed_at).toLocaleString("uz-UZ") : "-"}</td>
                   <td className="px-4 py-2">
                     <button onClick={() => removeSigner(ex.id)} className="text-red-500">
@@ -450,9 +448,9 @@ const SignatoriesStep: React.FC<SignatoriesStepProps> = ({ formData, setFormData
                               </div>
                             </td>
                             <td className="px-4 py-3 border-b border-gray-100">
-                              {person.position ? (
+                              {person.position_name ? (
                                 <span className="inline-block bg-purple-50 text-purple-700 text-xs font-medium px-2.5 py-1 rounded-full border border-purple-100">
-                                  {person.position}
+                                  {person.position_name}
                                 </span>
                               ) : (
                                 <span className="text-gray-400 text-sm">—</span>

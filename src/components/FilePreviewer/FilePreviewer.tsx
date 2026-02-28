@@ -23,6 +23,8 @@ export default function FilePreviewer({
     return (name.split(".").pop() || "").toLowerCase();
   }, [file?.name, file_url]);
 
+  console.log(file)
+
   /* ===== Blob URL lifecycle ===== */
   useEffect(() => {
     if (file) {

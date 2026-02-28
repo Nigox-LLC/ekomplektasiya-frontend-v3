@@ -49,7 +49,7 @@ export interface AttachInfo {
 export interface Staff {
   id: number;
   full_name: string;
-  position: string;
+  position_name: string;
 }
 
 export interface SelectedSigner extends Staff {
@@ -255,7 +255,7 @@ const PriceAnalysisForm: React.FC<PriceAnalysisFormProps> = ({
       </div>
 
       {/* Step content */}
-      <div className="flex-1 p-4 overflow-auto">
+      <div className="flex-1 p-4">
         {currentStep === 1 && (
           <ProductsStep formData={formData} setFormData={setFormData} />
         )}
