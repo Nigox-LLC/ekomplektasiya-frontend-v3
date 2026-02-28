@@ -68,6 +68,11 @@ const SidebarNav: React.FC = React.memo(() => {
           icon: null,
         },
         {
+          id: "department_document",
+          label: "Bo'lim hujjatlari",
+          icon: null,
+        },
+        {
           id: "executing",
           label: "Ijro uchun",
           icon: null,
@@ -102,6 +107,11 @@ const SidebarNav: React.FC = React.memo(() => {
         {
           id: "for_information",
           label: "Ma'lumot uchun",
+          icon: null,
+        },
+        {
+          id: "department_document",
+          label: "Bo'lim hujjatlari",
           icon: null,
         },
         {

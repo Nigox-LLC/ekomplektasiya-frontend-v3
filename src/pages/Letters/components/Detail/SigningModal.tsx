@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Modal, Table } from "antd";
 import { toast } from "react-toastify";
 import webSocketService from "@/service/webSocket";
@@ -15,7 +9,13 @@ import {
 } from "@/store/slices/infoSlice";
 import { axiosAPI } from "@/service/axiosAPI";
 import type { Executor } from "@/components/CreatAboveModal";
-import { saveEimzoCert } from "@/utils/eimzoStorage";
+import {
+  saveEimzoCert,
+  getSavedEimzoCert,
+  saveEimzoSigningData,
+  getSavedEimzoSigningData,
+  type SavedEimzoCert,
+} from "@/utils/eimzoStorage";
 
 interface CertificateRaw {
   disk: string;
@@ -112,10 +112,14 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
     useState<CertificateDetails | null>(null);
   const [keyId, setKeyId] = useState<string>("");
   const [signingLoading, setSigningLoading] = useState(false);
+  const [showSavedConfirm, setShowSavedConfirm] = useState(false);
 
   // Redux
   const dispatch = useAppDispatch();
   const savedCert = useAppSelector((state) => state.info.eimzoRememberedCert);
+  const savedSigningData = useAppSelector(
+    (state) => state.info.eimzoSigningData,
+  );
 
   // Refs
   const selectedCertRef = useRef<CertificateParsed | null>(null);
@@ -124,6 +128,7 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
   const signingInFlightRef = useRef(false);
   const keyLoadedRef = useRef(false);
   const pkcs7DataRef = useRef<string | null>(null);
+  const rememberKeyFlowRef = useRef(false);
 
   const pendingActionRef = useRef<PendingAction>(null);
 
@@ -132,10 +137,19 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
   const templateIDRef = useRef(templateID);
   const orderFileIDRef = useRef(orderFileID);
 
-  // Check if ready to proceed
-  const isReadyToSign = useMemo(() => {
-    return Boolean(selectedCertificate && keyId);
-  }, [selectedCertificate, keyId]);
+  // Load saved cert and signing data from localStorage on mount
+  useEffect(() => {
+    const loadedCert = getSavedEimzoCert();
+    const loadedSigningData = getSavedEimzoSigningData();
+
+    if (loadedCert && !savedCert) {
+      dispatch(setEimzoRememberedCert(loadedCert));
+    }
+
+    if (loadedSigningData && !savedSigningData) {
+      dispatch(setEimzoSigningData(loadedSigningData));
+    }
+  }, []);
 
   // Update refs when props change
   useEffect(() => {
@@ -152,9 +166,11 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
     setSelectedCertificate(null);
     setKeyId("");
     setSigningLoading(false);
+    setShowSavedConfirm(false);
 
     signingInFlightRef.current = false;
     pendingActionRef.current = null;
+    rememberKeyFlowRef.current = false;
 
     selectedCertRef.current = null;
     keyLoadedRef.current = false;
@@ -186,7 +202,8 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
           },
         };
 
-        if (orderFileIDRef.current) payload.order_file_id = orderFileIDRef.current;
+        if (orderFileIDRef.current)
+          payload.order_file_id = orderFileIDRef.current;
         if (templateIDRef.current) payload.template = templateIDRef.current;
 
         if (deadlineRef.current) payload.deadline = deadlineRef.current;
@@ -233,27 +250,27 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
   );
 
   const saveRememberedCert = useCallback(() => {
-  const cert = selectedCertRef.current;
-  if (!cert) return;
+    const cert = selectedCertRef.current;
+    if (!cert) return;
 
-  const payload = {
-    disk: cert.disk,
-    path: cert.path,
-    name: cert.name,
-    alias: cert.alias,
-    cn: cert.cn,
-    validFrom: cert.validFrom,
-    validTo: cert.validTo,
-  };
+    const payload = {
+      disk: cert.disk,
+      path: cert.path,
+      name: cert.name,
+      alias: cert.alias,
+      cn: cert.cn,
+      validFrom: cert.validFrom,
+      validTo: cert.validTo,
+    };
 
-  // ✅ localStorage
-  saveEimzoCert(payload);
+    // Save to localStorage
+    saveEimzoCert(payload);
 
-  // ✅ redux
-  dispatch(setEimzoRememberedCert(payload));
+    // Save to Redux
+    dispatch(setEimzoRememberedCert(payload));
 
-  toast.success("Kalit muvaffaqiyatli eslab qolindi", { autoClose: 2000 });
-}, [dispatch]);
+    toast.success("Kalit muvaffaqiyatli eslab qolindi", { autoClose: 2000 });
+  }, [dispatch]);
 
   // WebSocket and initialization effect
   useEffect(() => {
@@ -360,10 +377,16 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
               // Parol to'g'ri -> endi kalitni saqlaymiz
               saveRememberedCert();
 
+              // Save pkcs7 data to both Redux and localStorage for future use
+              dispatch(setEimzoSigningData(parsed.pkcs7_64));
+              saveEimzoSigningData(parsed.pkcs7_64);
+
               // remember jarayonini yakunlaymiz (modal yopilmaydi)
               signingInFlightRef.current = false;
               pendingActionRef.current = null;
+              rememberKeyFlowRef.current = false;
               setSigningLoading(false);
+              setShowSavedConfirm(true);
               return;
             }
           }
@@ -419,17 +442,23 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
     return () => window.clearInterval(timer);
   }, [isOpen]);
 
-  // Handle confirm button - imzolash (parol oynasi chiqadi)
-  const handleConfirm = () => {
-    if (!selectedCertificate) {
+  // Handle confirm button - imzolash
+  const handleConfirm = (cert?: SavedEimzoCert | null) => {
+    if (!selectedCertificate && !cert) {
       toast.error("Iltimos, sertifikatni tanlang!", { closeButton: false });
       return;
     }
 
-    if (!webSocketService.isConnected()) {
+    if (!webSocketService.isConnected() && !cert) {
       toast.error("E-IMZO bilan aloqa yo'q. Iltimos, biroz kuting.", {
         closeButton: false,
       });
+      return;
+    }
+
+    // If using saved cert with cached signature
+    if (cert && savedSigningData) {
+      handleSignDocument(savedSigningData);
       return;
     }
 
@@ -471,7 +500,8 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
       return;
     }
 
-    // "Remember" jarayonini boshlaymiz: parol oynasini majburiy ochamiz
+    // "Remember" jarayonini boshlaymiz
+    rememberKeyFlowRef.current = true;
     pendingActionRef.current = "remember";
     signingInFlightRef.current = true;
     setSigningLoading(true);
@@ -520,6 +550,20 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
       arguments: [record.disk, record.path, record.name, record.alias],
     });
 
+    // Reset showSavedConfirm if selecting a different cert
+    if (savedCert?.name !== record.name) {
+      setShowSavedConfirm(false);
+    }
+
+    // Show confirmation if this is the saved cert
+    if (savedCert?.name === record.name && savedSigningData) {
+      setShowSavedConfirm(true);
+      toast.info(
+        "Saqlangan kalit tanlandi. Imzolash tasdiqlash orqali davom etadi.",
+        { autoClose: 3000 },
+      );
+    }
+
     // Reset state when new cert is selected
     setKeyId("");
     keyLoadedRef.current = false;
@@ -527,119 +571,166 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
 
   return (
     <Modal
-      title="E-IMZO kalitini tanlang"
+      title={
+        showSavedConfirm && savedCert
+          ? "Saqlangan E-IMZO kaliti"
+          : "E-IMZO kalitini tanlang"
+      }
       open={isOpen}
       onCancel={handleCancel}
       width={900}
-      footer={[
-        <Button key="cancel" onClick={handleCancel} disabled={signingLoading}>
-          Chiqish
-        </Button>,
-        <Button
-          key="remember"
-          onClick={handleRememberKey}
-          disabled={signingLoading || !selectedCertificate}
-        >
-          Kalitni eslab qolish
-        </Button>,
-        <Button
-          key="ok"
-          type="primary"
-          loading={signingLoading}
-          disabled={!selectedCertificate}
-          onClick={handleConfirm}
-        >
-          Imzolash
-        </Button>,
-      ]}
-    >
-      <Table
-        rowKey="name"
-        dataSource={certificates}
-        pagination={false}
-        loading={certificates.length === 0 && !initSentRef.current}
-        locale={{
-          emptyText: (
-            <div
-              style={{
-                textAlign: "center",
-                color: "red",
-                fontWeight: "bold",
-                fontSize: "18px",
-                padding: "20px 0",
-              }}
-            >
-              E-IMZO moduli bilan ulanishda xatolik! <br />
-              Modulni{" "}
-              <a
-                href="https://e-imzo.soliq.uz/"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: "red", textDecoration: "underline" }}
+      footer={
+        showSavedConfirm && savedCert
+          ? [
+              <Button
+                key="cancel"
+                onClick={handleCancel}
+                disabled={signingLoading}
               >
-                shu yerdan
-              </a>{" "}
-              kompyuteringizga o'rnating va qayta urinib ko'ring.
+                Bekor qilish
+              </Button>,
+              <Button
+                key="ok"
+                type="primary"
+                loading={signingLoading}
+                onClick={() => handleConfirm(savedCert)}
+              >
+                Imzolash
+              </Button>,
+            ]
+          : [
+              <Button
+                key="cancel"
+                onClick={handleCancel}
+                disabled={signingLoading}
+              >
+                Chiqish
+              </Button>,
+              <Button
+                key="remember"
+                onClick={handleRememberKey}
+                disabled={signingLoading || !selectedCertificate}
+              >
+                Kalitni eslab qolish
+              </Button>,
+              <Button
+                key="ok"
+                type="primary"
+                loading={signingLoading}
+                disabled={!selectedCertificate}
+                onClick={() => handleConfirm(null)}
+              >
+                Imzolash
+              </Button>,
+            ]
+      }
+    >
+      {showSavedConfirm && savedCert ? (
+        <div className="space-y-3 text-sm text-gray-700">
+          <p>Siz belgilangan kalit orqali imzolashni tasdiqlaysizmi?</p>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+            <div className="font-medium text-slate-900">
+              {savedCert.cn || savedCert.name}
             </div>
-          ),
-        }}
-        rowClassName={(record: CertificateParsed) =>
-          isExpired(record.validTo)
-            ? "bg-red-50 text-red-600"
-            : selectedCertRow?.name === record.name
-              ? "bg-blue-50"
-              : ""
-        }
-        rowSelection={{
-          type: "radio",
-          selectedRowKeys: selectedCertRow ? [selectedCertRow.name] : [],
-          getCheckboxProps: (record: CertificateParsed) => ({
-            disabled: isExpired(record.validTo),
-            title: isExpired(record.validTo)
-              ? "Muddati tugagan — tanlab bo'lmaydi"
-              : undefined,
-          }),
-        }}
-        onRow={(record: CertificateParsed) => ({
-          onClick: () => handleCertificateSelect(record),
-        })}
-        columns={[
-          { title: "Disk", dataIndex: "disk", key: "disk", width: 80 },
-          {
-            title: "Joylashuvi",
-            dataIndex: "path",
-            key: "path",
-            width: 200,
-          },
-          { title: "F.I.O", dataIndex: "cn", key: "cn", width: 200 },
-          {
-            title: "Amal qilish muddati",
-            width: 250,
-            render: (_, r: CertificateParsed) => {
-              const expired = isExpired(r.validTo);
-              return (
-                <span className={expired ? "text-red-600 font-semibold" : ""}>
-                  {r.validFrom} - {r.validTo}
-                  {expired && <span className="ml-2">(muddati tugagan)</span>}
-                </span>
-              );
+            <div className="text-xs text-slate-600">
+              {savedCert.validFrom || ""}{" "}
+              {savedCert.validTo ? `- ${savedCert.validTo}` : ""}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <Table
+          rowKey="name"
+          dataSource={certificates}
+          pagination={false}
+          loading={certificates.length === 0 && !initSentRef.current}
+          locale={{
+            emptyText: (
+              <div
+                style={{
+                  textAlign: "center",
+                  color: "red",
+                  fontWeight: "bold",
+                  fontSize: "18px",
+                  padding: "20px 0",
+                }}
+              >
+                E-IMZO moduli bilan ulanishda xatolik! <br />
+                Modulni{" "}
+                <a
+                  href="https://e-imzo.soliq.uz/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "red", textDecoration: "underline" }}
+                >
+                  shu yerdan
+                </a>{" "}
+                kompyuteringizga o'rnating va qayta urinib ko'ring.
+              </div>
+            ),
+          }}
+          rowClassName={(record: CertificateParsed) =>
+            isExpired(record.validTo)
+              ? "bg-red-50 text-red-600"
+              : selectedCertRow?.name === record.name
+                ? "bg-blue-50"
+                : ""
+          }
+          rowSelection={{
+            type: "radio",
+            selectedRowKeys: selectedCertRow ? [selectedCertRow.name] : [],
+            getCheckboxProps: (record: CertificateParsed) => ({
+              disabled: isExpired(record.validTo),
+              title: isExpired(record.validTo)
+                ? "Muddati tugagan — tanlab bo'lmaydi"
+                : undefined,
+            }),
+          }}
+          onRow={(record: CertificateParsed) => ({
+            onClick: () => handleCertificateSelect(record),
+          })}
+          columns={[
+            { title: "Disk", dataIndex: "disk", key: "disk", width: 80 },
+            {
+              title: "Joylashuvi",
+              dataIndex: "path",
+              key: "path",
+              width: 200,
             },
-          },
-          {
-            title: "Holat",
-            width: 150,
-            render: (_, r: CertificateParsed) => {
-              const isSaved =
-                savedCert?.name === r.name && savedCert?.disk === r.disk;
-              return isSaved ? (
-                <span className="text-green-600 text-xs">✓ Kalit saqlangan</span>
-              ) : (
-                <span className="text-gray-400 text-xs">Kalit saqlanmagan</span>
-              );
+            { title: "F.I.O", dataIndex: "cn", key: "cn", width: 200 },
+            {
+              title: "Amal qilish muddati",
+              width: 250,
+              render: (_, r: CertificateParsed) => {
+                const expired = isExpired(r.validTo);
+                return (
+                  <span className={expired ? "text-red-600 font-semibold" : ""}>
+                    {r.validFrom} - {r.validTo}
+                    {expired && <span className="ml-2">(muddati tugagan)</span>}
+                  </span>
+                );
+              },
             },
-          },
-        ]}
-      />
+            {
+              title: "Holat",
+              width: 150,
+              render: (_, r: CertificateParsed) => {
+                const isSaved =
+                  savedCert?.name === r.name && savedCert?.disk === r.disk;
+                return isSaved ? (
+                  <span className="text-green-600 text-xs">
+                    ✓ Kalit saqlangan
+                  </span>
+                ) : (
+                  <span className="text-gray-400 text-xs">
+                    Kalit saqlanmagan
+                  </span>
+                );
+              },
+            },
+          ]}
+        />
+      )}
     </Modal>
   );
 };

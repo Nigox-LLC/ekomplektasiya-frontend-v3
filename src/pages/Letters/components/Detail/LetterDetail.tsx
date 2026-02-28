@@ -69,7 +69,7 @@ type PostedWebsiteData = {
 
 interface Product {
   id: number;
-  order_product_type?: "order" | "service";
+  order_product_type?: "product" | "service";
   type: string;
   yearPlan: any;
   name: string;
@@ -283,8 +283,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
         const transformedProducts = data.products.map((p: any) => ({
           id: p.id,
-          order_product_type:
-            p.order_product_type === "product" ? "order" : p.order_product_type,
+          order_product_type: p.order_product_type,
           name: p.product_name || "",
           model: p.product_model?.name || "",
           product_type: p.product_type
@@ -417,9 +416,11 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
           products: orderData.products.map((item) => ({
             ...item,
             product_type: item.product_type?.id || null,
+            unit: item.unit?.id || null,
+            quantity: item.quantity || 1,
             product_model: item.product_model?.id || null,
             size: item.size?.id || null,
-            unit: item.unit?.id || null,
+            attached_employee: item.attached_employee?.id || null,
           })),
         };
 
@@ -483,9 +484,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
     }
   };
 
-  const { department_category } = useAppSelector(
-    (state) => state.info.currentUserInfo,
-  );
+  const { role } = useAppSelector((state) => state.info.currentUserInfo);
 
   const goodsColumns: ColumnsType<Product> = [
     {
@@ -510,14 +509,14 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
           >
             <Badge
               className={`cursor-pointer transition-colors p-2! flex! items-center! gap-2! rounded-md ${
-                item.order_product_type === "order"
+                item.order_product_type === "product"
                   ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
                   : item.order_product_type === "service"
                     ? "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
                     : ""
               }`}
             >
-              {item.order_product_type === "order"
+              {item.order_product_type === "product"
                 ? "Tovar"
                 : item.order_product_type === "service"
                   ? "Xizmat"
@@ -536,7 +535,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  handleInputOnchange(index, "order_product_type", "order");
+                  handleInputOnchange(index, "order_product_type", "product");
                   setShowTypeDropdown(null);
                 }}
                 className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 flex items-center gap-2 rounded-t-lg transition-colors"
@@ -705,7 +704,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         />
       ),
     },
-    ...(department_category === "completasiya"
+    ...(role === "assistant_performer" ||
+    orderData?.receiver_name === currentUserInfo?.full_name
       ? [
           {
             title: "Biriktirilgan xodim",
@@ -1027,6 +1027,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                     const newRow = {
                       name: "",
                       model: "",
+                      order_product_type: "product",
                       product_type: { id: 0, name: "" },
                       product_model: { id: 0, name: "" },
                       size: { id: 0, name: "" },

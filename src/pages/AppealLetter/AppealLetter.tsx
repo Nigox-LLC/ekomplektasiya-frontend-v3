@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   Filter,
@@ -23,8 +23,9 @@ import {
   ArrowDown,
   User,
 } from "lucide-react";
+import { axiosAPI } from "../../service/axiosAPI";
 
-// --- Interfeyslar va Ma'lumotlar (o'zgarishsiz) ---
+// --- Interfeyslar (o'zgarishsiz) ---
 interface AppealLetter {
   id: string;
   number: string;
@@ -43,26 +44,6 @@ interface SignatureKey {
   organization: string;
   validity: string;
 }
-const signatureKeysData: SignatureKey[] = [
-  {
-    id: "key1",
-    fullName: "Karimov Aziz Shavkatovich",
-    type: "Yuridik shaxs",
-    inn: "123456789012",
-    series: "01AA234567",
-    organization: "O'zbekiston Respublikasi Moliya vazirligi",
-    validity: "01.01.2024 - 01.01.2027",
-  },
-  {
-    id: "key2",
-    fullName: "Rahmonov Jamshid Alievich",
-    type: "Jismoniy shaxs",
-    inn: "987654321098",
-    series: "02BB789012",
-    organization: "Jismoniy shaxs",
-    validity: "15.03.2024 - 15.03.2027",
-  },
-];
 interface ExecutionStep {
   id: number;
   actor: string;
@@ -72,38 +53,18 @@ interface ExecutionStep {
   date: string;
   isCurrent?: boolean;
 }
-const executionStepsData: ExecutionStep[] = [
-  {
-    id: 1,
-    actor: "Aliyev J.N.",
-    position: "Bosh mutaxassis",
-    department: "Moliya bo'limi",
-    action: "Ijro uchun",
-    date: "11 fev 2026, 23:05",
-  },
-  {
-    id: 2,
-    actor: "Aliyev J.N.",
-    position: "Bosh mutaxassis",
-    department: "Moliya bo'limi",
-    action: "Ijro uchun",
-    date: "11 fev 2026, 23:05",
-  },
-  {
-    id: 3,
-    actor: "Rahimov Sardor",
-    position: "Direktor",
-    department: "Rahbariyat",
-    date: "11 fev 2026, 23:05",
-    isCurrent: true,
-  },
-];
 
 // --- Komponentlar ---
 
-// --- Ijro Qadamlari Modali (o'zgarishsiz) ---
-const ExecutionStepsModal = ({ onClose }: { onClose: () => void }) => {
-  /* ... kod ... */ return (
+// --- Ijro Qadamlari Modali ---
+const ExecutionStepsModal = ({
+  onClose,
+  steps,
+}: {
+  onClose: () => void;
+  steps: ExecutionStep[];
+}) => {
+  return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="relative w-full max-w-2xl rounded-lg bg-white shadow-2xl m-4">
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
@@ -126,7 +87,7 @@ const ExecutionStepsModal = ({ onClose }: { onClose: () => void }) => {
           </button>
         </div>
         <div className="p-6 space-y-4">
-          {executionStepsData.map((step, index) => (
+          {steps.map((step, index) => (
             <div key={step.id}>
               {" "}
               <div
@@ -161,19 +122,19 @@ const ExecutionStepsModal = ({ onClose }: { onClose: () => void }) => {
     </div>
   );
 };
-// --- Imzolash Modali (o'zgarishsiz) ---
+// --- Imzolash Modali ---
 const SignatureModal = ({
   letter,
   onClose,
   onSignSuccess,
+  signatureKeys,
 }: {
   letter: AppealLetter;
   onClose: () => void;
   onSignSuccess: (msg: string) => void;
+  signatureKeys: SignatureKey[];
 }) => {
-  /* ... kod ... */ const [selectedKey, setSelectedKey] = useState<
-    string | null
-  >(null);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const handleSign = () => {
     if (!selectedKey) {
       alert("Iltimos, imzo kalitini tanlang");
@@ -209,7 +170,7 @@ const SignatureModal = ({
           </div>
           <h4 className="font-semibold text-gray-800 mb-3">Kalitni tanlang:</h4>
           <div className="max-h-64 space-y-3 overflow-y-auto pr-2">
-            {signatureKeysData.map((key) => (
+            {signatureKeys.map((key) => (
               <label
                 key={key.id}
                 className={`flex items-start gap-4 rounded-lg border-2 p-4 cursor-pointer transition-all ${selectedKey === key.id ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-white hover:border-gray-300"}`}
@@ -432,56 +393,44 @@ function AppealLettersView({ onLetterClick }: AppealLettersViewProps) {
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [showExecutionModal, setShowExecutionModal] = useState(false);
 
+  // API data states
+  const [appealLetters, setAppealLetters] = useState<AppealLetter[]>([]);
+  const [signatureKeys, setSignatureKeys] = useState<SignatureKey[]>([]);
+  const [executionSteps, setExecutionSteps] = useState<ExecutionStep[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch Appeal Letters data from API
+  useEffect(() => {
+    const fetchAppealLetters = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await axiosAPI.get("/document/appeal/");
+        if (response.data && Array.isArray(response.data)) {
+          setAppealLetters(response.data);
+          // Extract unique categories from the data
+          const uniqueCategories = Array.from(
+            new Set(response.data.map((letter: AppealLetter) => letter.category)),
+          ) as string[];
+          setCategories(uniqueCategories);
+        }
+      } catch (err) {
+        console.error("Error fetching appeal letters:", err);
+        setError("Ma'lumotni yuklashda xatolik yuz berdi");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAppealLetters();
+  }, []);
+
   // Test uchun PDF URL manzili
   const samplePdfUrl =
     "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
 
-  const appealLetters: AppealLetter[] = [
-    {
-      id: "1",
-      number: "MX-2024-001",
-      sender: "Karimov Aziz",
-      subject: "Ish haqi to'g'risida",
-      date: "10.02.2026",
-      status: "new",
-      category: "Mehnat munosabatlari",
-    },
-    {
-      id: "2",
-      number: "MX-2024-002",
-      sender: "Nazarova Dilnoza",
-      subject: "Ta'til muddati o'zgarishi haqida",
-      date: "09.02.2026",
-      status: "in-progress",
-      category: "Ta'til",
-    },
-    {
-      id: "3",
-      number: "MX-2024-003",
-      sender: "Aliyev Sardor",
-      subject: "Lavozim maoshini oshirish",
-      date: "08.02.2026",
-      status: "in-progress",
-      category: "Mehnat munosabatlari",
-    },
-    {
-      id: "4",
-      number: "MX-2024-004",
-      sender: "Rahimova Malika",
-      subject: "Ish joyini o'zgartirish",
-      date: "07.02.2026",
-      status: "resolved",
-      category: "Kadrlar",
-    },
-  ];
-  const categories = [
-    "Mehnat munosabatlari",
-    "Ta'til",
-    "Kadrlar",
-    "Ta'minot",
-    "Ish sharoitlari",
-    "Ta'lim",
-  ];
   const statuses = [
     { value: "new", label: "Yangi" },
     { value: "in-progress", label: "Ko'rib chiqilmoqda" },
@@ -545,6 +494,28 @@ function AppealLettersView({ onLetterClick }: AppealLettersViewProps) {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Ma'lumot yuklanmoqda...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full flex items-center justify-center bg-gray-50">
+        <div className="text-center text-red-600">
+          <AlertTriangle className="mx-auto h-12 w-12 mb-4" />
+          <p className="font-medium">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex bg-gray-50">
       {/* Left Panel */}
@@ -576,7 +547,7 @@ function AppealLettersView({ onLetterClick }: AppealLettersViewProps) {
           {showFilters && (
             <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
               {" "}
-              {/* ... */}{" "}
+              {/* Filter UI */}{" "}
             </div>
           )}
           <div className="flex items-center justify-between mt-3">
@@ -744,10 +715,14 @@ function AppealLettersView({ onLetterClick }: AppealLettersViewProps) {
           onSignSuccess={(message) => {
             alert(message);
           }}
+          signatureKeys={signatureKeys}
         />
       )}
       {showExecutionModal && (
-        <ExecutionStepsModal onClose={() => setShowExecutionModal(false)} />
+        <ExecutionStepsModal
+          onClose={() => setShowExecutionModal(false)}
+          steps={executionSteps}
+        />
       )}
     </div>
   );

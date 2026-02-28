@@ -247,7 +247,10 @@ const CreatAboveModal: React.FC<IProps> = ({
         documentId={String(orderDataID)}
         templateID={templateID}
         deadline={deadline}
-        executors={executors}
+        executors={executors.map((executor) => ({
+            employee: executor.id,
+            is_main: executor.id === mainExecutorId,
+          }))}
       />
     </>
   );

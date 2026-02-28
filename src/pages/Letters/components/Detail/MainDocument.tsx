@@ -84,7 +84,10 @@ const MainDocument: React.FC<{ orderData: OrderData | null }> = ({
   if (userType === "order") {
     return (
       <>
-        <OrderMainDocumentCreate orderDataID={orderData?.id!} orderData={orderData} />
+        <OrderMainDocumentCreate
+          orderDataID={orderData?.id!}
+          orderData={orderData}
+        />
       </>
     );
   }

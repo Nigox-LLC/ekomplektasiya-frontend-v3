@@ -72,13 +72,10 @@ const CreateDocument: React.FC = () => {
   const handleOpenSendModal = () => {
     if (
       orderData.products.some(
-        (item) =>
-          !item.product_name ||
-          !item.quantity ||
-          !item.product_type.id ||
-          !item.product_model.id ||
-          !item.size.id ||
-          !item.unit.id,
+        (item) => !item.product_type.id || !item.quantity || !item.unit.id,
+        // !item.product_model.id ||
+        // !item.size.id ||
+        // !item.unit.id,
       )
     ) {
       toast.error("Barcha tovarlar uchun nom va sonini kiriting!");
@@ -210,7 +207,10 @@ const CreateDocument: React.FC = () => {
           orderDataID={orderDataID}
         />
         <>
-          <SignerCardSection orderData={orderData} setOrderData={setOrderData} />
+          <SignerCardSection
+            orderData={orderData}
+            setOrderData={setOrderData}
+          />
 
           {/* Comment of order */}
           <div className="my-2">
@@ -233,7 +233,7 @@ const CreateDocument: React.FC = () => {
           </div>
 
           {/* Main document section */}
-          <MainDocument orderDataID={orderDataID} />
+          <MainDocument orderDataID={orderDataID} orderData={orderData} />
         </>
 
         {/* Footer - save button */}
@@ -251,11 +251,7 @@ const CreateDocument: React.FC = () => {
               } else if (
                 orderData.products.some(
                   (item) =>
-                    !item.product_name ||
-                    !item.quantity ||
-                    !item.product_type.id ||
-                    !item.product_model.id ||
-                    !item.unit.id,
+                    !item.quantity || !item.product_type.id || !item.unit.id,
                 )
               ) {
                 toast.error(

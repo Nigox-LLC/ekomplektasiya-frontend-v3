@@ -37,6 +37,8 @@ const SubNavItem: React.FC<IProps> = React.memo(
           return counts[`${itemID === "OUT" ? "out" : "in"}`].in_approval;
         case "in_signing":
           return counts[`${itemID === "OUT" ? "out" : "in"}`].in_signing;
+        case "department_document":
+          return counts[`${itemID === "OUT" ? "out" : "in"}`].department_document;
         default:
           return null;
       }

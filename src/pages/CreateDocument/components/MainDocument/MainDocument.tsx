@@ -10,6 +10,7 @@ import {
   FileText,
   Pencil,
   Plus,
+  Upload,
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
@@ -45,7 +46,7 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
 
   useEffect(() => {
     const handler = (e: MessageEvent) => {
-      // console.log("Parent received message:", e.data);
+      console.log("Parent received message:", e.data);
 
       if (
         e.data &&
@@ -59,9 +60,11 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
         const data = {
           input_url: selectedDocument.file_url,
           output_url:
-            axiosAPI.getUri() + `/document/orders/word/${selectedDocument.id}/`,
+            axiosAPI.getUri() + `/document/orders/word/${selectedDocument.word_id || selectedDocument.word_file_id}/`,
           v3_ganiwer: token,
         };
+
+        console.log(data)
 
         newWindowRef.current.postMessage(data, "*");
       }
@@ -112,7 +115,7 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
       const fd = new FormData();
       fd.append("file", file);
       const response = await axiosAPI.put(
-        `document/orders/word/${doc.id}/`,
+        `document/orders/word/${doc.word_id || doc.word_file_id}/`,
         fd,
         {
           headers: {
@@ -122,7 +125,11 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
       );
       if (response.status === 200) {
         setMainDocument((prev) =>
-          prev.map((d) => (d.id === doc.id ? response.data : d)),
+          prev.map((d) =>
+            d.id === doc.id
+              ? { ...d, file_url: response.data.file, word_file_name: file.name }
+              : d,
+          ),
         );
         toast.success("Hujjat muvaffaqiyatli yangilandi!");
       }
@@ -227,6 +234,7 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
                         //     console.error("Faylni olishda xatolik:", err);
                         //     toast.error("Faylni olishda xatolik yuz berdi!");
                         //   });
+                        setSelectedDocument(doc)
                         openEditor();
                       }}
                     >
@@ -261,9 +269,24 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
                       href={doc.file_url}
                       target="_blank"
                       className="flex items-center gap-2 bg-green-600 hover:bg-green-700 border-none text-white"
+                      onClick={() => {
+                        console.log(doc)
+                      }}
                     >
                       <Download className="w-4 h-4" />
                       Yuklab olish
+                    </Button>
+
+                    {/* Upload changed file */}
+                    <Button
+                      className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 border-none text-white"
+                      onClick={() => {
+                        setSelectedDocument(doc);
+                        documentInputRef.current?.click();
+                      }}
+                    >
+                      <Upload className="w-4 h-4" />
+                      Qayta yuklash
                     </Button>
                   </div>
 
