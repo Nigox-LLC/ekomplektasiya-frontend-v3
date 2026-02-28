@@ -136,9 +136,45 @@ const SendModal: React.FC<SendModalProps> = ({
     fetchDepartments();
   }, []);
 
+  // SendModal.tsx ichida (component ichida) JSX returndan oldin qo'yish mumkin
+  const selectEllipsisStyle = `
+/* Select ichidagi tanlangan value uzun bo'lsa ham select kengaymasin */
+.send-modal .ant-select {
+  width: 100%;
+  min-width: 0; /* flex ichida juda muhim */
+}
+
+/* Selection area */
+.send-modal .ant-select-selector {
+  overflow: hidden !important;
+}
+
+/* Selected text */
+.send-modal .ant-select-selection-item {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  display: block;
+}
+
+/* Placeholder ham shunaqa */
+.send-modal .ant-select-selection-placeholder {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Arrow va clear icon siqilib qolmasin */
+.send-modal .ant-select-arrow,
+.send-modal .ant-select-clear {
+  flex: 0 0 auto;
+}
+`;
+
   return (
     <>
       <div className="fixed inset-0 bg-black/20 bg-opacity-50 flex items-center justify-center z-50 text-black!">
+        <style>{selectEllipsisStyle}</style>
         <div className="bg-white rounded-lg p-6 w-full max-w-162.5">
           <div className="flex items-center justify-between gap-6">
             <h2 className="text-xl font-bold mb-4">Hujjatni yuborish</h2>
@@ -151,7 +187,7 @@ const SendModal: React.FC<SendModalProps> = ({
           </div>
           <div className="flex items-center gap-4 mb-4">
             {/* Department section */}
-            <div className="w-full">
+            <div className="w-full min-w-[350px]">
               <p className="mb-2 font-semibold">Bo'lim</p>
               <Select
                 value={selectedDepartment}
@@ -232,7 +268,7 @@ const SendModal: React.FC<SendModalProps> = ({
                 const element = e.currentTarget;
                 if (
                   element.scrollHeight - element.scrollTop <=
-                    element.clientHeight + 10 &&
+                  element.clientHeight + 10 &&
                   !isLoadingEmployees &&
                   employees.length < totalEmployees
                 ) {

@@ -203,6 +203,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
   const { currentUserInfo } = useAppSelector((state) => state.info);
 
+  const hideWarehouseWarning = currentUserInfo?.department_category === "completasiya";
+
   const categoryNames: Record<string, string> = {
     reply: "Javob xati",
     outgoing: "Chiquvchi hujjat",
@@ -970,12 +972,14 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         </div>
 
         {/* Warnig section: Checking warehouse */}
-        <div>
-          <h2 className="text-lg italic text-red-400">
-            Tovarlar sotuvga chiqarishdan avval uni omborlar qoldiqlaridan
-            tekshirish talab etiladi
-          </h2>
-        </div>
+        {!hideWarehouseWarning && (
+  <div>
+    <h2 className="text-lg italic text-red-400">
+      Tovarlar sotuvga chiqarishdan avval uni omborlar qoldiqlaridan
+      tekshirish talab etiladi
+    </h2>
+  </div>
+)}
 
         {/* Buyurtma uchun kelgan tovarlar ro'yxati - Collapse Card */}
         <div className="shadow-md rounded-md border border-gray-200 overflow-hidden flex flex-col">
@@ -1200,8 +1204,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 </div>
               </div>
 
-              {/* Hujjat heshteglari */}
-              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+              {/* <div className="flex items-center justify-between py-2 border-b border-gray-100">
                 <label className="text-sm text-gray-500 w-48">
                   Hujjat heshteglari
                 </label>
@@ -1210,7 +1213,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                     <Plus className="size-5" />
                   </button>
                 </div>
-              </div>
+              </div> */}
 
               {/* Qabul qiluvchilar */}
               <div className="flex items-start justify-between py-2">
