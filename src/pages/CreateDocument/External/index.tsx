@@ -9,6 +9,7 @@ import TextArea from "antd/es/input/TextArea";
 import MainDocument from "../components/MainDocument/MainDocument";
 import SendModal from "../components/SendModal";
 import SignerCardSection from "./SignerCardSection";
+import AdditionalFiles from "../components/AdditionalFiles/AdditionalFiles";
 
 export type Product = {
   order_product_type: "product" | "service";
@@ -234,6 +235,13 @@ const CreateDocument: React.FC = () => {
 
           {/* Main document section */}
           <MainDocument orderDataID={orderDataID} orderData={orderData} />
+
+          {/* Additioanl files section */}
+          <AdditionalFiles
+            orderData={orderData}
+            orderDataID={orderDataID}
+            setOrderData={setOrderData}
+          />
         </>
 
         {/* Footer - save button */}

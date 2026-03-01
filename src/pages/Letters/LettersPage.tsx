@@ -126,15 +126,15 @@ const LettersPage: React.FC = () => {
           ? "IN"
           : location.pathname.includes("OUT")
             ? "OUT"
-          : false;
+            : false;
         const params: any = {
           page: page,
         };
         const isPathMyLetter = location.pathname.includes("my_letter");
-        if(isPathMyLetter) params.status = "my_letter";
+        if (isPathMyLetter) params.movement_type = "my_letter";
         if (direction) params.direction = direction;
         if (status && status !== "all_count") {
-          params.status = status;
+          params.movement_type = status;
         }
 
         const response = await axiosAPI.get("document/orders/", { params });

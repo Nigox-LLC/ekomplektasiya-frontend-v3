@@ -203,7 +203,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
   const { currentUserInfo } = useAppSelector((state) => state.info);
 
-  const hideWarehouseWarning = currentUserInfo?.department_category === "completasiya";
+  const hideWarehouseWarning =
+    currentUserInfo?.department_category === "completasiya";
 
   const categoryNames: Record<string, string> = {
     reply: "Javob xati",
@@ -585,13 +586,15 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
     },
     {
       title: "Tovar nomi",
-      key: "name",
+      key: "product_name",
       width: 200,
       render: (_value, item, index) => (
         <Input
           type="text"
-          value={item.name}
-          onChange={(e) => handleInputOnchange(index, "name", e.target.value)}
+          value={item.product_name}
+          onChange={(e) =>
+            handleInputOnchange(index, "product_name", e.target.value)
+          }
           className="text-sm font-medium border-0 focus:ring-1 focus:ring-blue-500"
           placeholder="Nomi"
         />
@@ -973,13 +976,13 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
         {/* Warnig section: Checking warehouse */}
         {!hideWarehouseWarning && (
-  <div>
-    <h2 className="text-lg italic text-red-400">
-      Tovarlar sotuvga chiqarishdan avval uni omborlar qoldiqlaridan
-      tekshirish talab etiladi
-    </h2>
-  </div>
-)}
+          <div>
+            <h2 className="text-lg italic text-red-400">
+              Tovarlar sotuvga chiqarishdan avval uni omborlar qoldiqlaridan
+              tekshirish talab etiladi
+            </h2>
+          </div>
+        )}
 
         {/* Buyurtma uchun kelgan tovarlar ro'yxati - Collapse Card */}
         <div className="shadow-md rounded-md border border-gray-200 overflow-hidden flex flex-col">
@@ -1175,6 +1178,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 <TextArea
                   value={orderData?.comment || ""}
                   placeholder="Qisqacha mazmun..."
+                  disabled
                   onChange={(e) => {
                     setOrderData((prev) =>
                       prev
@@ -2121,7 +2125,6 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                   return {
                     ...product,
                     attached_employee: {
-                      ...product.attached_employee,
                       id: employee[0].id,
                       name: employee[0].full_name,
                     },
@@ -2129,6 +2132,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 }
                 return product;
               });
+
+              console.log(updatedProducts)
 
               return {
                 ...prev,
