@@ -131,13 +131,13 @@ interface DocumentDetailViewProps {
   onBack?: () => void;
   onClose?: () => void;
   category?:
-    | "execution"
-    | "signing"
-    | "resolution"
-    | "info"
-    | "approval"
-    | "for-signing"
-    | "backup";
+  | "execution"
+  | "signing"
+  | "resolution"
+  | "info"
+  | "approval"
+  | "for-signing"
+  | "backup";
   onSuccess?: (message: string) => void;
 }
 
@@ -169,11 +169,11 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
   const [productFieldModalOpen, setProductFieldModalOpen] = useState<{
     type:
-      | "product/type"
-      | "measurement/size"
-      | "measurement/unit"
-      | "product/model"
-      | null;
+    | "product/type"
+    | "measurement/size"
+    | "measurement/unit"
+    | "product/model"
+    | null;
     index: number;
   }>({ type: null, index: -1 });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -301,10 +301,10 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
           note: p.comment || "",
           attached_employee: p.attached_employee
             ? {
-                id: p.attached_employee.id,
-                full_name:
-                  p.attached_employee.name || p.attached_employee.full_name,
-              }
+              id: p.attached_employee.id,
+              full_name:
+                p.attached_employee.name || p.attached_employee.full_name,
+            }
             : null,
           posted_website: p.posted_website,
           // yearPlan: p.annual_plan,
@@ -477,7 +477,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
     }
   };
 
-  const handleMainFileUpload = async (file: File) => {};
+  const handleMainFileUpload = async (file: File) => { };
 
   const handleMainFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -510,13 +510,12 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             className="inline-flex items-center gap-2"
           >
             <Badge
-              className={`cursor-pointer transition-colors p-2! flex! items-center! gap-2! rounded-md ${
-                item.order_product_type === "product"
-                  ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
-                  : item.order_product_type === "service"
-                    ? "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
-                    : ""
-              }`}
+              className={`cursor-pointer transition-colors p-2! flex! items-center! gap-2! rounded-md ${item.order_product_type === "product"
+                ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
+                : item.order_product_type === "service"
+                  ? "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
+                  : ""
+                }`}
             >
               {item.order_product_type === "product"
                 ? "Tovar"
@@ -707,55 +706,55 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       ),
     },
     ...(role === "assistant_performer" ||
-    orderData?.receiver_name === currentUserInfo?.full_name
+      orderData?.receiver_name === currentUserInfo?.full_name
       ? [
-          {
-            title: "Biriktirilgan xodim",
-            key: "attached_employee",
-            width: 150,
-            fixed: "right" as const,
-            render: (_value: any, item: Product) => (
-              <Button
-                onClick={() => {
-                  setShowSelectEmployeeModal(item.id);
-                }}
-                className="text-sm text-gray-600"
-              >
-                {item.attached_employee?.full_name || "Xodim tanlang"}
-              </Button>
-            ),
-          },
-        ]
+        {
+          title: "Biriktirilgan xodim",
+          key: "attached_employee",
+          width: 150,
+          fixed: "right" as const,
+          render: (_value: any, item: Product) => (
+            <Button
+              onClick={() => {
+                setShowSelectEmployeeModal(item.id);
+              }}
+              className="text-sm text-gray-600"
+            >
+              {item.attached_employee?.full_name || "Xodim tanlang"}
+            </Button>
+          ),
+        },
+      ]
       : []),
     ...(orderData?.movement_type === "executing"
       ? [
-          // {
-          //   title: "Yillik reja",
-          //   key: "yearPlan",
-          //   width: 150,
-          //   align: "center" as const,
-          //   render: (_value: any, item: Product, index: number) => (
-          //     <button
-          //       onClick={(e) => {
-          //         e.stopPropagation();
-          //         setShowYearPlanModal(true);
-          //         setSelectedRowIndex(index);
-          //       }}
-          //       className={`inline-block px-2 py-1 cursor-pointer rounded-md ${
-          //         item.yearPlan
-          //           ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200"
-          //           : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"
-          //       } transition-colors`}
-          //     >
-          //       {item.yearPlan ? (
-          //         <Badge>{item.yearPlan.name}</Badge>
-          //       ) : (
-          //         <Badge>Tanlash</Badge>
-          //       )}
-          //     </button>
-          //   ),
-          // },
-        ]
+        // {
+        //   title: "Yillik reja",
+        //   key: "yearPlan",
+        //   width: 150,
+        //   align: "center" as const,
+        //   render: (_value: any, item: Product, index: number) => (
+        //     <button
+        //       onClick={(e) => {
+        //         e.stopPropagation();
+        //         setShowYearPlanModal(true);
+        //         setSelectedRowIndex(index);
+        //       }}
+        //       className={`inline-block px-2 py-1 cursor-pointer rounded-md ${
+        //         item.yearPlan
+        //           ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200"
+        //           : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"
+        //       } transition-colors`}
+        //     >
+        //       {item.yearPlan ? (
+        //         <Badge>{item.yearPlan.name}</Badge>
+        //       ) : (
+        //         <Badge>Tanlash</Badge>
+        //       )}
+        //     </button>
+        //   ),
+        // },
+      ]
       : []),
     {
       title: "Amallar",
@@ -804,6 +803,30 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       console.log(error);
       toast.error("Buyurtmani bekor qilishda xatolik yuz berdi");
     }
+  };
+
+  const handleAttachEmployeeToProduct = (employees: EmployeeType[]) => {
+    const selected = employees?.[0]; // single tanlanadi
+    if (!selected || !showSelectEmployeeModal) return;
+
+    setOrderData((prev) => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        products: prev.products.map((p) =>
+          p.id === showSelectEmployeeModal
+            ? {
+              ...p,
+              attached_employee: { id: selected.id, full_name: selected.full_name },
+            }
+            : p,
+        ),
+      };
+    });
+
+    toast.success("Xodim muvaffaqiyatli tanlandi");
+    setShowSelectEmployeeModal(0); // modal yopiladi
   };
 
   // Initialize cancel products when modal opens
@@ -869,15 +892,14 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 variant="outlined"
                 size="medium"
                 onClick={() => setShowAgreementModal(true)}
-                className={`gap-2 border-2 h-12 px-6 ${
-                  agreementStatus === "roziman"
-                    ? "border-green-600 text-green-700 bg-green-50 hover:bg-green-100 hover:border-green-700"
-                    : agreementStatus === "rozi-emasman"
-                      ? "border-red-500 text-red-700 bg-red-50 hover:bg-red-100"
-                      : agreementStatus === "qisman"
-                        ? "border-yellow-500 text-yellow-700 bg-yellow-50 hover:bg-yellow-100"
-                        : "border-purple-300 text-purple-600 hover:border-purple-500 hover:bg-purple-50"
-                }`}
+                className={`gap-2 border-2 h-12 px-6 ${agreementStatus === "roziman"
+                  ? "border-green-600 text-green-700 bg-green-50 hover:bg-green-100 hover:border-green-700"
+                  : agreementStatus === "rozi-emasman"
+                    ? "border-red-500 text-red-700 bg-red-50 hover:bg-red-100"
+                    : agreementStatus === "qisman"
+                      ? "border-yellow-500 text-yellow-700 bg-yellow-50 hover:bg-yellow-100"
+                      : "border-purple-300 text-purple-600 hover:border-purple-500 hover:bg-purple-50"
+                  }`}
               >
                 {(!agreementStatus || agreementStatus === "roziman") && (
                   <HandshakeIcon className="w-4 h-4 mix-blend-multiply" />
@@ -934,7 +956,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               <Button
                 type="primary"
                 onClick={() => setShowSendModal(true)}
-                // disabled={orderData?.is_send}
+              // disabled={orderData?.is_send}
               >
                 <Send className="w-4 h-4" />
                 <span className="text-base">
@@ -973,13 +995,13 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
         {/* Warnig section: Checking warehouse */}
         {!hideWarehouseWarning && (
-  <div>
-    <h2 className="text-lg italic text-red-400">
-      Tovarlar sotuvga chiqarishdan avval uni omborlar qoldiqlaridan
-      tekshirish talab etiladi
-    </h2>
-  </div>
-)}
+          <div>
+            <h2 className="text-lg italic text-red-400">
+              Tovarlar sotuvga chiqarishdan avval uni omborlar qoldiqlaridan
+              tekshirish talab etiladi
+            </h2>
+          </div>
+        )}
 
         {/* Buyurtma uchun kelgan tovarlar ro'yxati - Collapse Card */}
         <div className="shadow-md rounded-md border border-gray-200 overflow-hidden flex flex-col">
@@ -1110,8 +1132,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                         .split("-")
                         .reverse()
                         .join("-") +
-                        " " +
-                        orderData.created_at.split("T")[1].slice(0, 5)}
+                      " " +
+                      orderData.created_at.split("T")[1].slice(0, 5)}
                   </span>
                 </div>
               </div>
@@ -1179,9 +1201,9 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                     setOrderData((prev) =>
                       prev
                         ? {
-                            ...prev,
-                            comment: e.target.value,
-                          }
+                          ...prev,
+                          comment: e.target.value,
+                        }
                         : null,
                     );
                   }}
@@ -1193,9 +1215,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 <label className="text-sm text-gray-500 w-48">Holat</label>
                 <div className="flex-1">
                   <span
-                    className={`text-base font-medium ${
-                      orderData?.is_accepted ? "text-green-600" : "text-red-600"
-                    }`}
+                    className={`text-base font-medium ${orderData?.is_accepted ? "text-green-600" : "text-red-600"
+                      }`}
                   >
                     {orderData?.is_accepted
                       ? "Qabul qilingan"
@@ -1281,8 +1302,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
           {/* Fayllar grid */}
           {orderData &&
-          orderData.attachment_files &&
-          orderData.attachment_files.length > 0 ? (
+            orderData.attachment_files &&
+            orderData.attachment_files.length > 0 ? (
             <div className="grid grid-cols-2 gap-4 mb-6">
               {orderData.attachment_files.map((file) => {
                 const fileExtension =
@@ -1714,9 +1735,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                         return (
                           <tr
                             key={product.id}
-                            className={`hover:bg-gray-50 transition-colors ${
-                              !isAvailable ? "bg-red-50/30" : ""
-                            }`}
+                            className={`hover:bg-gray-50 transition-colors ${!isAvailable ? "bg-red-50/30" : ""
+                              }`}
                           >
                             <td className="px-4 py-3 text-sm text-gray-600">
                               {index + 1}
@@ -1739,11 +1759,10 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                             </td>
                             <td className="px-4 py-3 text-center">
                               <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-semibold ${
-                                  isAvailable
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-semibold ${isAvailable
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                                  }`}
                               >
                                 {availableStock} {getFieldLabel(product.unit)}
                               </span>
@@ -2112,39 +2131,70 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       {showSelectEmployeeModal > 0 && (
         <EmployeeSelectModal
           onClose={() => setShowSelectEmployeeModal(0)}
-          onSelect={(employee: any) => {
-            setOrderData((prev) => {
-              if (!prev) return null;
+          selectionType="single"
+          selectedEmployeeIds={
+            orderData?.products.find((p) => p.id === showSelectEmployeeModal)
+              ?.attached_employee?.id
+              ? [
+                orderData!.products.find((p) => p.id === showSelectEmployeeModal)!
+                  .attached_employee!.id,
+              ]
+              : []
+          }
+          onSelect={async (employees: EmployeeType[]) => {
+            const selected = employees?.[0];
+            if (!selected) return;
 
-              const updatedProducts = prev.products.map((product) => {
+            // 1) newProducts tayyorlaymiz (shu productga employee biriktiramiz)
+            const newProducts =
+              orderData?.products.map((product) => {
                 if (product.id === showSelectEmployeeModal) {
                   return {
                     ...product,
                     attached_employee: {
-                      ...product.attached_employee,
-                      id: employee[0].id,
-                      name: employee[0].full_name,
+                      id: selected.id,
+                      full_name: selected.full_name,
                     },
                   };
                 }
                 return product;
-              });
+              }) || [];
 
-              return {
-                ...prev,
-                products: updatedProducts,
-              };
-            });
+            // 2) UI state yangilanadi (ko‘rinishi uchun)
+            setOrderData((prev) => (prev ? { ...prev, products: newProducts } : prev));
+
+            // 3) modal yopamiz
             setShowSelectEmployeeModal(0);
-            handleOrderUpdate();
-            toast.success("Xodim muvaffaqiyatli tanlandi");
+
+            // 4) PATCH'ni NEW payload bilan yuboramiz (state kutmaymiz)
+            try {
+              const payload = {
+                comment: orderData?.comment || "",
+                products: newProducts.map((item) => ({
+                  ...item,
+                  product_type: item.product_type?.id || null,
+                  unit: item.unit?.id || null,
+                  quantity: item.quantity || 1,
+                  product_model: item.product_model?.id || null,
+                  size: item.size?.id || null,
+                  attached_employee: item.attached_employee?.id || null, // ✅ endi null emas
+                })),
+              };
+
+              const response = await axiosAPI.patch(
+                `document/orders/${orderData?.id}/`,
+                payload,
+              );
+
+              if (response.status === 200) {
+                toast.success("Xodim muvaffaqiyatli biriktirildi");
+                // xohlasang refresh:
+                // fetchOrderData();
+              }
+            } catch (e) {
+              toast.error("Xodimni biriktirishda xatolik yuz berdi");
+            }
           }}
-          selectedEmployeeIds={
-            orderData?.products
-              .filter((p) => p.attached_employee)
-              .map((p) => p.attached_employee!.id) || []
-          }
-          selectionType="single"
         />
       )}
     </>
