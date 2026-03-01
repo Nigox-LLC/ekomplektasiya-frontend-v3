@@ -120,7 +120,9 @@ export interface OrderData {
   movement_type: string;
   direction: string;
   comment: string;
+  is_forwarded: boolean;
   is_accepted: boolean;
+  is_rejected: boolean;
   is_done: boolean | null;
   is_send: boolean;
   done_date: string | null;
@@ -202,6 +204,11 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
   >([]);
 
   const { currentUserInfo } = useAppSelector((state) => state.info);
+
+  const isLocked =
+    !!orderData && (orderData.is_forwarded || orderData.is_accepted || orderData.is_rejected);
+
+  const isRejected = orderData?.is_rejected;
 
   const hideWarehouseWarning =
     currentUserInfo?.department_category === "completasiya";
@@ -507,8 +514,12 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
         <div className="relative inline-block">
           <button
             type="button"
-            onClick={() => handleTypeDropdownToggle(index)}
-            className="inline-flex items-center gap-2"
+            disabled={isLocked}
+            onClick={() => {
+              if (isLocked) return;
+              handleTypeDropdownToggle(index);
+            }}
+            className={`inline-flex items-center gap-2 ${isLocked ? "opacity-60 cursor-not-allowed" : ""}`}
           >
             <Badge
               className={`cursor-pointer transition-colors p-2! flex! items-center! gap-2! rounded-md ${item.order_product_type === "product"
@@ -516,7 +527,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 : item.order_product_type === "service"
                   ? "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
                   : ""
-                }`}
+                } ${isLocked ? "!cursor-not-allowed hover:!bg-inherit" : ""}`}
             >
               {item.order_product_type === "product"
                 ? "Tovar"
@@ -568,12 +579,17 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       align: "center",
       render: (_value, item, index) => (
         <button
+          disabled={isLocked}
           onClick={(e) => {
             e.stopPropagation();
+            if (isLocked) return;
             setShowYearPlanModal(true);
             setSelectedRowIndex(index);
           }}
-          className={`inline-block px-2 py-1 cursor-pointer rounded-md ${item.yearPlan ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200" : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"} transition-colors`}
+          className={`inline-block px-2 py-1 rounded-md transition-colors ${item.yearPlan
+            ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200"
+            : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"
+            } ${isLocked ? "opacity-60 cursor-not-allowed hover:bg-inherit" : "cursor-pointer"}`}
         >
           {item.yearPlan ? (
             <Badge>{item.yearPlan.name}</Badge>
@@ -590,6 +606,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       render: (_value, item, index) => (
         <Input
           type="text"
+          disabled={isLocked}
           value={item.product_name}
           onChange={(e) =>
             handleInputOnchange(index, "product_name", e.target.value)
@@ -606,11 +623,10 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       render: (_value, item, index) => (
         <Button
           className="w-full"
+          disabled={isLocked}
           onClick={() => {
-            setProductFieldModalOpen({
-              type: "product/type",
-              index,
-            });
+            if (isLocked) return;
+            setProductFieldModalOpen({ type: "product/type", index });
           }}
         >
           {isIdName(item.product_type) && item.product_type.id
@@ -626,13 +642,11 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       render: (_value, item, index) => (
         <Button
           className="w-full"
+          disabled={isLocked || !isIdName(item.product_type) || !item.product_type?.id}
           onClick={() => {
-            setProductFieldModalOpen({
-              type: "product/model",
-              index,
-            });
+            if (isLocked) return;
+            setProductFieldModalOpen({ type: "product/model", index });
           }}
-          disabled={!isIdName(item.product_type) || !item.product_type?.id}
         >
           {getModelLabel(item) || "Tanlang"}
         </Button>
@@ -645,13 +659,11 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       render: (_value, item, index) => (
         <Button
           className="w-full"
+          disabled={isLocked || !isIdName(item.product_model) || !item.product_model?.id}
           onClick={() => {
-            setProductFieldModalOpen({
-              type: "measurement/size",
-              index,
-            });
+            if (isLocked) return;
+            setProductFieldModalOpen({ type: "measurement/size", index });
           }}
-          disabled={!isIdName(item.product_model) || !item.product_model?.id}
         >
           {getFieldLabel(item.size) || "O'lcham tanlang"}
         </Button>
@@ -664,11 +676,10 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       render: (_value, item, index) => (
         <Button
           className="w-full"
+          disabled={isLocked}
           onClick={() => {
-            setProductFieldModalOpen({
-              type: "measurement/unit",
-              index,
-            });
+            if (isLocked) return;
+            setProductFieldModalOpen({ type: "measurement/unit", index });
           }}
         >
           {getFieldLabel(item.unit) || "O'lchov birligini tanlang"}
@@ -682,6 +693,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       align: "center",
       render: (_value, item, index) => (
         <InputNumber
+          disabled={isLocked}
           value={item.quantity}
           onChange={(value) => {
             if (typeof value === "number") {
@@ -701,6 +713,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       render: (_value, item, index) => (
         <Input
           type="text"
+          disabled={isLocked}
           value={item.note}
           onChange={(e) => handleInputOnchange(index, "note", e.target.value)}
           className="text-sm italic border-0 focus:ring-1 focus:ring-blue-500"
@@ -959,7 +972,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
               <Button
                 type="primary"
                 onClick={() => setShowSendModal(true)}
-              // disabled={orderData?.is_send}
+                // disabled={orderData?.is_send}
+                disabled={isRejected}
               >
                 <Send className="w-4 h-4" />
                 <span className="text-base">
@@ -972,6 +986,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 type="primary"
                 color="green"
                 onClick={handleOrderUpdate}
+                disabled={isRejected}
                 className="gap-2"
               >
                 <FileText className="w-4 h-4" />
@@ -987,7 +1002,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                   setShowCancelConfirm(true);
                   initializeCancelProducts();
                 }}
-                disabled={orderData?.is_accepted}
+                // disabled={orderData?.is_accepted}
+                disabled={isRejected}
               >
                 <X className="size-4" />
                 <span className="text-base">Bekor qilish</span>
@@ -1051,10 +1067,11 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 <Button
                   variant="outlined"
                   className="gap-2"
+                  disabled={isLocked}
                   onClick={() => {
-                    // Yangi bo'sh qator qo'shish
+                    if (isLocked) return;
                     const newRow = {
-                      name: "",
+                      product_name: "",
                       model: "",
                       order_product_type: "product",
                       product_type: { id: 0, name: "" },
@@ -1063,6 +1080,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                       unit: { id: 0, name: "" },
                       quantity: 0,
                       note: "",
+                      attached_employee: null,
                     };
                     // @ts-ignore
                     setOrderData((prev) => ({
