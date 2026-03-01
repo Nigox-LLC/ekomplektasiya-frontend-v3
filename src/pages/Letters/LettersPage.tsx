@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MapPin, Search, Trash2, ChevronRight, Building2 } from "lucide-react";
+import { MapPin, Search, Trash2, ChevronRight } from "lucide-react";
 import StatusFilter from "./components/StatusFilter";
 import { Button, Card, Input } from "antd";
 import LetterDetail from "./components/Detail/LetterDetail";
-import { useAppSelector } from "@/store/hooks/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks/hooks";
 import { axiosAPI } from "@/service/axiosAPI";
 import { useLocation, useParams } from "react-router";
+import { closeEditorView } from "@/store/slices/lettersSlice";
 
 export interface Letter {
   created_at: string;
   id: number;
+  old_number?: string;
   incoming_number: string;
   is_accepted: boolean;
   is_send: boolean;
@@ -29,9 +31,12 @@ const LettersPage: React.FC = () => {
   const [totalDocuments, setTotalDocuments] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const dispatch = useAppDispatch();
+  const { editorView } = useAppSelector((state) => state.letters);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const lastTriggeredPageRef = useRef<number>(1);
+  const editorIframeRef = useRef<HTMLIFrameElement>(null);
 
   const { showFilters } = useAppSelector((state) => state.letters);
   const { status } = useParams();
@@ -41,22 +46,7 @@ const LettersPage: React.FC = () => {
     return is_accepted ? "border-l-green-500!" : "border-l-red-500!";
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "overdue":
-        return { text: "Muddati o'tgan", class: "bg-red-100 text-red-700" };
-      case "active":
-        return { text: "Faol", class: "bg-yellow-100 text-yellow-700" };
-      case "completed":
-        return { text: "Bajarilgan", class: "bg-green-100 text-green-700" };
-      case "cancelled":
-        return { text: "Bekor qilingan", class: "bg-gray-100 text-gray-700" };
-      default:
-        return { text: "Noma'lum", class: "bg-gray-100 text-gray-700" };
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {};
+  const handleKeyPress = (_e: React.KeyboardEvent<HTMLInputElement>) => {};
 
   // Highlight funksiyasi - qidiruv so'zlarini ajratib ko'rsatish
   const highlightText = (text: string) => {
@@ -198,6 +188,26 @@ const LettersPage: React.FC = () => {
     return () => container.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (!editorView.isOpen || event.data?.status !== "ready") return;
+      const iframeWindow = editorIframeRef.current?.contentWindow;
+      if (!iframeWindow || event.source !== iframeWindow) return;
+
+      iframeWindow.postMessage(
+        {
+          input_url: editorView.inputUrl,
+          output_url: editorView.outputUrl,
+          v3_ganiwer: localStorage.getItem("v3_ganiwer"),
+        },
+        "*",
+      );
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [editorView]);
+
   return (
     <div className="flex flex-col gap-4 h-full">
       {/* Status Filters - YUQORIDA, TO'LIQ KENGLIKDA */}
@@ -301,7 +311,10 @@ const LettersPage: React.FC = () => {
                       ? "bg-blue-200! border-blue-600!"
                       : ""
                   }`}
-                  onClick={() => setSelectedLetter(letter)}
+                  onClick={() => {
+                    dispatch(closeEditorView());
+                    setSelectedLetter(letter);
+                  }}
                 >
                   <div className="flex items-start justify-between gap-1">
                     <div className="flex-1 min-w-0">
@@ -367,12 +380,27 @@ const LettersPage: React.FC = () => {
         </div>
 
         {/* Right Side - Document Detail */}
-        {selectedLetter && (
-          <div
-            className="w-3/4 border-l border-gray-200 pl-6 overflow-y-auto"
-            style={{ maxHeight: "calc(100vh - 200px)" }}
-          >
-            {/* <DocumentDetailView
+        {(selectedLetter || editorView.isOpen) && (
+          <>
+            {editorView.isOpen ? (
+              <div
+                className="w-3/4 border-l border-gray-200 pl-6 overflow-y-auto"
+                style={{ maxHeight: "calc(100vh - 200px)" }}
+              >
+                <iframe
+                  ref={editorIframeRef}
+                  src={editorView.url}
+                  title="Document Editor"
+                  className="w-full border-0"
+                  style={{ height: "calc(100vh - 220px)" }}
+                />
+              </div>
+            ) : (
+              <div
+                className="w-3/4 border-l border-gray-200 pl-6 overflow-y-auto"
+                style={{ maxHeight: "calc(100vh - 200px)" }}
+              >
+                {/* <DocumentDetailView
               document={{
                 id: selectedLetter.id,
                 number: selectedLetter.outgoingNumber,
@@ -385,20 +413,25 @@ const LettersPage: React.FC = () => {
               }}
               onBack={() => setSelectedLetter(null)}
             /> */}
-            <LetterDetail
-              document={{
-                id: selectedLetter.id,
-                number: selectedLetter.outgoing_number,
-                title: selectedLetter.department_name,
-                category: "outgoing",
-                date: selectedLetter.send_date,
-                tags: [],
-                isRead: true,
-                isReceived: false,
-              }}
-              onBack={() => setSelectedLetter(null)}
-            />
-          </div>
+                <LetterDetail
+                  document={{
+                    id: selectedLetter!.id,
+                    number: selectedLetter!.outgoing_number,
+                    title: selectedLetter!.department_name,
+                    category: "outgoing",
+                    date: selectedLetter!.send_date,
+                    tags: [],
+                    isRead: true,
+                    isReceived: false,
+                  }}
+                  onBack={() => {
+                    dispatch(closeEditorView());
+                    setSelectedLetter(null);
+                  }}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

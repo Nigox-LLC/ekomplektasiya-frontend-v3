@@ -1,14 +1,14 @@
 import { CreateAboveModal, FilePreviewer } from "@/components";
 import type { OrderData } from "@/pages/Letters/components/Detail/LetterDetail";
 import { axiosAPI } from "@/service/axiosAPI";
+import { useAppDispatch } from "@/store/hooks/hooks";
+import { setEditorView } from "@/store/slices/lettersSlice";
 import { Button, Card, Modal } from "antd";
 import {
-  Check,
   CheckCircle,
   Download,
   Eye,
   FileText,
-  Pencil,
   Plus,
   Upload,
 } from "lucide-react";
@@ -25,10 +25,18 @@ export interface MainDocument {
   id: number;
   file_name: string;
   file_url: string;
+  word_id?: number;
+  word_file_id?: number;
+  word_file_name?: string;
+  file_pdf_id?: number;
+  is_main?: boolean;
 }
 
 const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
-  const [fileTemplates, setFileTemplates] = useState<IDName[]>([]);
+  const dispatch = useAppDispatch();
+  const [fileTemplates, setFileTemplates] = useState<
+    Array<IDName & { is_fishka?: boolean }>
+  >([]);
   const [showTemplatesList, setShowTemplatesList] = useState(false);
 
   const [mainDocument, setMainDocument] = useState<MainDocument[]>([]);
@@ -42,48 +50,23 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
     null,
   );
 
-  const newWindowRef = useRef<Window | null>(null);
+  const handleOpenEditor = (doc: MainDocument) => {
+    const wordFileId = doc.word_id || doc.word_file_id || null;
+    const outputUrl = wordFileId
+      ? `${axiosAPI.getUri()}/document/orders/word/${wordFileId}/`
+      : "";
 
-  useEffect(() => {
-    const handler = (e: MessageEvent) => {
-      console.log("Parent received message:", e.data);
-
-      if (
-        e.data &&
-        e.data.status === "ready" &&
-        newWindowRef.current &&
-        selectedDocument
-      ) {
-        // console.log("✅ Child window tayyor!");
-        const token = localStorage.getItem("v3_ganiwer");
-
-        const data = {
-          input_url: selectedDocument.file_url,
-          output_url:
-            axiosAPI.getUri() + `/document/orders/word/${selectedDocument.word_id || selectedDocument.word_file_id}/`,
-          v3_ganiwer: token,
-        };
-
-        console.log(data)
-
-        newWindowRef.current.postMessage(data, "*");
-      }
-
-      if (e.data && e.data.status === "loaded") {
-        console.log("✅ Hujjat yuklandi:", e.data.url);
-      }
-    };
-
-    window.addEventListener("message", handler);
-    return () => window.removeEventListener("message", handler);
-  }, [selectedDocument]);
-
-  function openEditor() {
-    const url = "https://editor.ekomplektasiya.uz/";
-    const features =
-      "width=1200,height=800,menubar=no,toolbar=no,location=no,status=no";
-    newWindowRef.current = window.open(url, "SuperDocWindow", features);
-  }
+    dispatch(
+      setEditorView({
+        isOpen: true,
+        url: "https://editor.ekomplektasiya.uz/",
+        documentId: orderDataID,
+        wordFileId,
+        inputUrl: doc.file_url,
+        outputUrl,
+      }),
+    );
+  };
 
   const createMainDocument = async (file: File) => {
     try {
@@ -212,30 +195,7 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
                     <Button
                       className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 border-none"
                       onClick={() => {
-                        // fetch(doc.file_url)
-                        //   .then((res) => {
-                        //     if (!res.ok)
-                        //       throw new Error(
-                        //         `HTTP error! status: ${res.status}`,
-                        //       );
-                        //     return res.blob();
-                        //   })
-                        //   .then((blob) => {
-                        //     const fileObj = new File(
-                        //       [blob],
-                        //       doc.word_file_name,
-                        //       {
-                        //         type: blob.type,
-                        //       },
-                        //     );
-                        //     if (fileObj) setSelectedFile(fileObj);
-                        //   })
-                        //   .catch((err) => {
-                        //     console.error("Faylni olishda xatolik:", err);
-                        //     toast.error("Faylni olishda xatolik yuz berdi!");
-                        //   });
-                        setSelectedDocument(doc)
-                        openEditor();
+                        handleOpenEditor(doc);
                       }}
                     >
                       <Eye className="w-4 h-4" />
