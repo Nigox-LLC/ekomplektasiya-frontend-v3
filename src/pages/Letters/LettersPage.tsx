@@ -31,6 +31,18 @@ const LettersPage: React.FC = () => {
   const [totalDocuments, setTotalDocuments] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "not_seen" | "viewed" | "done" | "not_done" | "sent"
+  >("all");
+  const [statusCounts, setStatusCounts] = useState({
+    created: 0,
+    not_seen: 0,
+    viewed: 0,
+    done: 0,
+    not_done: 0,
+    sent: 0,
+  });
+
   const dispatch = useAppDispatch();
   const { editorView } = useAppSelector((state) => state.letters);
 
@@ -44,6 +56,26 @@ const LettersPage: React.FC = () => {
 
   const getStatusColor = (is_accepted: boolean) => {
     return is_accepted ? "border-l-green-500!" : "border-l-red-500!";
+  };
+
+  const mapStatusToApiParams = (
+    status: "all" | "not_seen" | "viewed" | "done" | "not_done" | "sent",
+  ) => {
+    switch (status) {
+      case "not_seen":
+        return { is_seen: false };
+      case "viewed":
+        return { is_seen: true };
+      case "done":
+        return { is_done: true };
+      case "not_done":
+        return { is_done: false };
+      case "sent":
+        return { is_send: true };
+      case "all":
+      default:
+        return {};
+    }
   };
 
   const handleKeyPress = (_e: React.KeyboardEvent<HTMLInputElement>) => {};
@@ -99,7 +131,7 @@ const LettersPage: React.FC = () => {
     setLetters([]);
     setHasMore(true);
     lastTriggeredPageRef.current = 1;
-  }, [status, location.pathname]);
+  }, [status, location.pathname, statusFilter]);
 
   // Fetch letters when page changes
   useEffect(() => {
@@ -119,6 +151,7 @@ const LettersPage: React.FC = () => {
             : false;
         const params: any = {
           page: page,
+          ...mapStatusToApiParams(statusFilter),
         };
         const isPathMyLetter = location.pathname.includes("my_letter");
         if (isPathMyLetter) params.movement_type = "my_letter";
@@ -133,6 +166,8 @@ const LettersPage: React.FC = () => {
           const total = response.data.count;
 
           setTotalDocuments(total);
+
+          setStatusCounts(response.data.counts);
 
           // Append or replace based on page number
           if (page === 1) {
@@ -159,7 +194,7 @@ const LettersPage: React.FC = () => {
 
     fetchLetters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, status]);
+  }, [page, status, statusFilter]);
 
   // Scroll handler for infinite scroll
   const handleScroll = useCallback(() => {
@@ -211,7 +246,12 @@ const LettersPage: React.FC = () => {
   return (
     <div className="flex flex-col gap-4 h-full">
       {/* Status Filters - YUQORIDA, TO'LIQ KENGLIKDA */}
-      <StatusFilter letters={letters} totalCount={totalDocuments} />
+      <StatusFilter
+        letters={letters}
+        totalCount={totalDocuments}
+        statusCounts={statusCounts}
+        setSelectedLetter={setSelectedLetter}
+      />
 
       {/* Main Content */}
       <div className="flex gap-6 flex-1">

@@ -201,7 +201,8 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
   const { currentUserInfo } = useAppSelector((state) => state.info);
 
   const isLocked =
-    !!orderData && (orderData.is_forwarded || orderData.is_accepted || orderData.is_rejected);
+    !!orderData &&
+    (orderData.is_forwarded || orderData.is_accepted || orderData.is_rejected);
 
   const isRejected = orderData?.is_rejected;
 
@@ -517,18 +518,23 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             className={`inline-flex items-center gap-2 ${isLocked ? "opacity-60 cursor-not-allowed" : ""}`}
           >
             <Badge
-              className={`cursor-pointer transition-colors p-2! flex! items-center! gap-2! rounded-md ${item.order_product_type === "product"
-                ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
-                : item.order_product_type === "service"
-                  ? "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
-                  : ""
-                } ${isLocked ? "!cursor-not-allowed hover:!bg-inherit" : ""}`}
+              className={`cursor-pointer transition-colors p-2! flex! items-center! gap-2! rounded-md ${
+                item.order_product_type === "product"
+                  ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
+                  : item.order_product_type === "service"
+                    ? "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
+                    : item.order_product_type === "yearly_plan"
+                      ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200"
+                      : ""
+              } ${isLocked ? "cursor-not-allowed! hover:bg-inherit!" : ""}`}
             >
               {item.order_product_type === "product"
                 ? "Tovar"
                 : item.order_product_type === "service"
                   ? "Xizmat"
-                  : "Tanlang"}
+                  : item.order_product_type === "yearly_plan"
+                    ? "Yillik reja"
+                    : "Tanlang"}
               <ChevronDown className="size-3 text-gray-500" />
             </Badge>
           </button>
@@ -562,6 +568,21 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
                 <div className="size-2 rounded-full bg-purple-500"></div>
                 Xizmat
               </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleInputOnchange(
+                    index,
+                    "order_product_type",
+                    "yearly_plan",
+                  );
+                  setShowTypeDropdown(null);
+                }}
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center gap-2 rounded-b-lg transition-colors"
+              >
+                <div className="size-2 rounded-full bg-green-500"></div>
+                Yillik reja
+              </button>
             </div>
           )}
         </div>
@@ -581,10 +602,11 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
             setShowYearPlanModal(true);
             setSelectedRowIndex(index);
           }}
-          className={`inline-block px-2 py-1 rounded-md transition-colors ${item.yearPlan
-            ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200"
-            : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"
-            } ${isLocked ? "opacity-60 cursor-not-allowed hover:bg-inherit" : "cursor-pointer"}`}
+          className={`inline-block px-2 py-1 rounded-md transition-colors ${
+            item.yearPlan
+              ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200"
+              : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"
+          } ${isLocked ? "opacity-60 cursor-not-allowed hover:bg-inherit" : "cursor-pointer"}`}
         >
           {item.yearPlan ? (
             <Badge>{item.yearPlan.name}</Badge>
@@ -637,7 +659,9 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       render: (_value, item, index) => (
         <Button
           className="w-full"
-          disabled={isLocked || !isIdName(item.product_type) || !item.product_type?.id}
+          disabled={
+            isLocked || !isIdName(item.product_type) || !item.product_type?.id
+          }
           onClick={() => {
             if (isLocked) return;
             setProductFieldModalOpen({ type: "product/model", index });
@@ -654,7 +678,9 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       render: (_value, item, index) => (
         <Button
           className="w-full"
-          disabled={isLocked || !isIdName(item.product_model) || !item.product_model?.id}
+          disabled={
+            isLocked || !isIdName(item.product_model) || !item.product_model?.id
+          }
           onClick={() => {
             if (isLocked) return;
             setProductFieldModalOpen({ type: "measurement/size", index });
@@ -739,32 +765,32 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
       : []),
     ...(orderData?.movement_type === "executing"
       ? [
-          // {
-          //   title: "Yillik reja",
-          //   key: "yearPlan",
-          //   width: 150,
-          //   align: "center" as const,
-          //   render: (_value: any, item: Product, index: number) => (
-          //     <button
-          //       onClick={(e) => {
-          //         e.stopPropagation();
-          //         setShowYearPlanModal(true);
-          //         setSelectedRowIndex(index);
-          //       }}
-          //       className={`inline-block px-2 py-1 cursor-pointer rounded-md ${
-          //         item.yearPlan
-          //           ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200"
-          //           : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"
-          //       } transition-colors`}
-          //     >
-          //       {item.yearPlan ? (
-          //         <Badge>{item.yearPlan.name}</Badge>
-          //       ) : (
-          //         <Badge>Tanlash</Badge>
-          //       )}
-          //     </button>
-          //   ),
-          // },
+          {
+            title: "Yillik reja",
+            key: "yearPlan",
+            width: 150,
+            align: "center" as const,
+            render: (_value: any, item: Product, index: number) => (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowYearPlanModal(true);
+                  setSelectedRowIndex(index);
+                }}
+                className={`inline-block px-2 py-1 cursor-pointer rounded-md ${
+                  item.yearPlan
+                    ? "bg-green-100 text-green-700 border-green-300 hover:bg-green-200"
+                    : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"
+                } transition-colors`}
+              >
+                {item.yearPlan ? (
+                  <Badge>{item.yearPlan.name}</Badge>
+                ) : (
+                  <Badge>Tanlash</Badge>
+                )}
+              </button>
+            ),
+          },
         ]
       : []),
     {
@@ -1050,14 +1076,17 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
 
           {showGoodsTable && (
             <div className="border-t border-gray-200 animate-in slide-in-from-top-2 duration-200">
-              <div className="p-4 overflow-x-auto">
+              <div className="p-4 overflow-x-auto min-h-[200px]">
                 <Table
                   columns={goodsColumns}
                   dataSource={orderData?.products || []}
                   rowKey="id"
+                  style={{ height: 1000 }}
                   pagination={false}
-                  scroll={{ x: "max-content", y: 520 }}
-                  className="w-full"
+                  scroll={{
+                    x: "max-content",
+                  }}
+                  className="w-full h-[100%]!"
                 />
               </div>
 
@@ -1608,6 +1637,7 @@ const LetterDetail: React.FC<DocumentDetailViewProps> = ({
           onCancel={() => {
             setShowSigningModal(false);
           }}
+          fetchOrderData={fetchOrderData}
         />
 
         {/* Send Document Modal */}

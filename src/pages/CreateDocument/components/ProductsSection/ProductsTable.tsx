@@ -100,12 +100,16 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                           className={`cursor-pointer transition-colors w-full px-2! py-1! rounded-md! ${
                             item.order_product_type === "product"
                               ? "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
-                              : "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
+                              : item.order_product_type === "service"
+                                ? "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200"
+                                : "bg-green-100 text-green-700 border-green-300 hover:bg-green-200"
                           }`}
                         >
                           {item.order_product_type === "product"
                             ? "Tovar"
-                            : "Xizmat"}
+                            : item.order_product_type === "service"
+                              ? "Xizmat"
+                              : "Yillik reja"}
                         </Badge>
                         <ChevronDown className="size-3 text-gray-500" />
                       </button>
@@ -146,6 +150,21 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                           >
                             <div className="size-2 rounded-full bg-purple-500"></div>
                             Xizmat
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleUpdateRow(
+                                index,
+                                "order_product_type",
+                                "annual_plan",
+                              );
+                              setShowTypeDropdown(null);
+                            }}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center gap-2 rounded-b-lg transition-colors"
+                          >
+                            <div className="size-2 rounded-full bg-green-500"></div>
+                            Yillik reja
                           </button>
                         </div>
                       )}

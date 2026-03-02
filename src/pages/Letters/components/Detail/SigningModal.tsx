@@ -48,6 +48,7 @@ interface EImzoSigningProps {
   templateID?: number;
   deadline?: string;
   executors?: Executor[];
+  fetchOrderData?: () => Promise<void>;
 }
 
 // Utility functions
@@ -103,6 +104,7 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
   templateID,
   deadline,
   executors,
+  fetchOrderData,
 }) => {
   // State management
   const [certificates, setCertificates] = useState<CertificateParsed[]>([]);
@@ -218,6 +220,9 @@ const EImzoSigning: React.FC<EImzoSigningProps> = ({
           toast.success("Hujjat muvaffaqiyatli imzolandi!", {
             autoClose: 3000,
           });
+          if (fetchOrderData) {
+            fetchOrderData();
+          }
 
           dispatch(
             setEimzoSigningData({

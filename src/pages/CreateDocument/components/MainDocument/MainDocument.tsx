@@ -49,6 +49,12 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
   const [selectedOrderFileID, setSelectedOrderFileID] = useState<number | null>(
     null,
   );
+  const [orderNumber, setOrderNumber] = useState("");
+  const [showInputNumberModal, setShowInputNumberModal] = useState<{
+    id: number;
+    name: string;
+    is_fishka?: boolean;
+  } | null>(null);
 
   const handleOpenEditor = (doc: MainDocument) => {
     const wordFileId = doc.word_id || doc.word_file_id || null;
@@ -110,7 +116,11 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
         setMainDocument((prev) =>
           prev.map((d) =>
             d.id === doc.id
-              ? { ...d, file_url: response.data.file, word_file_name: file.name }
+              ? {
+                  ...d,
+                  file_url: response.data.file,
+                  word_file_name: file.name,
+                }
               : d,
           ),
         );
@@ -123,11 +133,15 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
 
   const createMainDocByTemplate = async (templateID: number) => {
     try {
+      const payload = {
+        template_id: templateID,
+      };
+      if (showInputNumberModal) {
+        payload.outgoing_number = orderNumber;
+      }
       const response = await axiosAPI.post(
         `document/orders/${orderDataID}/add-file/`,
-        {
-          template_id: templateID,
-        },
+        payload,
       );
 
       if (response.status === 200) {
@@ -195,7 +209,56 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
                     <Button
                       className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 border-none"
                       onClick={() => {
-                        handleOpenEditor(doc);
+                        if (doc.file_pdf_id) {
+                          // ===============================
+                          async function fetchAndOpenFile() {
+                            try {
+                              const response = await axiosAPI.get(
+                                `document/orders/attachment/${doc.file_pdf_id}/`,
+                              );
+                              if (response.status === 200)
+                                return response.data.file_url;
+                            } catch (error) {
+                              console.log(error);
+                              toast.error(
+                                "Faylni yuklab olishda xatolik yuz berdi",
+                              );
+                            }
+                          }
+
+                          fetchAndOpenFile().then((url) => {
+                            if (url) {
+                              fetch(url)
+                                .then((res) => {
+                                  if (!res.ok)
+                                    throw new Error(
+                                      `HTTP error! status: ${res.status}`,
+                                    );
+                                  return res.blob();
+                                })
+                                .then((blob) => {
+                                  const fileObj: File = new File(
+                                    [blob],
+                                    doc.file_pdf_name,
+                                    { type: blob.type },
+                                  );
+                                  setSelectedFile(fileObj);
+                                })
+                                .catch((error) => {
+                                  console.log(error);
+                                  toast.error(
+                                    "Faylni ochib bo'lmadi. Iltimos, qayta urinib ko'ring.",
+                                  );
+                                });
+                            } else
+                              toast.error(
+                                "Faylni ochib bo'lmadi. Iltimos, qayta urinib ko'ring.",
+                              );
+                          });
+                          // ===============================
+                        } else {
+                          handleOpenEditor(doc);
+                        }
                       }}
                     >
                       <Eye className="w-4 h-4" />
@@ -230,7 +293,7 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
                       target="_blank"
                       className="flex items-center gap-2 bg-green-600 hover:bg-green-700 border-none text-white"
                       onClick={() => {
-                        console.log(doc)
+                        console.log(doc);
                       }}
                     >
                       <Download className="w-4 h-4" />
@@ -271,7 +334,7 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
                     className="text-blue-500 underline cursor-pointer hover:text-blue-700"
                     onClick={() => setShowTemplatesList((prev) => !prev)}
                   >
-                    (shablonlardan tanlash)
+                    (shablonlardan tanlash) fwe
                   </p>
                   {showTemplatesList && (
                     <div className="absolute top-0 left-full w-full z-50 bg-white border-2 border-slate-200 rounded-md shadow-md">
@@ -340,6 +403,8 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
                       if (template.is_fishka) {
                         setIsFishka(true);
                         setShowTemplatesList(false);
+                      } else if (template.is_order) {
+                        setShowInputNumberModal(template);
                       } else {
                         createMainDocByTemplate(template.id);
                       }
@@ -405,6 +470,34 @@ const MainDocument: React.FC<IProps> = ({ orderDataID, orderData }) => {
           documentId={orderDataID + ""}
         />
       )}
+      <Modal
+        open={!!showInputNumberModal}
+        onCancel={() => setShowInputNumberModal(null)}
+        centered
+        footer={null}
+      >
+        <div className="flex flex-col items-start gap-4">
+          <p>Hujjat raqamini kiriting</p>
+          <input
+            type="text"
+            className="border-2 border-gray-300 rounded-md px-4 py-2 w-full"
+            placeholder="Buyurtma raqami"
+            value={orderNumber}
+            onChange={(e) => setOrderNumber(e.target.value)}
+          />
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 border-none text-white"
+            onClick={() => {
+              if (showInputNumberModal) {
+                createMainDocByTemplate(showInputNumberModal.id);
+                setShowInputNumberModal(null);
+              }
+            }}
+          >
+            Yaratish
+          </Button>
+        </div>
+      </Modal>
     </>
   );
 };
